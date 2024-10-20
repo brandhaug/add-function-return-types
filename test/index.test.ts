@@ -1,510 +1,695 @@
-import * as fs from 'node:fs'
-import * as path from 'node:path'
-import { Project } from 'ts-morph'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { processFile } from '../src'
+import { execa } from 'execa'
+import path from 'node:path'
+import fs from 'fs-extra'
 
-describe('processFile', (): void => {
-	let project: Project
-	const createdFiles: string[] = []
+describe('e2e tests', () => {
+	const cliPath = path.resolve(__dirname, '../src/index.ts') // Update this path to your CLI script
+	const testDir = path.resolve(__dirname, 'temp-test-dir')
 
-	beforeEach((): void => {
-		project = new Project()
+	beforeEach(async () => {
+		// Create a temporary directory for each test
+		await fs.ensureDir(testDir)
 	})
 
-	afterEach((): void => {
-		// Clean up any files that were saved to disk
-		for (const filePath of createdFiles) {
-			if (fs.existsSync(filePath)) {
-				fs.unlinkSync(filePath)
-			}
-		}
-		createdFiles.length = 0 // Clear the array
+	afterEach(async () => {
+		// Clean up the temporary directory after each test
+		await fs.remove(testDir)
 	})
 
-	function createTestSourceFile(fileName: string, sourceCode: string) {
-		const filePath = path.resolve(__dirname, fileName)
-		const sourceFile = project.createSourceFile(filePath, sourceCode, {
-			overwrite: true
-		})
-		createdFiles.push(filePath)
-		return { sourceFile, filePath }
-	}
-
-	it('adds return types to functions without explicit return types', async (): Promise<void> => {
+	it('adds return types to functions without explicit return types', async () => {
 		const sourceCode = `
-      function greet(name: string) {
-        return 'Hello, ' + name;
-      }
-      
-      const getNumber = () => {
-        return 42;
-      }
-    `.trim()
+function greet(name: string) {
+  return 'Hello, ' + name;
+}
 
-		const { sourceFile } = createTestSourceFile('greet_test.ts', sourceCode)
+const getNumber = () => {
+  return 42;
+}
+`.trim()
 
-		await processFile(project, sourceFile.getFilePath())
+		const filePath = path.join(testDir, 'greet_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		const updatedSource = sourceFile.getText()
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function greet(name: string): string')
 		expect(updatedSource).toContain('const getNumber = (): number =>')
 	})
 
-	it('does not modify functions with explicit return types', async (): Promise<void> => {
+	it('does not modify functions with explicit return types', async () => {
 		const sourceCode = `
-      function sum(a: number, b: number): number {
-        return a + b;
-      }
-    `.trim()
+function sum(a: number, b: number): number {
+  return a + b;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('sum_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'sum_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles arrow functions correctly', async (): Promise<void> => {
+	it('handles arrow functions correctly', async () => {
 		const sourceCode = `
-      const multiply = (a: number, b: number) => {
-        return a * b;
-      }
-    `.trim()
+const multiply = (a: number, b: number) => {
+  return a * b;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('multiply_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'multiply_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'const multiply = (a: number, b: number): number =>'
 		)
 	})
 
-	it('handles async functions', async (): Promise<void> => {
+	it('handles async functions', async () => {
 		const sourceCode = `
-      async function fetchData(url: string) {
-        const response = await fetch(url);
-        return response.json();
-      }
-    `.trim()
+async function fetchData(url: string) {
+  const response = await fetch(url);
+  return response.json();
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('fetchData_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'fetchData_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'async function fetchData(url: string): Promise<any>'
 		)
 	})
 
-	it('does not modify constructors', async (): Promise<void> => {
+	it('does not modify constructors', async () => {
 		const sourceCode = `
-      class Person {
-        constructor(public name: string) {}
-      }
-    `.trim()
+class Person {
+  constructor(public name: string) {}
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('Person_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'Person_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles methods without return types', async (): Promise<void> => {
+	it('handles methods without return types', async () => {
 		const sourceCode = `
-      class Calculator {
-        add(a: number, b: number) {
-          return a + b;
-        }
-      }
-    `.trim()
+class Calculator {
+  add(a: number, b: number) {
+    return a + b;
+  }
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'Calculator_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'Calculator_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('add(a: number, b: number): number')
 	})
 
-	it('skips functions returning any or unknown types', async (): Promise<void> => {
+	it('skips functions returning any or unknown types', async () => {
 		const sourceCode = `
-      function parseData(data: string) {
-        return JSON.parse(data);
-      }
-    `.trim()
+function parseData(data: string) {
+  return JSON.parse(data);
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('parseData_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'parseData_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		// Assuming the script does not add return types for functions returning any or unknown
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('does not modify functions with existing return types', async (): Promise<void> => {
+	it('does not modify functions with existing return types', async () => {
 		const sourceCode = `
-      function getUser(): { name: string; age: number } {
-        return { name: 'Alice', age: 30 };
-      }
-    `.trim()
+function getUser(): { name: string; age: number } {
+  return { name: 'Alice', age: 30 };
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('getUser_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'getUser_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles functions returning anonymous objects', async (): Promise<void> => {
+	it('handles functions returning anonymous objects', async () => {
 		const sourceCode = `
-      function createUser(name: string, age: number) {
-        return { name, age };
-      }
-    `.trim()
+function createUser(name: string, age: number) {
+  return { name, age };
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'createUser_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'createUser_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
 		// Assuming the script does not add return types for anonymous objects
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles overloaded functions correctly', async (): Promise<void> => {
+	it('handles overloaded functions correctly', async () => {
 		const sourceCode = `
-      function combine(a: string, b: string): string;
-      function combine(a: number, b: number): number;
-      function combine(a: any, b: any) {
-        return a + b;
-      }
-    `.trim()
+function combine(a: string, b: string): string;
+function combine(a: number, b: number): number;
+function combine(a: any, b: any) {
+  return a + b;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('combine_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'combine_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		// Assuming the script does not modify overloaded functions
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('adds return types to functions returning void', async (): Promise<void> => {
+	it('adds return types to functions returning void', async () => {
 		const sourceCode = `
-      function logMessage(message: string) {
-        console.log(message);
-      }
-    `.trim()
+function logMessage(message: string) {
+  console.log(message);
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'logMessage_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'logMessage_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function logMessage(message: string): void'
 		)
 	})
 
-	it('handles generator functions', async (): Promise<void> => {
+	it('handles generator functions', async () => {
 		const sourceCode = `
-      function* idGenerator() {
-        let id = 0;
-        while (true) {
-          yield id++;
-        }
-      }
-    `.trim()
+function* idGenerator() {
+  let id = 0;
+  while (true) {
+    yield id++;
+  }
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'idGenerator_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'idGenerator_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function* idGenerator(): Generator<number, void, unknown>'
 		)
 	})
 
-	it('handles functions with type parameters', async (): Promise<void> => {
+	it('handles functions with type parameters', async () => {
 		const sourceCode = `
-      function identity<T>(arg: T) {
-        return arg;
-      }
-    `.trim()
+function identity<T>(arg: T) {
+  return arg;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('identity_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'identity_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function identity<T>(arg: T): T')
 	})
 
-	it('adds return types to functions returning union types', async (): Promise<void> => {
+	it('adds return types to functions returning union types', async () => {
 		const sourceCode = `
-      function toNumber(value: string | number) {
-        if (typeof value === 'string') {
-          return parseInt(value, 10);
-        }
-        return value;
-      }
-    `.trim()
+function toNumber(value: string | number) {
+  if (typeof value === 'string') {
+    return parseInt(value, 10);
+  }
+  return value;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('toNumber_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'toNumber_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function toNumber(value: string | number): number'
 		)
 	})
 
-	it('handles methods in object literals', async (): Promise<void> => {
+	it('handles methods in object literals', async () => {
 		const sourceCode = `
-      const obj = {
-        greet(name: string) {
-          return 'Hello, ' + name;
-        },
-        add(a: number, b: number) {
-          return a + b;
-        }
-      };
-    `.trim()
+const obj = {
+  greet(name: string) {
+    return 'Hello, ' + name;
+  },
+  add(a: number, b: number) {
+    return a + b;
+  }
+};
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'objectLiteral_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'objectLiteral_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
-
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('greet(name: string): string')
 		expect(updatedSource).toContain('add(a: number, b: number): number')
 	})
 
-	it('handles functions with destructured parameters', async (): Promise<void> => {
+	it('handles functions with destructured parameters', async () => {
 		const sourceCode = `
-      function getFullName({ firstName, lastName }: { firstName: string; lastName: string }) {
-        return firstName + ' ' + lastName;
-      }
-    `.trim()
+function getFullName({ firstName, lastName }: { firstName: string; lastName: string }) {
+  return firstName + ' ' + lastName;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'getFullName_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'getFullName_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function getFullName({ firstName, lastName }: { firstName: string; lastName: string }): string'
 		)
 	})
 
-	it('handles functions with default parameters', async (): Promise<void> => {
+	it('handles functions with default parameters', async () => {
 		const sourceCode = `
-      function greet(name: string = 'World') {
-        return 'Hello, ' + name;
-      }
-    `.trim()
+function greet(name: string = 'World') {
+  return 'Hello, ' + name;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'greetDefault_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'greetDefault_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			`function greet(name: string = 'World'): string`
 		)
 	})
 
-	it('handles functions with rest parameters', async (): Promise<void> => {
+	it('handles functions with rest parameters', async () => {
 		const sourceCode = `
-      function sum(...numbers: number[]) {
-        return numbers.reduce((a, b) => a + b, 0);
-      }
-    `.trim()
+function sum(...numbers: number[]) {
+  return numbers.reduce((a, b) => a + b, 0);
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('sumRest_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'sumRest_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function sum(...numbers: number[]): number'
 		)
 	})
 
-	it('handles functions with optional parameters', async (): Promise<void> => {
+	it('handles functions with optional parameters', async () => {
 		const sourceCode = `
-      function getLength(str?: string) {
-        return str ? str.length : 0;
-      }
-    `.trim()
+function getLength(str?: string) {
+  return str ? str.length : 0;
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('getLength_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'getLength_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function getLength(str?: string): number')
 	})
 
-	it('does modify functions inside namespaces', async (): Promise<void> => {
+	it('does not modify functions inside namespaces', async () => {
 		const sourceCode = `
-      namespace Utils {
-        export function parse(data: string) {
-          return JSON.parse(data);
-        }
-      }
-    `.trim()
+namespace Utils {
+  export function parse(data: string) {
+    return JSON.parse(data);
+  }
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('Utils_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'Utils_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
 		// Assuming the script does not handle functions inside namespaces
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles anonymous functions assigned to variables', async (): Promise<void> => {
+	it('handles anonymous functions assigned to variables', async () => {
 		const sourceCode = `
-      const double = function(n: number) {
-        return n * 2;
-      };
-    `.trim()
+const double = function(n: number) {
+  return n * 2;
+};
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('double_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'double_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'const double = function(n: number): number'
 		)
 	})
 
-	it('handles functions returning functions', async (): Promise<void> => {
+	it('handles functions returning functions', async () => {
 		const sourceCode = `
-      function createAdder(a: number) {
-        return function(b: number) {
-          return a + b;
-        };
-      }
-    `.trim()
+function createAdder(a: number) {
+  return function(b: number) {
+    return a + b;
+  };
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'createAdder_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'createAdder_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function createAdder(a: number): (b: number) => number'
 		)
 	})
 
-	it('handles higher-order functions', async (): Promise<void> => {
+	it('handles higher-order functions', async () => {
 		const sourceCode = `
-      function applyOperation(a: number, b: number, operation: (x: number, y: number) => number) {
-        return operation(a, b);
-      }
-    `.trim()
+function applyOperation(a: number, b: number, operation: (x: number, y: number) => number) {
+  return operation(a, b);
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile(
-			'applyOperation_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'applyOperation_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
 			'function applyOperation(a: number, b: number, operation: (x: number, y: number) => number): number'
 		)
 	})
 
-	it('does not modify functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
+	it('does not modify functions with inferred any return type due to untyped dependencies', async () => {
 		const sourceCode = `
-      function getValue(key: string) {
-        return (window as any)[key];
-      }
-    `.trim()
+function getValue(key: string) {
+  return (window as any)[key];
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('getValue_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'getValue_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
 		// Should not modify because return type is any
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles functions with conditional types', async (): Promise<void> => {
+	it('handles functions with conditional types', async () => {
 		const sourceCode = `
-      function isType<T>(value: any): value is T {
-        return typeof value === typeof ({} as T);
-      }
-    `.trim()
+function isType<T>(value: any): value is T {
+  return typeof value === typeof ({} as T);
+}
+`.trim()
 
-		const { sourceFile } = createTestSourceFile('isType_test.ts', sourceCode)
+		const filePath = path.join(testDir, 'isType_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		await processFile(project, sourceFile.getFilePath())
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
-		const updatedSource = sourceFile.getText()
 		// Should not modify because return type is already specified
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('saves modified files', async (): Promise<void> => {
+	it('saves modified files', async () => {
 		const sourceCode = `
-      function greet(name: string) {
-        return 'Hello, ' + name;
-      }
-    `.trim()
+function greet(name: string) {
+  return 'Hello, ' + name;
+}
+`.trim()
 
-		const { sourceFile, filePath } = createTestSourceFile(
-			'save_test.ts',
-			sourceCode
-		)
+		const filePath = path.join(testDir, 'save_test.ts')
+		await fs.writeFile(filePath, sourceCode)
 
-		// Mark the file for cleanup after test
-		createdFiles.push(filePath)
-
-		await processFile(project, sourceFile.getFilePath())
+		// No need to mark the file for cleanup; testDir is removed after each test
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
 		// Read the file from disk to verify it was saved
-		const savedContent = fs.readFileSync(filePath, 'utf-8')
+		const savedContent = await fs.readFile(filePath, 'utf-8')
 		expect(savedContent).toContain('function greet(name: string): string')
+	})
+
+	// New tests based on your request
+
+	it('handles --shallow argument', async () => {
+		// Create files in the top-level directory and in a subdirectory
+		const topLevelFile = `
+function topLevelFunction() {
+  return 'Top Level';
+}
+`.trim()
+
+		const subDirFile = `
+function subDirFunction() {
+  return 'Sub Directory';
+}
+`.trim()
+
+		// Write the top-level file
+		const topLevelFilePath = path.join(testDir, 'topLevel.ts')
+		await fs.writeFile(topLevelFilePath, topLevelFile)
+
+		// Create a subdirectory and write the subdirectory file
+		const subDir = path.join(testDir, 'subdir')
+		await fs.ensureDir(subDir)
+		const subDirFilePath = path.join(subDir, 'subDirFile.ts')
+		await fs.writeFile(subDirFilePath, subDirFile)
+
+		// Run the CLI with the --shallow argument
+		await execa('tsx', [cliPath, '--shallow'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		// Read the files back
+		const updatedTopLevelFile = await fs.readFile(topLevelFilePath, 'utf-8')
+		const updatedSubDirFile = await fs.readFile(subDirFilePath, 'utf-8')
+
+		// Check that the top-level file was modified
+		expect(updatedTopLevelFile).toContain('function topLevelFunction(): string')
+
+		// Check that the subdirectory file was not modified
+		expect(updatedSubDirFile).toBe(subDirFile)
+	})
+
+	it('handles --ignore argument', async () => {
+		// Create files
+		const fileToProcess = `
+function shouldBeProcessed() {
+  return 1;
+}
+`.trim()
+
+		const fileToIgnore = `
+function shouldBeIgnored() {
+  return 2;
+}
+`.trim()
+
+		// Write the files
+		const processFilePath = path.join(testDir, 'process.ts')
+		await fs.writeFile(processFilePath, fileToProcess)
+
+		const ignoreFilePath = path.join(testDir, 'ignore.ts')
+		await fs.writeFile(ignoreFilePath, fileToIgnore)
+
+		// Run the CLI with the --ignore argument
+		await execa('tsx', [cliPath, '--ignore', 'ignore.ts'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		// Read the files back
+		const updatedProcessFile = await fs.readFile(processFilePath, 'utf-8')
+		const updatedIgnoreFile = await fs.readFile(ignoreFilePath, 'utf-8')
+
+		// Check that the file to process was modified
+		expect(updatedProcessFile).toContain('function shouldBeProcessed(): number')
+
+		// Check that the ignored file was not modified
+		expect(updatedIgnoreFile).toBe(fileToIgnore)
+	})
+
+	it('handles --concurrency argument', async () => {
+		// Create multiple files to process
+		const numberOfFiles = 20
+		const filePromises = []
+
+		for (let i = 0; i < numberOfFiles; i++) {
+			const fileContent = `
+function func${i}() {
+  return ${i};
+}
+`.trim()
+
+			const filePath = path.join(testDir, `file${i}.ts`)
+			filePromises.push(fs.writeFile(filePath, fileContent))
+		}
+
+		await Promise.all(filePromises)
+
+		// Run the CLI with the --concurrency argument
+		await execa('tsx', [cliPath, '--concurrency', '5'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		// Read back the files and check they have been modified
+		const checkPromises = []
+
+		for (let i = 0; i < numberOfFiles; i++) {
+			const filePath = path.join(testDir, `file${i}.ts`)
+			const expectedContent = `
+function func${i}(): number {
+  return ${i};
+}
+`.trim()
+
+			checkPromises.push(
+				fs.readFile(filePath, 'utf-8').then((updatedContent) => {
+					expect(updatedContent.trim()).toBe(expectedContent)
+				})
+			)
+		}
+
+		await Promise.all(checkPromises)
 	})
 })
