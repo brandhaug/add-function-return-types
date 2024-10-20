@@ -256,9 +256,7 @@ export async function processFile(
 			}
 
 			const type = node.getReturnType()
-			console.log(type)
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
-			console.log(typeText)
 
 			if (type.isAny() || type.isUnknown() || typeText.includes('{')) {
 				return
