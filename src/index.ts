@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import cliProgress from 'cli-progress'
 import { Command } from 'commander'
 import fg from 'fast-glob'
 import pLimit from 'p-limit'
@@ -25,7 +24,6 @@ program
 		(value) => Number.parseInt(value, 10),
 		10
 	)
-	// New options based on explicit-function-return-type lint rule
 	.option(
 		'--ignore-concise-arrow-function-expressions-starting-with-void',
 		'Ignore arrow functions that start with the `void` keyword.'
@@ -91,14 +89,10 @@ void (async (): Promise<void> => {
 	// Limit concurrency to prevent overwhelming the system
 	const limit = pLimit(concurrencyLimit)
 
-	const progressBar = new cliProgress.SingleBar(
-		{},
-		cliProgress.Presets.shades_classic
-	)
-	progressBar.start(allFiles.length, 0)
+	const totalFiles = allFiles.length
 
 	await Promise.all(
-		allFiles.map((file) =>
+		allFiles.map((file, index) =>
 			limit(async (): Promise<void> => {
 				try {
 					await processFile(project, file)
@@ -106,13 +100,11 @@ void (async (): Promise<void> => {
 					console.error(`Error processing file ${file}:`, error)
 					process.exit(1)
 				} finally {
-					progressBar.increment()
+					console.info(`Progress: ${index + 1}/${totalFiles} files processed`)
 				}
 			})
 		)
 	)
-
-	progressBar.stop()
 
 	console.info('Processing complete.')
 })()
