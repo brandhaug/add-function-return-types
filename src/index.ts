@@ -22,7 +22,7 @@ program
 	.option(
 		'--concurrency <number>',
 		'Concurrency limit for processing files',
-		(value): number => Number.parseInt(value, 10),
+		(value) => Number.parseInt(value, 10),
 		10
 	)
 	// New options based on explicit-function-return-type lint rule
@@ -98,18 +98,17 @@ void (async (): Promise<void> => {
 	progressBar.start(allFiles.length, 0)
 
 	await Promise.all(
-		allFiles.map(
-			(file): Promise<void> =>
-				limit(async (): Promise<void> => {
-					try {
-						await processFile(project, file)
-					} catch (error) {
-						console.error(`Error processing file ${file}:`, error)
-						process.exit(1)
-					} finally {
-						progressBar.increment()
-					}
-				})
+		allFiles.map((file) =>
+			limit(async (): Promise<void> => {
+				try {
+					await processFile(project, file)
+				} catch (error) {
+					console.error(`Error processing file ${file}:`, error)
+					process.exit(1)
+				} finally {
+					progressBar.increment()
+				}
+			})
 		)
 	)
 
@@ -131,10 +130,10 @@ async function getAllTsAndTsxFiles(
 	ignorePatterns: string[]
 ): Promise<string[]> {
 	const extensions = ['ts', 'tsx']
-	const patterns = extensions.map((ext): string => `**/*.${ext}`)
+	const patterns = extensions.map((ext) => `**/*.${ext}`)
 
 	const defaultIgnorePatterns = ['**/node_modules/**', '**/*.d.ts']
-	return await fg(patterns, {
+	return fg(patterns, {
 		cwd: rootPath,
 		ignore: defaultIgnorePatterns.concat(ignorePatterns),
 		absolute: true,
@@ -152,124 +151,125 @@ export async function processFile(
 	project: Project,
 	filePath: string
 ): Promise<void> {
-	let sourceFile = project.getSourceFile(filePath)
-	if (!sourceFile) {
-		sourceFile = project.addSourceFileAtPath(filePath)
-	}
+	const sourceFile =
+		project.getSourceFile(filePath) || project.addSourceFileAtPath(filePath)
 
 	let modified = false
 
 	sourceFile.forEachDescendant((node): void => {
 		try {
 			if (
-				Node.isFunctionDeclaration(node) ||
-				Node.isFunctionExpression(node) ||
-				Node.isArrowFunction(node) ||
-				Node.isMethodDeclaration(node)
+				!(
+					Node.isFunctionDeclaration(node) ||
+					Node.isFunctionExpression(node) ||
+					Node.isArrowFunction(node) ||
+					Node.isMethodDeclaration(node)
+				)
 			) {
-				if (Node.isConstructorDeclaration(node) || node.getReturnTypeNode()) {
-					return
-				}
-
-				// Check for allowedNames
-				const name =
-					Node.isMethodDeclaration(node) || Node.isFunctionDeclaration(node)
-						? node.getName()
-						: undefined
-				if (name && ignoreNames.includes(name)) {
-					return
-				}
-
-				// Ignore functions based on options
-
-				// ignoreExpressions: ignore function expressions (functions not part of a declaration)
-				if (
-					ignoreExpressions &&
-					(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
-				) {
-					return
-				}
-
-				// ignoreTypedFunctionExpressions: ignore function expressions with type annotations on the variable
-				if (
-					ignoreTypedFunctionExpressions &&
-					(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
-				) {
-					const parent = node.getParent()
-					if (Node.isVariableDeclaration(parent) && parent.getTypeNode()) {
-						return
-					}
-				}
-
-				// ignoreFunctionsWithoutTypeParameters: ignore functions that don't have generic type parameters
-				if (
-					ignoreFunctionsWithoutTypeParameters &&
-					node.getTypeParameters().length === 0
-				) {
-					return
-				}
-
-				// ignoreHigherOrderFunctions: ignore functions immediately returning another function expression
-				if (ignoreHigherOrderFunctions) {
-					const body = node.getBody()
-					if (body && Node.isBlock(body)) {
-						const statements = body.getStatements()
-						if (statements.length === 1) {
-							const statement = statements[0]
-							if (Node.isReturnStatement(statement)) {
-								const expr = statement.getExpression()
-								if (
-									expr &&
-									(Node.isFunctionExpression(expr) ||
-										Node.isArrowFunction(expr))
-								) {
-									return
-								}
-							}
-						}
-					}
-				}
-
-				// ignoreDirectConstAssertionInArrowFunctions: ignore arrow functions immediately returning an `as const` value
-				if (
-					ignoreDirectConstAssertionInArrowFunctions &&
-					Node.isArrowFunction(node)
-				) {
-					const body = node.getBody()
-					if (
-						Node.isAsExpression(body) &&
-						body.getType().getText() === 'const'
-					) {
-						return
-					}
-				}
-
-				// ignoreConciseArrowFunctionExpressionsStartingWithVoid: ignore arrow functions starting with `void`
-				if (
-					ignoreConciseArrowFunctionExpressionsStartingWithVoid &&
-					Node.isArrowFunction(node)
-				) {
-					const body = node.getBody()
-					if (Node.isVoidExpression(body)) {
-						return
-					}
-				}
-
-				const type = node.getReturnType()
-				const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
-
-				if (type.isAny() || type.isUnknown() || typeText.includes('{')) {
-					return
-				}
-
-				node.setReturnType(typeText)
-				modified = true
+				return
 			}
+
+			if (Node.isConstructorDeclaration(node) || node.getReturnTypeNode()) {
+				return
+			}
+
+			// Check for allowedNames
+			const name =
+				Node.isMethodDeclaration(node) || Node.isFunctionDeclaration(node)
+					? node.getName()
+					: undefined
+
+			if (name && ignoreNames.includes(name)) {
+				return
+			}
+
+			// Ignore functions based on options
+
+			// ignoreExpressions: ignore function expressions (functions not part of a declaration)
+			if (
+				ignoreExpressions &&
+				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
+			) {
+				return
+			}
+
+			// ignoreTypedFunctionExpressions: ignore function expressions with type annotations on the variable
+			if (
+				ignoreTypedFunctionExpressions &&
+				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
+			) {
+				const parent = node.getParent()
+				if (Node.isVariableDeclaration(parent) && parent.getTypeNode()) {
+					return
+				}
+			}
+
+			// ignoreFunctionsWithoutTypeParameters: ignore functions that don't have generic type parameters
+			if (
+				ignoreFunctionsWithoutTypeParameters &&
+				node.getTypeParameters().length === 0
+			) {
+				return
+			}
+
+			// ignoreHigherOrderFunctions: ignore functions immediately returning another function expression
+			if (ignoreHigherOrderFunctions) {
+				const body = node.getBody()
+				if (!body || !Node.isBlock(body)) return
+
+				const statements = body.getStatements()
+				if (statements.length !== 1) return
+
+				const statement = statements[0]
+				if (!Node.isReturnStatement(statement)) return
+
+				const expr = statement.getExpression()
+				if (
+					expr &&
+					(Node.isFunctionExpression(expr) || Node.isArrowFunction(expr))
+				) {
+					return
+				}
+			}
+
+			// ignoreDirectConstAssertionInArrowFunctions: ignore arrow functions immediately returning an `as const` value
+			if (
+				ignoreDirectConstAssertionInArrowFunctions &&
+				Node.isArrowFunction(node)
+			) {
+				const body = node.getBody()
+				if (Node.isAsExpression(body) && body.getType().getText() === 'const') {
+					return
+				}
+			}
+
+			// ignoreConciseArrowFunctionExpressionsStartingWithVoid: ignore arrow functions starting with `void`
+			if (
+				ignoreConciseArrowFunctionExpressionsStartingWithVoid &&
+				Node.isArrowFunction(node)
+			) {
+				const body = node.getBody()
+				if (Node.isVoidExpression(body)) {
+					return
+				}
+			}
+
+			const type = node.getReturnType()
+			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
+
+			if (type.isAny() || type.isUnknown() || typeText.includes('{')) {
+				return
+			}
+
+			node.setReturnType(typeText)
+			modified = true
 		} catch (error) {
 			const position = node.getStart()
 			const { line, column } = sourceFile.getLineAndColumnAtPos(position)
 			console.error(
-				`Error processing node at ${filePath}:${line}:${column} - ${error instanceof Error ? error.message : error}`
+				`Error processing node at ${filePath}:${line}:${column} - ${
+					error instanceof Error ? error.message : error
+				}`
 			)
 		}
 	})
