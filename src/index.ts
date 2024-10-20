@@ -3,7 +3,7 @@
 import { Command } from 'commander'
 import fg from 'fast-glob'
 import pLimit from 'p-limit'
-import { Node, Project, ts } from 'ts-morph'
+import { ModuleKind, Node, Project, ScriptTarget, ts } from 'ts-morph'
 
 /**
  * CLI tool to add explicit return types to TypeScript functions.
@@ -83,6 +83,14 @@ void (async (): Promise<void> => {
 	console.info(`${allFiles.length} TypeScript files found`)
 
 	const project = new Project({
+		compilerOptions: {
+			allowSyntheticDefaultImports: true,
+			esModuleInterop: true,
+			module: ModuleKind.ESNext,
+			target: ScriptTarget.ESNext,
+			strict: true,
+			noUncheckedIndexedAccess: true
+		},
 		skipAddingFilesFromTsConfig: true
 	})
 
@@ -248,7 +256,9 @@ export async function processFile(
 			}
 
 			const type = node.getReturnType()
+			console.log(type)
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
+			console.log(typeText)
 
 			if (type.isAny() || type.isUnknown() || typeText.includes('{')) {
 				return

@@ -1,6 +1,6 @@
 {
 	"name": "add-function-return-types",
-	"version": "1.1.7",
+	"version": "1.1.8",
 	"description": "A CLI tool to add explicit return types to TypeScript functions",
 	"files": [
 		"dist/"
@@ -59,8 +59,8 @@
 	"license": "MIT",
 	"lint-staged": {
 		"*.{js,ts}": [
-			"biome format",
-			"biome check"
+			"biome format --write",
+			"biome check --write"
 		]
 	}
 }

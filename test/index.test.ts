@@ -1,7 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { execa } from 'execa'
 import path from 'node:path'
+import { execa } from 'execa'
 import fs from 'fs-extra'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 describe('e2e tests', () => {
 	const cliPath = path.resolve(__dirname, '../src/index.ts') // Update this path to your CLI script
@@ -37,7 +37,7 @@ const getNumber = () => {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function greet(name: string): string')
+		expect(updatedSource).toContain('function greet(name: string): string {')
 		expect(updatedSource).toContain('const getNumber = (): number =>')
 	})
 
@@ -99,7 +99,7 @@ async function fetchData(url: string) {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'async function fetchData(url: string): Promise<any>'
+			'async function fetchData(url: string): Promise<any> {'
 		)
 	})
 
@@ -140,7 +140,7 @@ class Calculator {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('add(a: number, b: number): number')
+		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
 
 	it('skips functions returning any or unknown types', async () => {
@@ -241,7 +241,7 @@ function logMessage(message: string) {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function logMessage(message: string): void'
+			'function logMessage(message: string): void {'
 		)
 	})
 
@@ -265,7 +265,7 @@ function* idGenerator() {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function* idGenerator(): Generator<number, void, unknown>'
+			'function* idGenerator(): Generator<number, void, unknown> {'
 		)
 	})
 
@@ -285,7 +285,7 @@ function identity<T>(arg: T) {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function identity<T>(arg: T): T')
+		expect(updatedSource).toContain('function identity<T>(arg: T): T {')
 	})
 
 	it('adds return types to functions returning union types', async () => {
@@ -308,7 +308,7 @@ function toNumber(value: string | number) {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function toNumber(value: string | number): number'
+			'function toNumber(value: string | number): number {'
 		)
 	})
 
@@ -333,8 +333,8 @@ const obj = {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('greet(name: string): string')
-		expect(updatedSource).toContain('add(a: number, b: number): number')
+		expect(updatedSource).toContain('greet(name: string): string {')
+		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
 
 	it('handles functions with destructured parameters', async () => {
@@ -354,7 +354,7 @@ function getFullName({ firstName, lastName }: { firstName: string; lastName: str
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function getFullName({ firstName, lastName }: { firstName: string; lastName: string }): string'
+			'function getFullName({ firstName, lastName }: { firstName: string; lastName: string }): string {'
 		)
 	})
 
@@ -375,7 +375,7 @@ function greet(name: string = 'World') {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			`function greet(name: string = 'World'): string`
+			`function greet(name: string = 'World'): string {`
 		)
 	})
 
@@ -396,7 +396,7 @@ function sum(...numbers: number[]) {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function sum(...numbers: number[]): number'
+			'function sum(...numbers: number[]): number {'
 		)
 	})
 
@@ -416,7 +416,9 @@ function getLength(str?: string) {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function getLength(str?: string): number')
+		expect(updatedSource).toContain(
+			'function getLength(str?: string): number {'
+		)
 	})
 
 	it('does not modify functions inside namespaces', async () => {
@@ -458,7 +460,7 @@ const double = function(n: number) {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'const double = function(n: number): number'
+			'const double = function(n: number): number {'
 		)
 	})
 
@@ -481,7 +483,7 @@ function createAdder(a: number) {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function createAdder(a: number): (b: number) => number'
+			'function createAdder(a: number): (b: number) => number {'
 		)
 	})
 
@@ -502,7 +504,7 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
-			'function applyOperation(a: number, b: number, operation: (x: number, y: number) => number): number'
+			'function applyOperation(a: number, b: number, operation: (x: number, y: number) => number): number {'
 		)
 	})
 
@@ -546,28 +548,70 @@ function isType<T>(value: any): value is T {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('saves modified files', async () => {
+	it('handles functions with undefined union return types', async () => {
 		const sourceCode = `
-function greet(name: string) {
-  return 'Hello, ' + name;
+function toNumber(value: string) {
+  if (!value) return;
+	return parseInt(value, 10);
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'save_test.ts')
+		const filePath = path.join(testDir, 'toNumber_test.ts')
 		await fs.writeFile(filePath, sourceCode)
 
-		// No need to mark the file for cleanup; testDir is removed after each test
 		await execa('tsx', [cliPath], {
 			cwd: testDir,
 			preferLocal: true
 		})
 
-		// Read the file from disk to verify it was saved
-		const savedContent = await fs.readFile(filePath, 'utf-8')
-		expect(savedContent).toContain('function greet(name: string): string')
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'function toNumber(value: string): number | undefined {'
+		)
 	})
 
-	// New tests based on your request
+	it('handles functions with null union return types', async () => {
+		const sourceCode = `
+function toNumber(value: string) {
+  if (!value) return null;
+	return parseInt(value, 10);
+}
+`.trim()
+
+		const filePath = path.join(testDir, 'toNumber_test.ts')
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'function toNumber(value: string): number | null {'
+		)
+	})
+
+	it('handles array item types', async () => {
+		const sourceCode = `
+function firstItem(values: string[]) {
+  return values[0];
+}
+`.trim()
+
+		const filePath = path.join(testDir, 'firstItem_test.ts')
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'function firstItem(values: string[]): string | undefined {'
+		)
+	})
 
 	it('handles --shallow argument', async () => {
 		// Create files in the top-level directory and in a subdirectory
@@ -604,7 +648,9 @@ function subDirFunction() {
 		const updatedSubDirFile = await fs.readFile(subDirFilePath, 'utf-8')
 
 		// Check that the top-level file was modified
-		expect(updatedTopLevelFile).toContain('function topLevelFunction(): string')
+		expect(updatedTopLevelFile).toContain(
+			'function topLevelFunction(): string {'
+		)
 
 		// Check that the subdirectory file was not modified
 		expect(updatedSubDirFile).toBe(subDirFile)
@@ -642,7 +688,9 @@ function shouldBeIgnored() {
 		const updatedIgnoreFile = await fs.readFile(ignoreFilePath, 'utf-8')
 
 		// Check that the file to process was modified
-		expect(updatedProcessFile).toContain('function shouldBeProcessed(): number')
+		expect(updatedProcessFile).toContain(
+			'function shouldBeProcessed(): number {'
+		)
 
 		// Check that the ignored file was not modified
 		expect(updatedIgnoreFile).toBe(fileToIgnore)
