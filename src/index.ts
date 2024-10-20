@@ -15,12 +15,44 @@ program
 	.name('add-function-return-types')
 	.description('CLI tool to add explicit return types to TypeScript functions')
 	.option('--shallow', 'Process only the top-level directory')
-	.option('--ignore <patterns>', 'Comma-separated list of patterns to ignore')
+	.option(
+		'--ignore <patterns>',
+		'Comma-separated list of file patterns to ignore'
+	)
 	.option(
 		'--concurrency <number>',
 		'Concurrency limit for processing files',
 		(value): number => Number.parseInt(value, 10),
 		10
+	)
+	// New options based on explicit-function-return-type lint rule
+	.option(
+		'--ignore-concise-arrow-function-expressions-starting-with-void',
+		'Ignore arrow functions that start with the `void` keyword.'
+	)
+	.option(
+		'--ignore-direct-const-assertion-in-arrow-functions',
+		'Ignore arrow functions immediately returning an `as const` value.'
+	)
+	.option(
+		'--ignore-expressions',
+		'Ignore function expressions (functions not part of a declaration).'
+	)
+	.option(
+		'--ignore-functions-without-type-parameters',
+		"Ignore functions that don't have generic type parameters."
+	)
+	.option(
+		'--ignore-higher-order-functions',
+		'Ignore functions immediately returning another function expression.'
+	)
+	.option(
+		'--ignore-typed-function-expressions',
+		'Ignore function expressions with type annotations on the variable.'
+	)
+	.option(
+		'--ignore-names <names>',
+		'Comma-separated list of function/method names to ignore'
 	)
 
 program.parse(process.argv)
@@ -29,6 +61,19 @@ const options = program.opts()
 const shallow = options.shallow || false
 const ignorePatterns = options.ignore ? options.ignore.split(',') : []
 const concurrencyLimit = options.concurrency
+
+// New options
+const ignoreConciseArrowFunctionExpressionsStartingWithVoid =
+	options.ignoreConciseArrowFunctionExpressionsStartingWithVoid || false
+const ignoreDirectConstAssertionInArrowFunctions =
+	options.ignoreDirectConstAssertionInArrowFunctions || false
+const ignoreExpressions = options.ignoreExpressions || false
+const ignoreFunctionsWithoutTypeParameters =
+	options.ignoreFunctionsWithoutTypeParameters || false
+const ignoreHigherOrderFunctions = options.ignoreHigherOrderFunctions || false
+const ignoreTypedFunctionExpressions =
+	options.ignoreTypedFunctionExpressions || false
+const ignoreNames = options.ignoreNames ? options.ignoreNames.split(',') : []
 
 void (async (): Promise<void> => {
 	console.info('Starting process to analyze TypeScript files')
@@ -124,6 +169,90 @@ export async function processFile(
 			) {
 				if (Node.isConstructorDeclaration(node) || node.getReturnTypeNode()) {
 					return
+				}
+
+				// Check for allowedNames
+				const name =
+					Node.isMethodDeclaration(node) || Node.isFunctionDeclaration(node)
+						? node.getName()
+						: undefined
+				if (name && ignoreNames.includes(name)) {
+					return
+				}
+
+				// Ignore functions based on options
+
+				// ignoreExpressions: ignore function expressions (functions not part of a declaration)
+				if (
+					ignoreExpressions &&
+					(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
+				) {
+					return
+				}
+
+				// ignoreTypedFunctionExpressions: ignore function expressions with type annotations on the variable
+				if (
+					ignoreTypedFunctionExpressions &&
+					(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
+				) {
+					const parent = node.getParent()
+					if (Node.isVariableDeclaration(parent) && parent.getTypeNode()) {
+						return
+					}
+				}
+
+				// ignoreFunctionsWithoutTypeParameters: ignore functions that don't have generic type parameters
+				if (
+					ignoreFunctionsWithoutTypeParameters &&
+					node.getTypeParameters().length === 0
+				) {
+					return
+				}
+
+				// ignoreHigherOrderFunctions: ignore functions immediately returning another function expression
+				if (ignoreHigherOrderFunctions) {
+					const body = node.getBody()
+					if (body && Node.isBlock(body)) {
+						const statements = body.getStatements()
+						if (statements.length === 1) {
+							const statement = statements[0]
+							if (Node.isReturnStatement(statement)) {
+								const expr = statement.getExpression()
+								if (
+									expr &&
+									(Node.isFunctionExpression(expr) ||
+										Node.isArrowFunction(expr))
+								) {
+									return
+								}
+							}
+						}
+					}
+				}
+
+				// ignoreDirectConstAssertionInArrowFunctions: ignore arrow functions immediately returning an `as const` value
+				if (
+					ignoreDirectConstAssertionInArrowFunctions &&
+					Node.isArrowFunction(node)
+				) {
+					const body = node.getBody()
+					if (
+						Node.isAsExpression(body) &&
+						body.getType().getText() === 'const'
+					) {
+						return
+					}
+				}
+
+				// ignoreConciseArrowFunctionExpressionsStartingWithVoid: ignore arrow functions starting with `void`
+				if (
+					ignoreConciseArrowFunctionExpressionsStartingWithVoid &&
+					Node.isArrowFunction(node)
+				) {
+					const body = node.getBody()
+					if (Node.isVoidExpression(body)) {
+						return
+					}
 				}
 
 				const type = node.getReturnType()

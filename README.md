@@ -28,8 +28,16 @@ By default, the tool:
 ## Options
 
 - `--shallow`: Only process current directory.
-- `--ignore <patterns>`: Comma-separated list of glob patterns to ignore.
-- `--concurrency <number>`: Concurrency limit for processing files (default: 10).
+- `--ignore <patterns>`: Comma-separated list of file glob patterns to ignore.
+- `--concurrency <number>`: Concurrency limit for processing files (default: 10)
+- `--ignore-concise-arrow-function-expressions-starting-with-void`: Ignore arrow functions that start with the void keyword.
+- `--ignore-direct-const-assertion-in-arrow-functions`: Ignore arrow functions that immediately return an as const value.
+- `--ignore-expressions`: Ignore function expressions (functions that are not part of a declaration).
+- `--ignore-functions-without-type-parameters`: Ignore functions that don't have generic type parameters.
+- `--ignore-higher-order-functions`: Ignore functions that immediately return another function expression.
+- `--ignore-typed-function-expressions`: Ignore function expressions that already have type annotations on the variable.
+- `--ignore-names <names>`: Comma-separated list of function or method names to ignore during processing (e.g., `--ignore-names "
+  getData,processItem"`).
 
 ## Example
 

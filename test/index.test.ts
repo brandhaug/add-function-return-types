@@ -692,4 +692,204 @@ function func${i}(): number {
 
 		await Promise.all(checkPromises)
 	})
+	it('ignores function expressions when --ignore-expressions is used', async () => {
+		const sourceCode = `
+const myFunction = function() {
+  return 42;
+}
+
+const myArrowFunction = () => {
+  return 43;
+}
+`.trim()
+
+		const filePath = path.join(testDir, 'ignoreExpressions_test.ts')
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath, '--ignore-expressions'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		// Should not have added return types
+		expect(updatedSource).toBe(sourceCode)
+	})
+
+	it('ignores functions without type parameters when --ignore-functions-without-type-parameters is used', async () => {
+		const sourceCode = `
+function noTypeParams() {
+  return 'hello';
+}
+
+function withTypeParams<T>() {
+  return 'hello';
+}
+`.trim()
+
+		const filePath = path.join(
+			testDir,
+			'ignoreFunctionsWithoutTypeParameters_test.ts'
+		)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa(
+			'tsx',
+			[cliPath, '--ignore-functions-without-type-parameters'],
+			{
+				cwd: testDir,
+				preferLocal: true
+			}
+		)
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function noTypeParams() {') // Should not have return type added
+		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
+	})
+
+	it('ignores functions with names in --ignore-names', async () => {
+		const sourceCode = `
+function allowedFunction() {
+  return 1;
+}
+
+function notAllowedFunction() {
+  return 2;
+}
+`.trim()
+
+		const filePath = path.join(testDir, 'allowedNames_test.ts')
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath, '--ignore-names', 'allowedFunction'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function allowedFunction() {') // Should not have return type added
+		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
+	})
+
+	it('ignores higher order functions when --ignore-higher-order-functions is used', async () => {
+		const sourceCode = `
+function higherOrder() {
+  return function() {
+    return 42;
+  }
+}
+
+function normalFunction() {
+  return 42;
+}
+`.trim()
+
+		const filePath = path.join(testDir, 'ignoreHigherOrderFunctions_test.ts')
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath, '--ignore-higher-order-functions'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function higherOrder() {') // Should not have return type added
+		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
+	})
+
+	it('ignores typed function expressions when --ignore-typed-function-expressions is used', async () => {
+		const sourceCode = `
+const typedFunction: () => number = function() {
+  return 42;
+}
+
+const untypedFunction = function() {
+  return 43;
+}
+`.trim()
+
+		const filePath = path.join(
+			testDir,
+			'ignoreTypedFunctionExpressions_test.ts'
+		)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath, '--ignore-typed-function-expressions'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		// typedFunction should not have return type added
+		expect(updatedSource).toContain(
+			'const typedFunction: () => number = function() {'
+		)
+		// untypedFunction should have return type added
+		expect(updatedSource).toContain(
+			'const untypedFunction = function(): number {'
+		)
+	})
+
+	it('ignores concise arrow functions starting with void when --ignore-concise-arrow-function-expressions-starting-with-void is used', async () => {
+		const sourceCode = `
+const arrowVoid = () => void doSomething();
+const arrowNormal = () => 42;
+`.trim()
+
+		const filePath = path.join(
+			testDir,
+			'ignoreConciseArrowFunctionExpressionsStartingWithVoid_test.ts'
+		)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa(
+			'tsx',
+			[
+				cliPath,
+				'--ignore-concise-arrow-function-expressions-starting-with-void'
+			],
+			{
+				cwd: testDir,
+				preferLocal: true
+			}
+		)
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		// arrowVoid should not have return type added
+		expect(updatedSource).toContain(
+			'const arrowVoid = () => void doSomething();'
+		)
+		// arrowNormal should have return type added
+		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
+	})
+
+	it('ignores arrow functions returning const assertion when --ignore-direct-const-assertion-in-arrow-functions is used', async () => {
+		const sourceCode = `
+const arrowConst = () => ({ x: 1 } as const);
+const arrowNormal = () => 42;
+`.trim()
+
+		const filePath = path.join(
+			testDir,
+			'ignoreDirectConstAssertionInArrowFunctions_test.ts'
+		)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa(
+			'tsx',
+			[cliPath, '--ignore-direct-const-assertion-in-arrow-functions'],
+			{
+				cwd: testDir,
+				preferLocal: true
+			}
+		)
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		// arrowConst should not have return type added
+		expect(updatedSource).toContain(
+			'const arrowConst = () => ({ x: 1 } as const);'
+		)
+		// arrowNormal should have return type added
+		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
+	})
 })
