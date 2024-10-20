@@ -90,17 +90,18 @@ void (async (): Promise<void> => {
 	const limit = pLimit(concurrencyLimit)
 
 	const totalFiles = allFiles.length
+	let processedFiles = 0
 
 	await Promise.all(
-		allFiles.map((file, index) =>
+		allFiles.map((file) =>
 			limit(async (): Promise<void> => {
 				try {
-					await processFile(project, file)
+					const message = await processFile(project, file)
+					processedFiles++
+					console.info(`${processedFiles}/${totalFiles}: ${message}`)
 				} catch (error) {
 					console.error(`Error processing file ${file}:`, error)
 					process.exit(1)
-				} finally {
-					console.info(`Progress: ${index + 1}/${totalFiles} files processed`)
 				}
 			})
 		)
@@ -142,7 +143,7 @@ async function getAllTsAndTsxFiles(
 export async function processFile(
 	project: Project,
 	filePath: string
-): Promise<void> {
+): Promise<string> {
 	const sourceFile =
 		project.getSourceFile(filePath) || project.addSourceFileAtPath(filePath)
 
@@ -266,10 +267,10 @@ export async function processFile(
 		}
 	})
 
-	if (modified) {
-		await sourceFile.save()
-		console.info(`Processed and saved file: ${filePath}`)
-	} else {
-		console.info(`No changes made to file: ${filePath}`)
+	if (!modified) {
+		return `No changes made to "${filePath}"`
 	}
+
+	await sourceFile.save()
+	return `Processed and saved "${filePath}"`
 }
