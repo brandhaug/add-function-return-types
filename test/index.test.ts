@@ -1098,4 +1098,54 @@ const typedFunction: () => number = function() {
 	// 		// arrowNormal should have return type added
 	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
 	// 	})
+
+	it('overwrites existing return types when --overwrite-existing-return-types is used', async (): Promise<void> => {
+		// Source code with an incorrect existing return type
+		const sourceCode = `
+function greet(name: string): number {
+  return 'Hello, ' + name;
+}
+`.trim()
+
+		// Write the source code to a temporary file
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		// Run the CLI with the --overwrite-existing-return-types option
+		await execa('tsx', [cliPath, '--overwrite-existing-return-types'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		// Read the updated source code
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+
+		// Check that the incorrect return type has been corrected
+		expect(updatedSource).toContain('function greet(name: string): string {')
+	})
+
+	it('ignores functions with correct existing return types when --overwrite-existing-return-types is used', async (): Promise<void> => {
+		// Source code with correct existing return types
+		const sourceCode = `
+function sum(a: number, b: number): number {
+  return a + b;
+}
+`.trim()
+
+		// Write the source code to a temporary file
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		// Run the CLI with the --overwrite-existing-return-types option
+		await execa('tsx', [cliPath, '--overwrite-existing-return-types'], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		// Read the updated source code
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+
+		// Check that the function remains unchanged
+		expect(updatedSource).toBe(sourceCode)
+	})
 })

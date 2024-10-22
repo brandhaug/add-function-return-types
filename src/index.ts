@@ -48,6 +48,10 @@ program
 		'--ignore-names <names>',
 		'Comma-separated list of function/method names to ignore'
 	)
+	.option(
+		'--overwrite-existing-return-types',
+		'Overwrite existing return types'
+	)
 
 program.parse(process.argv)
 
@@ -55,8 +59,8 @@ const options = program.opts()
 const shallow = options.shallow || false
 const ignorePatterns = options.ignore ? options.ignore.split(',') : []
 const concurrencyLimit = options.concurrency
-
-// New options
+const overwriteExistingReturnTypes =
+	options.overwriteExistingReturnTypes || false
 const ignoreConciseArrowFunctionExpressionsStartingWithVoid =
 	options.ignoreConciseArrowFunctionExpressionsStartingWithVoid || false
 const ignoreExpressions = options.ignoreExpressions || false
@@ -164,7 +168,10 @@ export async function processFile(
 				return
 			}
 
-			if (Node.isConstructorDeclaration(node) || node.getReturnTypeNode()) {
+			if (
+				Node.isConstructorDeclaration(node) ||
+				(!overwriteExistingReturnTypes && node.getReturnTypeNode())
+			) {
 				return
 			}
 
@@ -238,6 +245,10 @@ export async function processFile(
 				}
 			}
 
+			// Reset the return type so we get the inferred type
+			if (overwriteExistingReturnTypes) {
+				node.setReturnType('')
+			}
 			const type = node.getReturnType()
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
 
