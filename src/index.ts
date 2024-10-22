@@ -21,16 +21,12 @@ program
 	.option(
 		'--concurrency <number>',
 		'Concurrency limit for processing files',
-		(value) => Number.parseInt(value, 10),
+		(value): number => Number.parseInt(value, 10),
 		10
 	)
 	.option(
 		'--ignore-concise-arrow-function-expressions-starting-with-void',
 		'Ignore arrow functions that start with the `void` keyword.'
-	)
-	.option(
-		'--ignore-direct-const-assertion-in-arrow-functions',
-		'Ignore arrow functions immediately returning an `as const` value.'
 	)
 	.option(
 		'--ignore-expressions',
@@ -63,8 +59,6 @@ const concurrencyLimit = options.concurrency
 // New options
 const ignoreConciseArrowFunctionExpressionsStartingWithVoid =
 	options.ignoreConciseArrowFunctionExpressionsStartingWithVoid || false
-const ignoreDirectConstAssertionInArrowFunctions =
-	options.ignoreDirectConstAssertionInArrowFunctions || false
 const ignoreExpressions = options.ignoreExpressions || false
 const ignoreFunctionsWithoutTypeParameters =
 	options.ignoreFunctionsWithoutTypeParameters || false
@@ -131,7 +125,7 @@ async function getAllTsAndTsxFiles(
 	ignorePatterns: string[]
 ): Promise<string[]> {
 	const extensions = ['ts', 'tsx']
-	const patterns = extensions.map((ext) => `**/*.${ext}`)
+	const patterns = extensions.map((ext): string => `**/*.${ext}`)
 
 	const defaultIgnorePatterns = ['**/node_modules/**', '**/*.d.ts']
 	return fg(patterns, {
@@ -229,17 +223,6 @@ export async function processFile(
 					expr &&
 					(Node.isFunctionExpression(expr) || Node.isArrowFunction(expr))
 				) {
-					return
-				}
-			}
-
-			// ignoreDirectConstAssertionInArrowFunctions: ignore arrow functions immediately returning an `as const` value
-			if (
-				ignoreDirectConstAssertionInArrowFunctions &&
-				Node.isArrowFunction(node)
-			) {
-				const body = node.getBody()
-				if (Node.isAsExpression(body) && body.getType().getText() === 'const') {
 					return
 				}
 			}

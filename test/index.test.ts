@@ -1,23 +1,24 @@
+import * as crypto from 'node:crypto'
 import path from 'node:path'
 import { execa } from 'execa'
 import fs from 'fs-extra'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-describe('e2e tests', () => {
-	const cliPath = path.resolve(__dirname, '../src/index.ts') // Update this path to your CLI script
+describe('add-function-return-types', (): void => {
+	const cliPath = path.resolve(__dirname, '../src/index.ts')
 	const testDir = path.resolve(__dirname, 'temp-test-dir')
 
-	beforeEach(async () => {
+	beforeEach(async (): Promise<void> => {
 		// Create a temporary directory for each test
 		await fs.ensureDir(testDir)
 	})
 
-	afterEach(async () => {
+	afterEach(async (): Promise<void> => {
 		// Clean up the temporary directory after each test
 		await fs.remove(testDir)
 	})
 
-	it('adds return types to functions without explicit return types', async () => {
+	it('handles to functions without explicit return types', async (): Promise<void> => {
 		const sourceCode = `
 function greet(name: string) {
   return 'Hello, ' + name;
@@ -28,7 +29,7 @@ const getNumber = () => {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'greet_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -41,14 +42,14 @@ const getNumber = () => {
 		expect(updatedSource).toContain('const getNumber = (): number =>')
 	})
 
-	it('does not modify functions with explicit return types', async () => {
+	it('does not modify functions with explicit return types', async (): Promise<void> => {
 		const sourceCode = `
 function sum(a: number, b: number): number {
   return a + b;
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'sum_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -60,14 +61,14 @@ function sum(a: number, b: number): number {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles arrow functions correctly', async () => {
+	it('handles arrow functions correctly', async (): Promise<void> => {
 		const sourceCode = `
 const multiply = (a: number, b: number) => {
   return a * b;
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'multiply_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -81,7 +82,7 @@ const multiply = (a: number, b: number) => {
 		)
 	})
 
-	it('handles async functions', async () => {
+	it('handles async functions', async (): Promise<void> => {
 		const sourceCode = `
 async function fetchData(url: string) {
   const response = await fetch(url);
@@ -89,7 +90,7 @@ async function fetchData(url: string) {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'fetchData_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -103,14 +104,14 @@ async function fetchData(url: string) {
 		)
 	})
 
-	it('does not modify constructors', async () => {
+	it('does not modify constructors', async (): Promise<void> => {
 		const sourceCode = `
 class Person {
   constructor(public name: string) {}
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'Person_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -122,7 +123,7 @@ class Person {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles methods without return types', async () => {
+	it('handles methods without return types', async (): Promise<void> => {
 		const sourceCode = `
 class Calculator {
   add(a: number, b: number) {
@@ -131,7 +132,7 @@ class Calculator {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'Calculator_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -143,14 +144,14 @@ class Calculator {
 		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
 
-	it('skips functions returning any or unknown types', async () => {
+	it('skips functions returning any or unknown types', async (): Promise<void> => {
 		const sourceCode = `
 function parseData(data: string) {
   return JSON.parse(data);
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'parseData_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -163,14 +164,14 @@ function parseData(data: string) {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('does not modify functions with existing return types', async () => {
+	it('does not modify functions with existing return types', async (): Promise<void> => {
 		const sourceCode = `
 function getUser(): { name: string; age: number } {
   return { name: 'Alice', age: 30 };
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'getUser_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -182,14 +183,14 @@ function getUser(): { name: string; age: number } {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles functions returning anonymous objects', async () => {
+	it('handles functions returning anonymous objects', async (): Promise<void> => {
 		const sourceCode = `
 function createUser(name: string, age: number) {
   return { name, age };
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'createUser_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -202,7 +203,7 @@ function createUser(name: string, age: number) {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles overloaded functions correctly', async () => {
+	it('handles overloaded functions correctly', async (): Promise<void> => {
 		const sourceCode = `
 function combine(a: string, b: string): string;
 function combine(a: number, b: number): number;
@@ -211,7 +212,7 @@ function combine(a: any, b: any) {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'combine_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -224,14 +225,14 @@ function combine(a: any, b: any) {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('adds return types to functions returning void', async () => {
+	it('handles to functions returning void', async (): Promise<void> => {
 		const sourceCode = `
 function logMessage(message: string) {
   console.log(message);
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'logMessage_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -245,7 +246,7 @@ function logMessage(message: string) {
 		)
 	})
 
-	it('handles generator functions', async () => {
+	it('handles generator functions', async (): Promise<void> => {
 		const sourceCode = `
 function* idGenerator() {
   let id = 0;
@@ -255,7 +256,7 @@ function* idGenerator() {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'idGenerator_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -269,14 +270,14 @@ function* idGenerator() {
 		)
 	})
 
-	it('handles functions with type parameters', async () => {
+	it('handles functions with type parameters', async (): Promise<void> => {
 		const sourceCode = `
 function identity<T>(arg: T) {
   return arg;
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'identity_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -288,7 +289,7 @@ function identity<T>(arg: T) {
 		expect(updatedSource).toContain('function identity<T>(arg: T): T {')
 	})
 
-	it('adds return types to functions returning union types', async () => {
+	it('handles to functions returning union types', async (): Promise<void> => {
 		const sourceCode = `
 function toNumber(value: string | number) {
   if (typeof value === 'string') {
@@ -298,7 +299,7 @@ function toNumber(value: string | number) {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'toNumber_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -312,7 +313,7 @@ function toNumber(value: string | number) {
 		)
 	})
 
-	it('handles methods in object literals', async () => {
+	it('handles methods in object literals', async (): Promise<void> => {
 		const sourceCode = `
 const obj = {
   greet(name: string) {
@@ -324,7 +325,7 @@ const obj = {
 };
 `.trim()
 
-		const filePath = path.join(testDir, 'objectLiteral_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -337,14 +338,14 @@ const obj = {
 		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
 
-	it('handles functions with destructured parameters', async () => {
+	it('handles functions with destructured parameters', async (): Promise<void> => {
 		const sourceCode = `
 function getFullName({ firstName, lastName }: { firstName: string; lastName: string }) {
   return firstName + ' ' + lastName;
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'getFullName_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -358,14 +359,14 @@ function getFullName({ firstName, lastName }: { firstName: string; lastName: str
 		)
 	})
 
-	it('handles functions with default parameters', async () => {
+	it('handles functions with default parameters', async (): Promise<void> => {
 		const sourceCode = `
 function greet(name: string = 'World') {
   return 'Hello, ' + name;
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'greetDefault_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -379,14 +380,14 @@ function greet(name: string = 'World') {
 		)
 	})
 
-	it('handles functions with rest parameters', async () => {
+	it('handles functions with rest parameters', async (): Promise<void> => {
 		const sourceCode = `
 function sum(...numbers: number[]) {
   return numbers.reduce((a, b) => a + b, 0);
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'sumRest_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -400,14 +401,14 @@ function sum(...numbers: number[]) {
 		)
 	})
 
-	it('handles functions with optional parameters', async () => {
+	it('handles functions with optional parameters', async (): Promise<void> => {
 		const sourceCode = `
 function getLength(str?: string) {
   return str ? str.length : 0;
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'getLength_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -421,7 +422,7 @@ function getLength(str?: string) {
 		)
 	})
 
-	it('does not modify functions inside namespaces', async () => {
+	it('does not modify functions inside namespaces', async (): Promise<void> => {
 		const sourceCode = `
 namespace Utils {
   export function parse(data: string) {
@@ -430,7 +431,7 @@ namespace Utils {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'Utils_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -443,14 +444,14 @@ namespace Utils {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles anonymous functions assigned to variables', async () => {
+	it('handles anonymous functions assigned to variables', async (): Promise<void> => {
 		const sourceCode = `
 const double = function(n: number) {
   return n * 2;
 };
 `.trim()
 
-		const filePath = path.join(testDir, 'double_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -464,7 +465,7 @@ const double = function(n: number) {
 		)
 	})
 
-	it('handles functions returning functions', async () => {
+	it('handles functions returning functions', async (): Promise<void> => {
 		const sourceCode = `
 function createAdder(a: number) {
   return function(b: number) {
@@ -473,7 +474,7 @@ function createAdder(a: number) {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'createAdder_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -487,14 +488,14 @@ function createAdder(a: number) {
 		)
 	})
 
-	it('handles higher-order functions', async () => {
+	it('handles higher-order functions', async (): Promise<void> => {
 		const sourceCode = `
 function applyOperation(a: number, b: number, operation: (x: number, y: number) => number) {
   return operation(a, b);
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'applyOperation_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -508,14 +509,14 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 		)
 	})
 
-	it('does not modify functions with inferred any return type due to untyped dependencies', async () => {
+	it('does not modify functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
 		const sourceCode = `
 function getValue(key: string) {
   return (window as any)[key];
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'getValue_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -528,14 +529,14 @@ function getValue(key: string) {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles functions with conditional types', async () => {
+	it('handles functions with conditional types', async (): Promise<void> => {
 		const sourceCode = `
 function isType<T>(value: any): value is T {
   return typeof value === typeof ({} as T);
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'isType_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -548,7 +549,7 @@ function isType<T>(value: any): value is T {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('handles functions with undefined union return types', async () => {
+	it('handles functions with undefined union return types', async (): Promise<void> => {
 		const sourceCode = `
 function toNumber(value: string) {
   if (!value) return;
@@ -556,7 +557,7 @@ function toNumber(value: string) {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'toNumber_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -570,7 +571,7 @@ function toNumber(value: string) {
 		)
 	})
 
-	it('handles functions with null union return types', async () => {
+	it('handles functions with null union return types', async (): Promise<void> => {
 		const sourceCode = `
 function toNumber(value: string) {
   if (!value) return null;
@@ -578,7 +579,7 @@ function toNumber(value: string) {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'toNumber_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -592,14 +593,14 @@ function toNumber(value: string) {
 		)
 	})
 
-	it('handles array item types', async () => {
+	it('handles array item types', async (): Promise<void> => {
 		const sourceCode = `
 function firstItem(values: string[]) {
   return values[0];
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'firstItem_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath], {
@@ -613,7 +614,7 @@ function firstItem(values: string[]) {
 		)
 	})
 
-	it('handles --shallow argument', async () => {
+	it('handles --shallow argument', async (): Promise<void> => {
 		// Create files in the top-level directory and in a subdirectory
 		const topLevelFile = `
 function topLevelFunction() {
@@ -628,13 +629,13 @@ function subDirFunction() {
 `.trim()
 
 		// Write the top-level file
-		const topLevelFilePath = path.join(testDir, 'topLevel.ts')
+		const topLevelFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(topLevelFilePath, topLevelFile)
 
 		// Create a subdirectory and write the subdirectory file
 		const subDir = path.join(testDir, 'subdir')
 		await fs.ensureDir(subDir)
-		const subDirFilePath = path.join(subDir, 'subDirFile.ts')
+		const subDirFilePath = path.join(subDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(subDirFilePath, subDirFile)
 
 		// Run the CLI with the --shallow argument
@@ -656,7 +657,7 @@ function subDirFunction() {
 		expect(updatedSubDirFile).toBe(subDirFile)
 	})
 
-	it('handles --ignore argument', async () => {
+	it('handles --ignore argument', async (): Promise<void> => {
 		// Create files
 		const fileToProcess = `
 function shouldBeProcessed() {
@@ -671,14 +672,15 @@ function shouldBeIgnored() {
 `.trim()
 
 		// Write the files
-		const processFilePath = path.join(testDir, 'process.ts')
+		const processFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(processFilePath, fileToProcess)
 
-		const ignoreFilePath = path.join(testDir, 'ignore.ts')
+		const ignoreFileName = `${crypto.randomUUID()}.ts`
+		const ignoreFilePath = path.join(testDir, ignoreFileName)
 		await fs.writeFile(ignoreFilePath, fileToIgnore)
 
 		// Run the CLI with the --ignore argument
-		await execa('tsx', [cliPath, '--ignore', 'ignore.ts'], {
+		await execa('tsx', [cliPath, '--ignore', ignoreFileName], {
 			cwd: testDir,
 			preferLocal: true
 		})
@@ -696,7 +698,7 @@ function shouldBeIgnored() {
 		expect(updatedIgnoreFile).toBe(fileToIgnore)
 	})
 
-	it('handles --concurrency argument', async () => {
+	it('handles --concurrency argument', async (): Promise<void> => {
 		// Create multiple files to process
 		const numberOfFiles = 20
 		const filePromises = []
@@ -732,7 +734,7 @@ function func${i}(): number {
 `.trim()
 
 			checkPromises.push(
-				fs.readFile(filePath, 'utf-8').then((updatedContent) => {
+				fs.readFile(filePath, 'utf-8').then((updatedContent): void => {
 					expect(updatedContent.trim()).toBe(expectedContent)
 				})
 			)
@@ -740,7 +742,8 @@ function func${i}(): number {
 
 		await Promise.all(checkPromises)
 	})
-	it('ignores function expressions when --ignore-expressions is used', async () => {
+
+	it('ignores function expressions when --ignore-expressions is used', async (): Promise<void> => {
 		const sourceCode = `
 const myFunction = function() {
   return 42;
@@ -751,7 +754,7 @@ const myArrowFunction = () => {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'ignoreExpressions_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath, '--ignore-expressions'], {
@@ -764,7 +767,7 @@ const myArrowFunction = () => {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('ignores functions without type parameters when --ignore-functions-without-type-parameters is used', async () => {
+	it('ignores functions without type parameters when --ignore-functions-without-type-parameters is used', async (): Promise<void> => {
 		const sourceCode = `
 function noTypeParams() {
   return 'hello';
@@ -775,10 +778,7 @@ function withTypeParams<T>() {
 }
 `.trim()
 
-		const filePath = path.join(
-			testDir,
-			'ignoreFunctionsWithoutTypeParameters_test.ts'
-		)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa(
@@ -795,7 +795,7 @@ function withTypeParams<T>() {
 		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
 	})
 
-	it('ignores functions with names in --ignore-names', async () => {
+	it('ignores functions with names in --ignore-names', async (): Promise<void> => {
 		const sourceCode = `
 function allowedFunction() {
   return 1;
@@ -806,7 +806,7 @@ function notAllowedFunction() {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'allowedNames_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath, '--ignore-names', 'allowedFunction'], {
@@ -819,7 +819,7 @@ function notAllowedFunction() {
 		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
 	})
 
-	it('ignores higher order functions when --ignore-higher-order-functions is used', async () => {
+	it('ignores higher order functions when --ignore-higher-order-functions is used', async (): Promise<void> => {
 		const sourceCode = `
 function higherOrder() {
   return function() {
@@ -832,7 +832,7 @@ function normalFunction() {
 }
 `.trim()
 
-		const filePath = path.join(testDir, 'ignoreHigherOrderFunctions_test.ts')
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath, '--ignore-higher-order-functions'], {
@@ -845,7 +845,7 @@ function normalFunction() {
 		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
 	})
 
-	it('ignores typed function expressions when --ignore-typed-function-expressions is used', async () => {
+	it('ignores typed function expressions when --ignore-typed-function-expressions is used', async (): Promise<void> => {
 		const sourceCode = `
 const typedFunction: () => number = function() {
   return 42;
@@ -856,10 +856,7 @@ const untypedFunction = function() {
 }
 `.trim()
 
-		const filePath = path.join(
-			testDir,
-			'ignoreTypedFunctionExpressions_test.ts'
-		)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa('tsx', [cliPath, '--ignore-typed-function-expressions'], {
@@ -878,16 +875,13 @@ const untypedFunction = function() {
 		)
 	})
 
-	it('ignores concise arrow functions starting with void when --ignore-concise-arrow-function-expressions-starting-with-void is used', async () => {
+	it('ignores concise arrow functions starting with void when --ignore-concise-arrow-function-expressions-starting-with-void is used', async (): Promise<void> => {
 		const sourceCode = `
 const arrowVoid = () => void doSomething();
 const arrowNormal = () => 42;
 `.trim()
 
-		const filePath = path.join(
-			testDir,
-			'ignoreConciseArrowFunctionExpressionsStartingWithVoid_test.ts'
-		)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
 		await execa(
@@ -911,33 +905,197 @@ const arrowNormal = () => 42;
 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
 	})
 
-	it('ignores arrow functions returning const assertion when --ignore-direct-const-assertion-in-arrow-functions is used', async () => {
+	// 	it('ignores arrow functions returning const assertion when --ignore-direct-const-assertion-in-arrow-functions is used', async (): Promise<void> => {
+	// 		const sourceCode = `
+	// const arrowConst = () => (42 as const);
+	// const arrowNormal = () => 42;
+	// `.trim()
+	//
+	// 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+	// 		await fs.writeFile(filePath, sourceCode)
+	//
+	// 		await execa(
+	// 			'tsx',
+	// 			[cliPath, '--ignore-direct-const-assertion-in-arrow-functions'],
+	// 			{
+	// 				cwd: testDir,
+	// 				preferLocal: true
+	// 			}
+	// 		)
+	//
+	// 		const updatedSource = await fs.readFile(filePath, 'utf-8')
+	// 		// arrowConst should not have return type added
+	// 		expect(updatedSource).toContain(
+	// 			'const arrowConst = () => (42 as const);'
+	// 		)
+	// 		// arrowNormal should have return type added
+	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
+	// 	})
+
+	it('handles when --ignore-expressions is not used', async (): Promise<void> => {
 		const sourceCode = `
-const arrowConst = () => ({ x: 1 } as const);
-const arrowNormal = () => 42;
+const myFunction = function() {
+  return 42;
+}
+
+const myArrowFunction = () => {
+  return 43;
+}
 `.trim()
 
-		const filePath = path.join(
-			testDir,
-			'ignoreDirectConstAssertionInArrowFunctions_test.ts'
-		)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa(
-			'tsx',
-			[cliPath, '--ignore-direct-const-assertion-in-arrow-functions'],
-			{
-				cwd: testDir,
-				preferLocal: true
-			}
-		)
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		// arrowConst should not have return type added
-		expect(updatedSource).toContain(
-			'const arrowConst = () => ({ x: 1 } as const);'
-		)
-		// arrowNormal should have return type added
-		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
+		// Should have added return types
+		expect(updatedSource).toContain('const myFunction = function(): number {')
+		expect(updatedSource).toContain('const myArrowFunction = (): number =>')
 	})
+
+	it('handles when --ignore-functions-without-type-parameters is not used', async (): Promise<void> => {
+		const sourceCode = `
+function noTypeParams() {
+  return 'hello';
+}
+
+function withTypeParams<T>() {
+  return 'hello';
+}
+`.trim()
+
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function noTypeParams(): string {') // Should have return type added
+		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
+	})
+
+	it('handles when --ignore-names is not used', async (): Promise<void> => {
+		const sourceCode = `
+function allowedFunction() {
+  return 1;
+}
+
+function notAllowedFunction() {
+  return 2;
+}
+`.trim()
+
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function allowedFunction(): number {') // Should have return type added
+		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
+	})
+
+	it('handles when --ignore-higher-order-functions is not used', async (): Promise<void> => {
+		const sourceCode = `
+function higherOrder() {
+  return function() {
+    return 42;
+  }
+}
+
+function normalFunction() {
+  return 42;
+}
+`.trim()
+
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function higherOrder(): () => number {') // Should have return type added
+		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
+	})
+
+	it('handles when --ignore-typed-function-expressions is not used', async (): Promise<void> => {
+		const sourceCode = `
+const typedFunction: () => number = function() {
+  return 42;
+}
+`.trim()
+
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await execa('tsx', [cliPath], {
+			cwd: testDir,
+			preferLocal: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		// typedFunction should have return type added
+		expect(updatedSource).toContain(
+			'const typedFunction: () => number = function(): number {'
+		)
+	})
+
+	// 	it('handles concise arrow functions starting with void when --ignore-concise-arrow-function-expressions-starting-with-void is not used', async (): Promise<void> => {
+	// 		const sourceCode = `
+	// const arrowVoid = () => void doSomething();
+	// const arrowNormal = () => 42;
+	// `.trim()
+	//
+	// 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+	// 		await fs.writeFile(filePath, sourceCode)
+	//
+	// 		await execa('tsx', [cliPath], {
+	// 			cwd: testDir,
+	// 			preferLocal: true
+	// 		})
+	//
+	// 		const updatedSource = await fs.readFile(filePath, 'utf-8')
+	// 		// arrowVoid should have return type added
+	// 		expect(updatedSource).toContain(
+	// 			'const arrowVoid = (): void => void doSomething();'
+	// 		)
+	// 		// arrowNormal should have return type added
+	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
+	// 	})
+
+	// 	it('handles arrow functions returning const assertion when --ignore-direct-const-assertion-in-arrow-functions is not used', async (): Promise<void> => {
+	// 		const sourceCode = `
+	// const arrowConst = () => (42 as const);
+	// const arrowNormal = () => 42;
+	// `.trim()
+	//
+	// 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+	// 		await fs.writeFile(filePath, sourceCode)
+	//
+	// 		await execa('tsx', [cliPath], {
+	// 			cwd: testDir,
+	// 			preferLocal: true
+	// 		})
+	//
+	// 		const updatedSource = await fs.readFile(filePath, 'utf-8')
+	// 		// arrowConst should have return type added
+	// 		expect(updatedSource).toContain(
+	// 			'const arrowConst = (): 42 => (42 as const);'
+	// 		)
+	// 		// arrowNormal should have return type added
+	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
+	// 	})
 })
