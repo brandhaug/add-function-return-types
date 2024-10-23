@@ -1,6 +1,6 @@
 {
 	"name": "add-function-return-types",
-	"version": "2.2.1",
+	"version": "2.2.2",
 	"description": "A CLI tool to add explicit return types to TypeScript functions",
 	"files": ["dist/"],
 	"main": "./dist/index.js",
@@ -45,7 +45,7 @@
 		"@commitlint/config-conventional": "19.2.2",
 		"husky": "9.1.4",
 		"lint-staged": "15.2.7",
-		"parcel": "^2.12.0",
+		"parcel": "2.12.0",
 		"tsc-files": "1.1.4",
 		"tsx": "4.19.1",
 		"typescript": "5.5.4",

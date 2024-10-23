@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as addFunctionReturnTypesModule from '../src/addFunctionReturnTypes'
 import { addFunctionReturnTypes } from '../src/addFunctionReturnTypes'
 import { main } from '../src/cli'
 
-// Mock the addFunctionReturnTypes module
 vi.mock('../src/addFunctionReturnTypes', () => ({
 	addFunctionReturnTypes: vi.fn()
 }))
