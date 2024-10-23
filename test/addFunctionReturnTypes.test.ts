@@ -1,22 +1,36 @@
 import * as crypto from 'node:crypto'
+import * as os from 'node:os'
 import path from 'node:path'
-import { execa } from 'execa'
 import fs from 'fs-extra'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import {
+	type Options,
+	addFunctionReturnTypes
+} from '../src/addFunctionReturnTypes'
 
-describe('add-function-return-types', (): void => {
-	const cliPath = path.resolve(__dirname, '../src/index.ts')
-	const testDir = path.resolve(__dirname, 'temp-test-dir')
+describe.concurrent('add-function-return-types', (): void => {
+	// Define default options
+	const defaultOptions: Options = {
+		path: '.',
+		shallow: false,
+		ignorePatterns: [],
+		concurrencyLimit: 10, // Assuming 10 as a reasonable default
+		ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
+		ignoreExpressions: false,
+		ignoreFunctionsWithoutTypeParameters: false,
+		ignoreHigherOrderFunctions: false,
+		ignoreTypedFunctionExpressions: false,
+		ignoreNames: [],
+		overwriteExistingReturnTypes: false
+	}
 
-	beforeEach(async (): Promise<void> => {
-		// Create a temporary directory for each test
-		await fs.ensureDir(testDir)
-	})
-
-	afterEach(async (): Promise<void> => {
-		// Clean up the temporary directory after each test
-		await fs.remove(testDir)
-	})
+	// Helper function to run the addFunctionReturnTypes with overridden options
+	const runAddFunctionReturnTypes = async (
+		overrides: Partial<Options> = {}
+	): Promise<void> => {
+		const options: Options = { ...defaultOptions, ...overrides }
+		await addFunctionReturnTypes(options)
+	}
 
 	it('handles to functions without explicit return types', async (): Promise<void> => {
 		const sourceCode = `
@@ -29,13 +43,11 @@ const getNumber = () => {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function greet(name: string): string {')
@@ -49,13 +61,11 @@ function sum(a: number, b: number): number {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
@@ -68,13 +78,11 @@ const multiply = (a: number, b: number) => {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -90,13 +98,11 @@ async function fetchData(url: string) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -111,13 +117,11 @@ class Person {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
@@ -132,13 +136,11 @@ class Calculator {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('add(a: number, b: number): number {')
@@ -151,13 +153,11 @@ function parseData(data: string) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		// Assuming the script does not add return types for functions returning any or unknown
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -171,13 +171,11 @@ function getUser(): { name: string; age: number } {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
@@ -190,13 +188,11 @@ function createUser(name: string, age: number) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		// Assuming the script does not add return types for anonymous objects
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -212,13 +208,11 @@ function combine(a: any, b: any) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		// Assuming the script does not modify overloaded functions
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -232,13 +226,11 @@ function logMessage(message: string) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -256,13 +248,11 @@ function* idGenerator() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -277,13 +267,11 @@ function identity<T>(arg: T) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function identity<T>(arg: T): T {')
@@ -299,13 +287,11 @@ function toNumber(value: string | number) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -325,13 +311,11 @@ const obj = {
 };
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('greet(name: string): string {')
@@ -345,13 +329,11 @@ function getFullName({ firstName, lastName }: { firstName: string; lastName: str
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -366,13 +348,11 @@ function greet(name: string = 'World') {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -387,13 +367,11 @@ function sum(...numbers: number[]) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -408,13 +386,11 @@ function getLength(str?: string) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -431,13 +407,11 @@ namespace Utils {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		// Assuming the script does not handle functions inside namespaces
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -451,13 +425,11 @@ const double = function(n: number) {
 };
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -474,13 +446,11 @@ function createAdder(a: number) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -495,13 +465,11 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -516,13 +484,11 @@ function getValue(key: string) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		// Should not modify because return type is any
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -536,13 +502,11 @@ function isType<T>(value: any): value is T {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		// Should not modify because return type is already specified
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -553,17 +517,15 @@ function isType<T>(value: any): value is T {
 		const sourceCode = `
 function toNumber(value: string) {
   if (!value) return;
-	return parseInt(value, 10);
+  return parseInt(value, 10);
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -575,17 +537,15 @@ function toNumber(value: string) {
 		const sourceCode = `
 function toNumber(value: string) {
   if (!value) return null;
-	return parseInt(value, 10);
+  return parseInt(value, 10);
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -600,13 +560,11 @@ function firstItem(values: string[]) {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -614,7 +572,7 @@ function firstItem(values: string[]) {
 		)
 	})
 
-	it('handles --shallow argument', async (): Promise<void> => {
+	it('handles shallow option', async (): Promise<void> => {
 		// Create files in the top-level directory and in a subdirectory
 		const topLevelFile = `
 function topLevelFunction() {
@@ -629,6 +587,7 @@ function subDirFunction() {
 `.trim()
 
 		// Write the top-level file
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const topLevelFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(topLevelFilePath, topLevelFile)
 
@@ -638,11 +597,8 @@ function subDirFunction() {
 		const subDirFilePath = path.join(subDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(subDirFilePath, subDirFile)
 
-		// Run the CLI with the --shallow argument
-		await execa('tsx', [cliPath, '--shallow'], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		// Run the function with shallow option
+		await runAddFunctionReturnTypes({ path: testDir, shallow: true })
 
 		// Read the files back
 		const updatedTopLevelFile = await fs.readFile(topLevelFilePath, 'utf-8')
@@ -657,7 +613,7 @@ function subDirFunction() {
 		expect(updatedSubDirFile).toBe(subDirFile)
 	})
 
-	it('handles --ignore argument', async (): Promise<void> => {
+	it('handles ignorePatterns option', async (): Promise<void> => {
 		// Create files
 		const fileToProcess = `
 function shouldBeProcessed() {
@@ -672,6 +628,7 @@ function shouldBeIgnored() {
 `.trim()
 
 		// Write the files
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const processFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(processFilePath, fileToProcess)
 
@@ -679,10 +636,10 @@ function shouldBeIgnored() {
 		const ignoreFilePath = path.join(testDir, ignoreFileName)
 		await fs.writeFile(ignoreFilePath, fileToIgnore)
 
-		// Run the CLI with the --ignore argument
-		await execa('tsx', [cliPath, '--ignore', ignoreFileName], {
-			cwd: testDir,
-			preferLocal: true
+		// Run the function with ignorePatterns option
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignorePatterns: [ignoreFileName]
 		})
 
 		// Read the files back
@@ -698,52 +655,7 @@ function shouldBeIgnored() {
 		expect(updatedIgnoreFile).toBe(fileToIgnore)
 	})
 
-	it('handles --concurrency argument', async (): Promise<void> => {
-		// Create multiple files to process
-		const numberOfFiles = 20
-		const filePromises = []
-
-		for (let i = 0; i < numberOfFiles; i++) {
-			const fileContent = `
-function func${i}() {
-  return ${i};
-}
-`.trim()
-
-			const filePath = path.join(testDir, `file${i}.ts`)
-			filePromises.push(fs.writeFile(filePath, fileContent))
-		}
-
-		await Promise.all(filePromises)
-
-		// Run the CLI with the --concurrency argument
-		await execa('tsx', [cliPath, '--concurrency', '5'], {
-			cwd: testDir,
-			preferLocal: true
-		})
-
-		// Read back the files and check they have been modified
-		const checkPromises = []
-
-		for (let i = 0; i < numberOfFiles; i++) {
-			const filePath = path.join(testDir, `file${i}.ts`)
-			const expectedContent = `
-function func${i}(): number {
-  return ${i};
-}
-`.trim()
-
-			checkPromises.push(
-				fs.readFile(filePath, 'utf-8').then((updatedContent): void => {
-					expect(updatedContent.trim()).toBe(expectedContent)
-				})
-			)
-		}
-
-		await Promise.all(checkPromises)
-	})
-
-	it('ignores function expressions when --ignore-expressions is used', async (): Promise<void> => {
+	it('ignores function expressions when ignoreExpressions is true', async (): Promise<void> => {
 		const sourceCode = `
 const myFunction = function() {
   return 42;
@@ -754,20 +666,18 @@ const myArrowFunction = () => {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath, '--ignore-expressions'], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir, ignoreExpressions: true })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		// Should not have added return types
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('ignores functions without type parameters when --ignore-functions-without-type-parameters is used', async (): Promise<void> => {
+	it('ignores functions without type parameters when ignoreFunctionsWithoutTypeParameters is true', async (): Promise<void> => {
 		const sourceCode = `
 function noTypeParams() {
   return 'hello';
@@ -778,24 +688,21 @@ function withTypeParams<T>() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa(
-			'tsx',
-			[cliPath, '--ignore-functions-without-type-parameters'],
-			{
-				cwd: testDir,
-				preferLocal: true
-			}
-		)
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreFunctionsWithoutTypeParameters: true
+		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function noTypeParams() {') // Should not have return type added
 		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
 	})
 
-	it('ignores functions with names in --ignore-names', async (): Promise<void> => {
+	it('ignores functions with names in ignoreNames', async (): Promise<void> => {
 		const sourceCode = `
 function allowedFunction() {
   return 1;
@@ -806,12 +713,13 @@ function notAllowedFunction() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath, '--ignore-names', 'allowedFunction'], {
-			cwd: testDir,
-			preferLocal: true
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreNames: ['allowedFunction']
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -819,7 +727,7 @@ function notAllowedFunction() {
 		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
 	})
 
-	it('ignores higher order functions when --ignore-higher-order-functions is used', async (): Promise<void> => {
+	it('ignores higher order functions when ignoreHigherOrderFunctions is true', async (): Promise<void> => {
 		const sourceCode = `
 function higherOrder() {
   return function() {
@@ -832,12 +740,13 @@ function normalFunction() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath, '--ignore-higher-order-functions'], {
-			cwd: testDir,
-			preferLocal: true
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreHigherOrderFunctions: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -845,7 +754,7 @@ function normalFunction() {
 		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
 	})
 
-	it('ignores typed function expressions when --ignore-typed-function-expressions is used', async (): Promise<void> => {
+	it('ignores typed function expressions when ignoreTypedFunctionExpressions is true', async (): Promise<void> => {
 		const sourceCode = `
 const typedFunction: () => number = function() {
   return 42;
@@ -856,12 +765,13 @@ const untypedFunction = function() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath, '--ignore-typed-function-expressions'], {
-			cwd: testDir,
-			preferLocal: true
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreTypedFunctionExpressions: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -875,26 +785,20 @@ const untypedFunction = function() {
 		)
 	})
 
-	it('ignores concise arrow functions starting with void when --ignore-concise-arrow-function-expressions-starting-with-void is used', async (): Promise<void> => {
+	it('ignores concise arrow functions starting with void when ignoreConciseArrowFunctionExpressionsStartingWithVoid is true', async (): Promise<void> => {
 		const sourceCode = `
 const arrowVoid = () => void doSomething();
 const arrowNormal = () => 42;
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa(
-			'tsx',
-			[
-				cliPath,
-				'--ignore-concise-arrow-function-expressions-starting-with-void'
-			],
-			{
-				cwd: testDir,
-				preferLocal: true
-			}
-		)
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreConciseArrowFunctionExpressionsStartingWithVoid: true
+		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		// arrowVoid should not have return type added
@@ -905,34 +809,60 @@ const arrowNormal = () => 42;
 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
 	})
 
-	// 	it('ignores arrow functions returning const assertion when --ignore-direct-const-assertion-in-arrow-functions is used', async (): Promise<void> => {
-	// 		const sourceCode = `
-	// const arrowConst = () => (42 as const);
-	// const arrowNormal = () => 42;
-	// `.trim()
-	//
-	// 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-	// 		await fs.writeFile(filePath, sourceCode)
-	//
-	// 		await execa(
-	// 			'tsx',
-	// 			[cliPath, '--ignore-direct-const-assertion-in-arrow-functions'],
-	// 			{
-	// 				cwd: testDir,
-	// 				preferLocal: true
-	// 			}
-	// 		)
-	//
-	// 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-	// 		// arrowConst should not have return type added
-	// 		expect(updatedSource).toContain(
-	// 			'const arrowConst = () => (42 as const);'
-	// 		)
-	// 		// arrowNormal should have return type added
-	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
-	// 	})
+	it('overwrites existing return types when overwriteExistingReturnTypes is true', async (): Promise<void> => {
+		// Source code with an incorrect existing return type
+		const sourceCode = `
+function greet(name: string): number {
+  return 'Hello, ' + name;
+}
+`.trim()
 
-	it('handles when --ignore-expressions is not used', async (): Promise<void> => {
+		// Write the source code to a temporary file
+		const testDir = await fs.mkdtemp(os.tmpdir())
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		// Run the function with overwriteExistingReturnTypes option
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			overwriteExistingReturnTypes: true
+		})
+
+		// Read the updated source code
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+
+		// Check that the incorrect return type has been corrected
+		expect(updatedSource).toContain('function greet(name: string): string {')
+	})
+
+	it('ignores functions with correct existing return types when overwriteExistingReturnTypes is true', async (): Promise<void> => {
+		// Source code with correct existing return types
+		const sourceCode = `
+function sum(a: number, b: number): number {
+  return a + b;
+}
+`.trim()
+
+		// Write the source code to a temporary file
+		const testDir = await fs.mkdtemp(os.tmpdir())
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		// Run the function with overwriteExistingReturnTypes option
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			overwriteExistingReturnTypes: true
+		})
+
+		// Read the updated source code
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+
+		// Check that the function remains unchanged
+		expect(updatedSource).toBe(sourceCode)
+	})
+
+	// Additional tests where options are not used
+	it('adds return types when ignoreExpressions is not used', async (): Promise<void> => {
 		const sourceCode = `
 const myFunction = function() {
   return 42;
@@ -943,13 +873,11 @@ const myArrowFunction = () => {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		// Should have added return types
@@ -957,7 +885,7 @@ const myArrowFunction = () => {
 		expect(updatedSource).toContain('const myArrowFunction = (): number =>')
 	})
 
-	it('handles when --ignore-functions-without-type-parameters is not used', async (): Promise<void> => {
+	it('adds return types when ignoreFunctionsWithoutTypeParameters is not used', async (): Promise<void> => {
 		const sourceCode = `
 function noTypeParams() {
   return 'hello';
@@ -968,20 +896,18 @@ function withTypeParams<T>() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function noTypeParams(): string {') // Should have return type added
 		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
 	})
 
-	it('handles when --ignore-names is not used', async (): Promise<void> => {
+	it('adds return types when ignoreNames is not used', async (): Promise<void> => {
 		const sourceCode = `
 function allowedFunction() {
   return 1;
@@ -992,20 +918,18 @@ function notAllowedFunction() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function allowedFunction(): number {') // Should have return type added
 		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
 	})
 
-	it('handles when --ignore-higher-order-functions is not used', async (): Promise<void> => {
+	it('adds return types when ignoreHigherOrderFunctions is not used', async (): Promise<void> => {
 		const sourceCode = `
 function higherOrder() {
   return function() {
@@ -1018,134 +942,34 @@ function normalFunction() {
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function higherOrder(): () => number {') // Should have return type added
 		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
 	})
 
-	it('handles when --ignore-typed-function-expressions is not used', async (): Promise<void> => {
+	it('adds return types when ignoreTypedFunctionExpressions is not used', async (): Promise<void> => {
 		const sourceCode = `
 const typedFunction: () => number = function() {
   return 42;
 }
 `.trim()
 
+		const testDir = await fs.mkdtemp(os.tmpdir())
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await execa('tsx', [cliPath], {
-			cwd: testDir,
-			preferLocal: true
-		})
+		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		// typedFunction should have return type added
 		expect(updatedSource).toContain(
 			'const typedFunction: () => number = function(): number {'
 		)
-	})
-
-	// 	it('handles concise arrow functions starting with void when --ignore-concise-arrow-function-expressions-starting-with-void is not used', async (): Promise<void> => {
-	// 		const sourceCode = `
-	// const arrowVoid = () => void doSomething();
-	// const arrowNormal = () => 42;
-	// `.trim()
-	//
-	// 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-	// 		await fs.writeFile(filePath, sourceCode)
-	//
-	// 		await execa('tsx', [cliPath], {
-	// 			cwd: testDir,
-	// 			preferLocal: true
-	// 		})
-	//
-	// 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-	// 		// arrowVoid should have return type added
-	// 		expect(updatedSource).toContain(
-	// 			'const arrowVoid = (): void => void doSomething();'
-	// 		)
-	// 		// arrowNormal should have return type added
-	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
-	// 	})
-
-	// 	it('handles arrow functions returning const assertion when --ignore-direct-const-assertion-in-arrow-functions is not used', async (): Promise<void> => {
-	// 		const sourceCode = `
-	// const arrowConst = () => (42 as const);
-	// const arrowNormal = () => 42;
-	// `.trim()
-	//
-	// 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-	// 		await fs.writeFile(filePath, sourceCode)
-	//
-	// 		await execa('tsx', [cliPath], {
-	// 			cwd: testDir,
-	// 			preferLocal: true
-	// 		})
-	//
-	// 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-	// 		// arrowConst should have return type added
-	// 		expect(updatedSource).toContain(
-	// 			'const arrowConst = (): 42 => (42 as const);'
-	// 		)
-	// 		// arrowNormal should have return type added
-	// 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
-	// 	})
-
-	it('overwrites existing return types when --overwrite-existing-return-types is used', async (): Promise<void> => {
-		// Source code with an incorrect existing return type
-		const sourceCode = `
-function greet(name: string): number {
-  return 'Hello, ' + name;
-}
-`.trim()
-
-		// Write the source code to a temporary file
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		// Run the CLI with the --overwrite-existing-return-types option
-		await execa('tsx', [cliPath, '--overwrite-existing-return-types'], {
-			cwd: testDir,
-			preferLocal: true
-		})
-
-		// Read the updated source code
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-
-		// Check that the incorrect return type has been corrected
-		expect(updatedSource).toContain('function greet(name: string): string {')
-	})
-
-	it('ignores functions with correct existing return types when --overwrite-existing-return-types is used', async (): Promise<void> => {
-		// Source code with correct existing return types
-		const sourceCode = `
-function sum(a: number, b: number): number {
-  return a + b;
-}
-`.trim()
-
-		// Write the source code to a temporary file
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		// Run the CLI with the --overwrite-existing-return-types option
-		await execa('tsx', [cliPath, '--overwrite-existing-return-types'], {
-			cwd: testDir,
-			preferLocal: true
-		})
-
-		// Read the updated source code
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-
-		// Check that the function remains unchanged
-		expect(updatedSource).toBe(sourceCode)
 	})
 })
