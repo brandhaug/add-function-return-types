@@ -1,7 +1,7 @@
 import * as crypto from 'node:crypto'
+import fs from 'node:fs/promises'
 import * as os from 'node:os'
 import path from 'node:path'
-import fs from 'fs-extra'
 import { describe, expect, it } from 'vitest'
 import {
 	type Options,
@@ -593,7 +593,7 @@ function subDirFunction() {
 
 		// Create a subdirectory and write the subdirectory file
 		const subDir = path.join(testDir, 'subdir')
-		await fs.ensureDir(subDir)
+		await fs.mkdir(subDir)
 		const subDirFilePath = path.join(subDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(subDirFilePath, subDirFile)
 
