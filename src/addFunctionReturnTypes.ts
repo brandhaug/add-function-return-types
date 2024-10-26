@@ -1,14 +1,7 @@
 import path from 'node:path'
 import fg from 'fast-glob'
 import pLimit from 'p-limit'
-import {
-	ModuleKind,
-	Node,
-	Project,
-	ScriptTarget,
-	SyntaxKind,
-	ts
-} from 'ts-morph'
+import { ModuleKind, Node, Project, ScriptTarget, ts } from 'ts-morph'
 
 export type Options = {
 	path: string
