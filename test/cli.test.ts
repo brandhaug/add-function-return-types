@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { addFunctionReturnTypes } from '../src/addFunctionReturnTypes'
+import {
+	type Options,
+	addFunctionReturnTypes
+} from '../src/addFunctionReturnTypes'
 import { main } from '../src/cli'
 
 vi.mock('../src/addFunctionReturnTypes', () => ({
@@ -28,8 +31,7 @@ describe.concurrent('cli', (): void => {
 		// Call the main function
 		await main()
 
-		// Assert that addFunctionReturnTypes was called with default options
-		expect(addFunctionReturnTypes).toHaveBeenCalledWith({
+		const options: Options = {
 			path: '.',
 			shallow: false,
 			ignorePatterns: [],
@@ -40,8 +42,12 @@ describe.concurrent('cli', (): void => {
 			ignoreFunctionsWithoutTypeParameters: false,
 			ignoreHigherOrderFunctions: false,
 			ignoreTypedFunctionExpressions: false,
+			ignoreIIFEs: false,
 			ignoreNames: []
-		})
+		}
+
+		// Assert that addFunctionReturnTypes was called with default options
+		expect(addFunctionReturnTypes).toHaveBeenCalledWith(options)
 	})
 
 	it('should correctly parse and pass all provided arguments', async (): Promise<void> => {
@@ -59,14 +65,14 @@ describe.concurrent('cli', (): void => {
 			'--ignore-functions-without-type-parameters',
 			'--ignore-higher-order-functions',
 			'--ignore-typed-function-expressions',
+			'--ignore-iifes',
 			'--ignore-names=foo,bar'
 		]
 
 		// Call the main function
 		await main()
 
-		// Assert that addFunctionReturnTypes was called with the expected options
-		expect(addFunctionReturnTypes).toHaveBeenCalledWith({
+		const options: Options = {
 			path: 'src',
 			shallow: true,
 			ignorePatterns: ['**/*.test.ts', '**/node_modules/**'],
@@ -77,8 +83,12 @@ describe.concurrent('cli', (): void => {
 			ignoreFunctionsWithoutTypeParameters: true,
 			ignoreHigherOrderFunctions: true,
 			ignoreTypedFunctionExpressions: true,
+			ignoreIIFEs: true,
 			ignoreNames: ['foo', 'bar']
-		})
+		}
+
+		// Assert that addFunctionReturnTypes was called with the expected options
+		expect(addFunctionReturnTypes).toHaveBeenCalledWith(options)
 	})
 
 	it('should handle partial arguments correctly', async (): Promise<void> => {
@@ -93,8 +103,7 @@ describe.concurrent('cli', (): void => {
 		// Call the main function
 		await main()
 
-		// Assert that addFunctionReturnTypes was called with the expected options
-		expect(addFunctionReturnTypes).toHaveBeenCalledWith({
+		const options: Options = {
 			path: '.',
 			shallow: false,
 			ignorePatterns: ['**/*.spec.ts'],
@@ -105,7 +114,11 @@ describe.concurrent('cli', (): void => {
 			ignoreFunctionsWithoutTypeParameters: false,
 			ignoreHigherOrderFunctions: false,
 			ignoreTypedFunctionExpressions: false,
+			ignoreIIFEs: false,
 			ignoreNames: []
-		})
+		}
+
+		// Assert that addFunctionReturnTypes was called with the expected options
+		expect(addFunctionReturnTypes).toHaveBeenCalledWith(options)
 	})
 })

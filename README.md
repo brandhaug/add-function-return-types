@@ -35,6 +35,7 @@ By default, the tool:
 - `--ignore-functions-without-type-parameters`: Ignore functions that don't have generic type parameters.
 - `--ignore-higher-order-functions`: Ignore functions that immediately return another function expression.
 - `--ignore-typed-function-expressions`: Ignore function expressions that already have type annotations on the variable.
+- `--ignore-iifes`: Ignore immediately-invoked function expressions.
 - `--ignore-names <names>`: Comma-separated list of function or method names to ignore during processing (e.g., `--ignore-names "getData,processItem"`).
 
 ## Example

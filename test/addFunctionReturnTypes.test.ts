@@ -24,6 +24,7 @@ describe.concurrent('add-function-return-types', (): void => {
 		ignoreHigherOrderFunctions: false,
 		ignoreTypedFunctionExpressions: false,
 		ignoreNames: [],
+		ignoreIIFEs: false,
 		overwriteExistingReturnTypes: false
 	}
 
@@ -973,6 +974,76 @@ const typedFunction: () => number = function() {
 		// typedFunction should have return type added
 		expect(updatedSource).toContain(
 			'const typedFunction: () => number = function(): number {'
+		)
+	})
+
+	it('handles IIFEs when ignoreIIFEs is not used', async (): Promise<void> => {
+		const sourceCode = `
+		(function() {
+			return 42;
+		})();
+		`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('(function(): number {') // Should have return type added
+	})
+
+	it('ignores IIFEs when ignoreIIFEs is true', async (): Promise<void> => {
+		const sourceCode = `
+	  (function() {
+		return 42;
+	  })();
+	  
+	  function normalFunction() {
+		return 43;
+	  }
+	  `.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreIIFEs: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('(function() {') // Should not have return type added
+		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
+	})
+
+	it('should not overwrite return type when overwriteExistingReturnTypes is true with ignoreHigherOrderFunctions o', async (): Promise<void> => {
+		const sourceCode = `
+			function higherOrder(callback: () => number): number {
+				return callback();
+			}
+		`
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreIIFEs: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+
+		await runAddFunctionReturnTypes({
+			overwriteExistingReturnTypes: true,
+			ignoreHigherOrderFunctions: true
+		})
+
+		expect(updatedSource).toContain(
+			'function higherOrder(callback: () => number): number {'
 		)
 	})
 })

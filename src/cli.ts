@@ -42,6 +42,10 @@ export async function main(): Promise<void> {
 			'Ignore function expressions with type annotations on the variable.'
 		)
 		.option(
+			'--ignore-iifes',
+			'Ignore immediately invoked function expressions (IIFEs)'
+		)
+		.option(
 			'--ignore-names <names>',
 			'Comma-separated list of function/method names to ignore'
 		)
@@ -68,6 +72,7 @@ export async function main(): Promise<void> {
 	const ignoreHigherOrderFunctions = options.ignoreHigherOrderFunctions || false
 	const ignoreTypedFunctionExpressions =
 		options.ignoreTypedFunctionExpressions || false
+	const ignoreIIFEs = options.ignoreIifes || false
 	const ignoreNames = options.ignoreNames ? options.ignoreNames.split(',') : []
 
 	await addFunctionReturnTypes({
@@ -81,6 +86,7 @@ export async function main(): Promise<void> {
 		ignoreFunctionsWithoutTypeParameters,
 		ignoreHigherOrderFunctions,
 		ignoreTypedFunctionExpressions,
+		ignoreIIFEs,
 		ignoreNames
 	})
 }

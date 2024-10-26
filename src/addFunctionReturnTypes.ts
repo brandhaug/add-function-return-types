@@ -1,7 +1,14 @@
 import path from 'node:path'
 import fg from 'fast-glob'
 import pLimit from 'p-limit'
-import { ModuleKind, Node, Project, ScriptTarget, ts } from 'ts-morph'
+import {
+	ModuleKind,
+	Node,
+	Project,
+	ScriptTarget,
+	SyntaxKind,
+	ts
+} from 'ts-morph'
 
 export type Options = {
 	path: string
@@ -12,6 +19,7 @@ export type Options = {
 	ignoreExpressions: boolean
 	ignoreFunctionsWithoutTypeParameters: boolean
 	ignoreHigherOrderFunctions: boolean
+	ignoreIIFEs: boolean
 	ignoreTypedFunctionExpressions: boolean
 	ignoreNames: string[]
 	overwriteExistingReturnTypes: boolean
@@ -124,6 +132,9 @@ async function processFile(
 				return
 			}
 
+			// Print the function in console
+			console.log(node.getText())
+
 			// Check if node already has a return type
 			if (!options.overwriteExistingReturnTypes && node.getReturnTypeNode()) {
 				return
@@ -195,6 +206,25 @@ async function processFile(
 			) {
 				const body = node.getBody()
 				if (Node.isVoidExpression(body)) {
+					return
+				}
+			}
+
+			// ignoreIIFEs: ignore immediately invoked function expressions
+			if (options.ignoreIIFEs) {
+				const parent = node.getParent()
+				if (Node.isParenthesizedExpression(parent)) {
+					const grandParent = parent.getParent()
+					if (
+						Node.isCallExpression(grandParent) &&
+						grandParent.getExpression() === parent
+					) {
+						return
+					}
+				} else if (
+					Node.isCallExpression(parent) &&
+					parent.getExpression() === node
+				) {
 					return
 				}
 			}
