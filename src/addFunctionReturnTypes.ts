@@ -132,9 +132,6 @@ async function processFile(
 				return
 			}
 
-			// Print the function in console
-			console.log(node.getText())
-
 			// Check if node already has a return type
 			if (!options.overwriteExistingReturnTypes && node.getReturnTypeNode()) {
 				return
