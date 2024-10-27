@@ -15,19 +15,19 @@ describe.concurrent('add-function-return-types', (): void => {
 	const defaultOptions: Options = {
 		path: '.',
 		shallow: false,
-		ignorePatterns: [],
-		concurrencyLimit: 5,
+		ignoreFiles: [],
+		concurrencyLimit: 10,
 		ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 		ignoreExpressions: false,
 		ignoreFunctionsWithoutTypeParameters: false,
 		ignoreHigherOrderFunctions: false,
 		ignoreTypedFunctionExpressions: false,
-		ignoreNames: [],
+		ignoreFunctions: [],
 		ignoreIIFEs: false,
-		overwriteExistingReturnTypes: false,
-		ignoreAnonymousObjectTypes: false,
-		ignoreAnyType: false,
-		ignoreUnknownType: false
+		overwrite: false,
+		ignoreAnonymousObjects: false,
+		ignoreAny: false,
+		ignoreUnknown: false
 	}
 
 	// Helper function to run the addFunctionReturnTypes with overridden options
@@ -546,7 +546,7 @@ function subDirFunction() {
 		expect(updatedSubDirFile).toBe(subDirFile)
 	})
 
-	it('ignores files matching ignorePatterns', async (): Promise<void> => {
+	it('ignores files matching ignorefiles', async (): Promise<void> => {
 		const fileToProcess = `
 function shouldBeProcessed() {
   return 1;
@@ -569,7 +569,7 @@ function shouldBeIgnored() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignorePatterns: [ignoreFileName]
+			ignoreFiles: [ignoreFileName]
 		})
 
 		const updatedProcessFile = await fs.readFile(processFilePath, 'utf-8')
@@ -628,7 +628,7 @@ function withTypeParams<T>() {
 		expect(updatedSource).toContain('function withTypeParams<T>(): string {')
 	})
 
-	it('ignores functions with names in ignoreNames', async (): Promise<void> => {
+	it('ignores functions with names in ignoreFunctions', async (): Promise<void> => {
 		const sourceCode = `
 function allowedFunction() {
   return 1;
@@ -645,7 +645,7 @@ function notAllowedFunction() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreNames: ['allowedFunction']
+			ignoreFunctions: ['allowedFunction']
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -731,7 +731,7 @@ const arrowNormal = () => 42;
 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
 	})
 
-	it('handles functions with existing return types if overwriteExistingReturnTypes is true', async (): Promise<void> => {
+	it('handles functions with existing return types if overwrite is true', async (): Promise<void> => {
 		// Source code with an incorrect existing return type
 		const sourceCode = `
 function greet(name: string): number {
@@ -745,7 +745,7 @@ function greet(name: string): number {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			overwriteExistingReturnTypes: true
+			overwrite: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -753,7 +753,7 @@ function greet(name: string): number {
 		expect(updatedSource).toContain('function greet(name: string): string {')
 	})
 
-	it('ignores existing return types if overwriteExistingReturnTypes is false', async (): Promise<void> => {
+	it('ignores existing return types if overwrite is false', async (): Promise<void> => {
 		// Source code with an incorrect existing return type
 		const sourceCode = `
 function greet(name: string): number {
@@ -902,7 +902,7 @@ const typedFunction: () => number = function() {
 		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
 
-	it('ignores return type if overwriteExistingReturnTypes is true and ignoreHigherOrderFunctions is true', async (): Promise<void> => {
+	it('ignores return type if overwrite is true and ignoreHigherOrderFunctions is true', async (): Promise<void> => {
 		const sourceCode = `
 			function higherOrder(callback: () => number): number | null {
 				return callback();
@@ -921,7 +921,7 @@ const typedFunction: () => number = function() {
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 
 		await runAddFunctionReturnTypes({
-			overwriteExistingReturnTypes: true,
+			overwrite: true,
 			ignoreHigherOrderFunctions: true
 		})
 
@@ -994,7 +994,7 @@ function getNormalType() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreAnonymousObjectTypes: true
+			ignoreAnonymousObjects: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -1002,7 +1002,7 @@ function getNormalType() {
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
-	it('ignores functions returning any if ignoreAnyType is true', async (): Promise<void> => {
+	it('ignores functions returning any if ignoreAny is true', async (): Promise<void> => {
 		const sourceCode = `
 function returnAny() {
   return JSON.parse('{"foo": "bar"}');
@@ -1019,7 +1019,7 @@ function getNormalType() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreAnyType: true
+			ignoreAny: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -1027,7 +1027,7 @@ function getNormalType() {
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
-	it('handles functions returning any if ignoreAnyType is false', async (): Promise<void> => {
+	it('handles functions returning any if ignoreAny is false', async (): Promise<void> => {
 		const sourceCode = `
 function returnAny(): any {
   return Math.random() > 0.5 ? 'string' : 42;
@@ -1049,7 +1049,7 @@ function inferredAny() {
 		expect(updatedSource).toContain('function inferredAny(): any {')
 	})
 
-	it('ignores functions returning unknown if ignoreUnknownType is true', async (): Promise<void> => {
+	it('ignores functions returning unknown if ignoreAny is true', async (): Promise<void> => {
 		const sourceCode = `
 function returnUnknown() {
   return JSON.parse('{"foo": "bar"}') as unknown;
@@ -1066,7 +1066,7 @@ function getNormalType() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreUnknownType: true
+			ignoreUnknown: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
@@ -1074,7 +1074,7 @@ function getNormalType() {
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
-	it('handles functions returning unknown if ignoreUnknownType is false', async (): Promise<void> => {
+	it('handles functions returning unknown if ignoreAny is false', async (): Promise<void> => {
 		const sourceCode = `
 function returnUnknown(): unknown {
 	return JSON.parse('{"foo": "bar"}') as unknown;

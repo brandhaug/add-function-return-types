@@ -27,24 +27,33 @@ By default, the tool:
 
 ## Options
 
+### Base options
+
 - `--shallow`: Only process current directory.
-- `--ignore <patterns>`: Comma-separated list of file glob patterns to ignore.
-- `--concurrency <number>`: Concurrency limit for processing files (default: 10)
+- `--overwrite`: Overwrite functions with existing return types.
+
+### Ignore
+
+- `--ignore-files <patterns>`: Comma-separated list of file glob patterns to ignore.
+- `--ignore-functions <names>`: Comma-separated list of function or method names to ignore during processing.
 - `--ignore-concise-arrow-function-expressions-starting-with-void`: Ignore arrow functions that start with the void keyword.
 - `--ignore-expressions`: Ignore function expressions (functions that are not part of a declaration).
 - `--ignore-functions-without-type-parameters`: Ignore functions that don't have generic type parameters.
 - `--ignore-higher-order-functions`: Ignore functions that immediately return another function expression.
 - `--ignore-typed-function-expressions`: Ignore function expressions that already have type annotations on the variable.
 - `--ignore-iifes`: Ignore immediately-invoked function expressions.
-- `--ignore-names <names>`: Comma-separated list of function or method names to ignore during processing (e.g., `--ignore-names "getData,processItem"`).
-- `--ignore-anonymous-object-types`: Ignore functions that return anonymous object types.
-- `--ignore-any-type`: Ignore functions that return the any type.
-- `--ignore-unknown-type`: Ignore functions that return the unknown type.
+- `--ignore-anonymous-objects`: Ignore functions that return anonymous object types.
+- `--ignore-any`: Ignore functions that return the any type.
+- `--ignore-unknown`: Ignore functions that return the unknown type.
+
+### Performance
+
+- `--concurrency <number>`: Concurrency limit for processing files (default: 10)
 
 ## Example
 
 ```bash
-add-function-return-types --ignore "src/generated/**,tests/**" --concurrency 20 --ignore-unknown-type
+add-function-return-types --ignore-files "src/generated/**,tests/**" --concurrency 20
 ```
 
 ## Contributing

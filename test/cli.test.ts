@@ -5,7 +5,7 @@ import {
 } from '../src/addFunctionReturnTypes'
 import { main } from '../src/cli'
 
-vi.mock('../src/addFunctionReturnTypes', () => ({
+vi.mock('../src/addFunctionReturnTypes', (): object => ({
 	addFunctionReturnTypes: vi.fn()
 }))
 
@@ -34,19 +34,19 @@ describe.concurrent('cli', (): void => {
 		const options: Options = {
 			path: '.',
 			shallow: false,
-			ignorePatterns: [],
+			ignoreFiles: [],
 			concurrencyLimit: 10,
-			overwriteExistingReturnTypes: false,
+			overwrite: false,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 			ignoreExpressions: false,
 			ignoreFunctionsWithoutTypeParameters: false,
 			ignoreHigherOrderFunctions: false,
 			ignoreTypedFunctionExpressions: false,
 			ignoreIIFEs: false,
-			ignoreNames: [],
-			ignoreAnonymousObjectTypes: false,
-			ignoreAnyType: false,
-			ignoreUnknownType: false
+			ignoreFunctions: [],
+			ignoreAnonymousObjects: false,
+			ignoreAny: false,
+			ignoreUnknown: false
 		}
 
 		// Assert that addFunctionReturnTypes was called with default options
@@ -60,19 +60,19 @@ describe.concurrent('cli', (): void => {
 			'cli.js',
 			'src',
 			'--shallow',
-			'--ignore=**/*.test.ts,**/node_modules/**',
+			'--ignore-files=**/*.test.ts,**/node_modules/**',
 			'--concurrency=5',
-			'--overwrite-existing-return-types',
+			'--overwrite',
 			'--ignore-concise-arrow-function-expressions-starting-with-void',
 			'--ignore-expressions',
 			'--ignore-functions-without-type-parameters',
 			'--ignore-higher-order-functions',
 			'--ignore-typed-function-expressions',
 			'--ignore-iifes',
-			'--ignore-names=foo,bar',
-			'--ignore-anonymous-object-types',
-			'--ignore-any-type',
-			'--ignore-unknown-type'
+			'--ignore-functions=foo,bar',
+			'--ignore-anonymous-objects',
+			'--ignore-any',
+			'--ignore-unknown'
 		]
 
 		// Call the main function
@@ -81,19 +81,19 @@ describe.concurrent('cli', (): void => {
 		const options: Options = {
 			path: 'src',
 			shallow: true,
-			ignorePatterns: ['**/*.test.ts', '**/node_modules/**'],
+			ignoreFiles: ['**/*.test.ts', '**/node_modules/**'],
 			concurrencyLimit: 5,
-			overwriteExistingReturnTypes: true,
+			overwrite: true,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: true,
 			ignoreExpressions: true,
 			ignoreFunctionsWithoutTypeParameters: true,
 			ignoreHigherOrderFunctions: true,
 			ignoreTypedFunctionExpressions: true,
 			ignoreIIFEs: true,
-			ignoreNames: ['foo', 'bar'],
-			ignoreAnonymousObjectTypes: true,
-			ignoreAnyType: true,
-			ignoreUnknownType: true
+			ignoreFunctions: ['foo', 'bar'],
+			ignoreAnonymousObjects: true,
+			ignoreAny: true,
+			ignoreUnknown: true
 		}
 
 		// Assert that addFunctionReturnTypes was called with the expected options
@@ -105,7 +105,7 @@ describe.concurrent('cli', (): void => {
 		process.argv = [
 			'node',
 			'cli.js',
-			'--ignore=**/*.spec.ts',
+			'--ignore-files=**/*.spec.ts',
 			'--concurrency=20'
 		]
 
@@ -115,19 +115,19 @@ describe.concurrent('cli', (): void => {
 		const options: Options = {
 			path: '.',
 			shallow: false,
-			ignorePatterns: ['**/*.spec.ts'],
+			ignoreFiles: ['**/*.spec.ts'],
 			concurrencyLimit: 20,
-			overwriteExistingReturnTypes: false,
+			overwrite: false,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 			ignoreExpressions: false,
 			ignoreFunctionsWithoutTypeParameters: false,
 			ignoreHigherOrderFunctions: false,
 			ignoreTypedFunctionExpressions: false,
 			ignoreIIFEs: false,
-			ignoreNames: [],
-			ignoreAnonymousObjectTypes: false,
-			ignoreAnyType: false,
-			ignoreUnknownType: false
+			ignoreFunctions: [],
+			ignoreAnonymousObjects: false,
+			ignoreAny: false,
+			ignoreUnknown: false
 		}
 
 		// Assert that addFunctionReturnTypes was called with the expected options

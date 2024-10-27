@@ -6,7 +6,7 @@ import { ModuleKind, Node, Project, ScriptTarget, ts } from 'ts-morph'
 export type Options = {
 	path: string
 	shallow: boolean
-	ignorePatterns: string[]
+	ignoreFiles: string[]
 	concurrencyLimit: number
 	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
 	ignoreExpressions: boolean
@@ -14,11 +14,11 @@ export type Options = {
 	ignoreHigherOrderFunctions: boolean
 	ignoreIIFEs: boolean
 	ignoreTypedFunctionExpressions: boolean
-	ignoreNames: string[]
-	overwriteExistingReturnTypes: boolean
-	ignoreAnonymousObjectTypes: boolean
-	ignoreAnyType: boolean
-	ignoreUnknownType: boolean
+	ignoreFunctions: string[]
+	overwrite: boolean
+	ignoreAnonymousObjects: boolean
+	ignoreAny: boolean
+	ignoreUnknown: boolean
 }
 
 /**
@@ -84,10 +84,10 @@ async function getAllTsAndTsxFiles(
 	const extensions = ['ts', 'tsx']
 	const patterns = extensions.map((ext): string => `**/*.${ext}`)
 
-	const defaultIgnorePatterns = ['**/node_modules/**', '**/*.d.ts']
+	const defaultIgnorefiles = ['**/node_modules/**', '**/*.d.ts']
 	return fg(patterns, {
 		cwd: rootPath,
-		ignore: defaultIgnorePatterns.concat(options.ignorePatterns),
+		ignore: defaultIgnorefiles.concat(options.ignoreFiles),
 		absolute: true,
 		deep: options.shallow ? 0 : undefined // Recursive by default, shallow if specified
 	})
@@ -130,7 +130,7 @@ async function processFile(
 			}
 
 			// Check if node already has a return type
-			if (!options.overwriteExistingReturnTypes && node.getReturnTypeNode()) {
+			if (!options.overwrite && node.getReturnTypeNode()) {
 				return
 			}
 
@@ -140,7 +140,7 @@ async function processFile(
 					? node.getName()
 					: undefined
 
-			if (name && options.ignoreNames.includes(name)) {
+			if (name && options.ignoreFunctions.includes(name)) {
 				return
 			}
 
@@ -224,23 +224,23 @@ async function processFile(
 			}
 
 			// Reset the return type so we get the inferred type
-			if (options.overwriteExistingReturnTypes) node.setReturnType('')
+			if (options.overwrite) node.setReturnType('')
 
 			const type = node.getReturnType()
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
 
 			// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
-			if (options.ignoreAnonymousObjectTypes && typeText.startsWith('{')) {
+			if (options.ignoreAnonymousObjects && typeText.startsWith('{')) {
 				return
 			}
 
-			// ignoreAnyType: ignore functions that return the any type
-			if (options.ignoreAnyType && type.isAny()) {
+			// ignoreAny: ignore functions that return the any type
+			if (options.ignoreAny && type.isAny()) {
 				return
 			}
 
-			// ignoreUnknownType: ignore functions that return the unknown type
-			if (options.ignoreUnknownType && type.isUnknown()) {
+			// ignoreAny: ignore functions that return the unknown type
+			if (options.ignoreUnknown && type.isUnknown()) {
 				return
 			}
 

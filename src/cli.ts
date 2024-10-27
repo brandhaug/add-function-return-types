@@ -12,7 +12,7 @@ export async function main(): Promise<void> {
 		.argument('[path]', 'Path to the directory or file to process (optional)')
 		.option('--shallow', 'Process only the top-level directory')
 		.option(
-			'--ignore <patterns>',
+			'--ignore-files <patterns>',
 			'Comma-separated list of file patterns to ignore'
 		)
 		.option(
@@ -21,6 +21,7 @@ export async function main(): Promise<void> {
 			(value): number => Number.parseInt(value, 10),
 			10
 		)
+		.option('--overwrite', 'Overwrite existing return types')
 		.option(
 			'--ignore-concise-arrow-function-expressions-starting-with-void',
 			'Ignore arrow functions that start with the `void` keyword.'
@@ -46,22 +47,15 @@ export async function main(): Promise<void> {
 			'Ignore immediately invoked function expressions (IIFEs)'
 		)
 		.option(
-			'--ignore-names <names>',
+			'--ignore-functions <names>',
 			'Comma-separated list of function/method names to ignore'
 		)
 		.option(
-			'--overwrite-existing-return-types',
-			'Overwrite existing return types'
-		)
-		.option(
-			'--ignore-anonymous-object-types',
+			'--ignore-anonymous-objects',
 			'Ignore functions that return anonymous object types'
 		)
-		.option('--ignore-any-type', 'Ignore functions that return the any type')
-		.option(
-			'--ignore-unknown-type',
-			'Ignore functions that return the unknown type'
-		)
+		.option('--ignore-any', 'Ignore functions that return the any type')
+		.option('--ignore-unknown', 'Ignore functions that return the unknown type')
 
 	program.parse(process.argv)
 
@@ -69,10 +63,9 @@ export async function main(): Promise<void> {
 
 	const options = program.opts()
 	const shallow = options.shallow || false
-	const ignorePatterns = options.ignore ? options.ignore.split(',') : []
+	const ignoreFiles = options.ignoreFiles ? options.ignoreFiles.split(',') : []
 	const concurrencyLimit = options.concurrency
-	const overwriteExistingReturnTypes =
-		options.overwriteExistingReturnTypes || false
+	const overwrite = options.overwrite || false
 	const ignoreConciseArrowFunctionExpressionsStartingWithVoid =
 		options.ignoreConciseArrowFunctionExpressionsStartingWithVoid || false
 	const ignoreExpressions = options.ignoreExpressions || false
@@ -82,26 +75,28 @@ export async function main(): Promise<void> {
 	const ignoreTypedFunctionExpressions =
 		options.ignoreTypedFunctionExpressions || false
 	const ignoreIIFEs = options.ignoreIifes || false
-	const ignoreNames = options.ignoreNames ? options.ignoreNames.split(',') : []
-	const ignoreAnonymousObjectTypes = options.ignoreAnonymousObjectTypes || false
-	const ignoreAnyType = options.ignoreAnyType || false
-	const ignoreUnknownType = options.ignoreUnknownType || false
+	const ignoreFunctions = options.ignoreFunctions
+		? options.ignoreFunctions.split(',')
+		: []
+	const ignoreAnonymousObjects = options.ignoreAnonymousObjects || false
+	const ignoreAny = options.ignoreAny || false
+	const ignoreUnknown = options.ignoreUnknown || false
 
 	await addFunctionReturnTypes({
 		path,
 		shallow,
-		ignorePatterns,
+		ignoreFiles,
 		concurrencyLimit,
-		overwriteExistingReturnTypes,
+		overwrite: overwrite,
 		ignoreConciseArrowFunctionExpressionsStartingWithVoid,
 		ignoreExpressions,
 		ignoreFunctionsWithoutTypeParameters,
 		ignoreHigherOrderFunctions,
 		ignoreTypedFunctionExpressions,
 		ignoreIIFEs,
-		ignoreNames,
-		ignoreAnonymousObjectTypes,
-		ignoreAnyType,
-		ignoreUnknownType
+		ignoreFunctions,
+		ignoreAnonymousObjects,
+		ignoreAny,
+		ignoreUnknown
 	})
 }
