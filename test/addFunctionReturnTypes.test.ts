@@ -16,7 +16,6 @@ describe.concurrent('add-function-return-types', (): void => {
 		path: '.',
 		shallow: false,
 		ignoreFiles: [],
-		concurrencyLimit: 10,
 		ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 		ignoreExpressions: false,
 		ignoreFunctionsWithoutTypeParameters: false,

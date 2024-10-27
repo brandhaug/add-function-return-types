@@ -46,14 +46,10 @@ By default, the tool:
 - `--ignore-any`: Ignore functions that return the any type.
 - `--ignore-unknown`: Ignore functions that return the unknown type.
 
-### Performance
-
-- `--concurrency <number>`: Concurrency limit for processing files (default: 10)
-
 ## Example
 
 ```bash
-add-function-return-types --ignore-files "src/generated/**,tests/**" --concurrency 20
+add-function-return-types --ignore-files "src/generated/**,tests/**" --ignore-functions "map,filter"
 ```
 
 ## Contributing

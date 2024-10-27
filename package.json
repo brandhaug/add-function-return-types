@@ -1,6 +1,6 @@
 {
 	"name": "add-function-return-types",
-	"version": "3.0.1",
+	"version": "3.1.0",
 	"description": "A CLI tool to add explicit return types to TypeScript functions",
 	"files": ["dist/"],
 	"main": "./dist/index.js",
@@ -36,7 +36,6 @@
 	"dependencies": {
 		"commander": "12.1.0",
 		"fast-glob": "3.3.2",
-		"p-limit": "6.1.0",
 		"ts-morph": "24.0.0"
 	},
 	"devDependencies": {

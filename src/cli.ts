@@ -15,12 +15,6 @@ export async function main(): Promise<void> {
 			'--ignore-files <patterns>',
 			'Comma-separated list of file patterns to ignore'
 		)
-		.option(
-			'--concurrency <number>',
-			'Concurrency limit for processing files',
-			(value): number => Number.parseInt(value, 10),
-			10
-		)
 		.option('--overwrite', 'Overwrite existing return types')
 		.option(
 			'--ignore-concise-arrow-function-expressions-starting-with-void',
@@ -64,7 +58,6 @@ export async function main(): Promise<void> {
 	const options = program.opts()
 	const shallow = options.shallow || false
 	const ignoreFiles = options.ignoreFiles ? options.ignoreFiles.split(',') : []
-	const concurrencyLimit = options.concurrency
 	const overwrite = options.overwrite || false
 	const ignoreConciseArrowFunctionExpressionsStartingWithVoid =
 		options.ignoreConciseArrowFunctionExpressionsStartingWithVoid || false
@@ -86,7 +79,6 @@ export async function main(): Promise<void> {
 		path,
 		shallow,
 		ignoreFiles,
-		concurrencyLimit,
 		overwrite: overwrite,
 		ignoreConciseArrowFunctionExpressionsStartingWithVoid,
 		ignoreExpressions,

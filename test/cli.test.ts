@@ -35,7 +35,6 @@ describe.concurrent('cli', (): void => {
 			path: '.',
 			shallow: false,
 			ignoreFiles: [],
-			concurrencyLimit: 10,
 			overwrite: false,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 			ignoreExpressions: false,
@@ -61,7 +60,6 @@ describe.concurrent('cli', (): void => {
 			'src',
 			'--shallow',
 			'--ignore-files=**/*.test.ts,**/node_modules/**',
-			'--concurrency=5',
 			'--overwrite',
 			'--ignore-concise-arrow-function-expressions-starting-with-void',
 			'--ignore-expressions',
@@ -82,7 +80,6 @@ describe.concurrent('cli', (): void => {
 			path: 'src',
 			shallow: true,
 			ignoreFiles: ['**/*.test.ts', '**/node_modules/**'],
-			concurrencyLimit: 5,
 			overwrite: true,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: true,
 			ignoreExpressions: true,
@@ -102,12 +99,7 @@ describe.concurrent('cli', (): void => {
 
 	it('should handle partial arguments correctly', async (): Promise<void> => {
 		// Define a subset of command-line arguments
-		process.argv = [
-			'node',
-			'cli.js',
-			'--ignore-files=**/*.spec.ts',
-			'--concurrency=20'
-		]
+		process.argv = ['node', 'cli.js', '--ignore-files=**/*.spec.ts']
 
 		// Call the main function
 		await main()
@@ -116,7 +108,6 @@ describe.concurrent('cli', (): void => {
 			path: '.',
 			shallow: false,
 			ignoreFiles: ['**/*.spec.ts'],
-			concurrencyLimit: 20,
 			overwrite: false,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 			ignoreExpressions: false,

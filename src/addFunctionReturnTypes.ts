@@ -1,13 +1,11 @@
 import path from 'node:path'
 import fg from 'fast-glob'
-import pLimit from 'p-limit'
 import { ModuleKind, Node, Project, ScriptTarget, ts } from 'ts-morph'
 
 export type Options = {
 	path: string
 	shallow: boolean
 	ignoreFiles: string[]
-	concurrencyLimit: number
 	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
 	ignoreExpressions: boolean
 	ignoreFunctionsWithoutTypeParameters: boolean
@@ -26,6 +24,7 @@ export type Options = {
  * @param options - The options object.
  */
 export async function addFunctionReturnTypes(options: Options): Promise<void> {
+	const startTime = Date.now()
 	console.info('Starting process to analyze TypeScript files')
 	const pathToProcess = path.resolve(options.path)
 
@@ -46,29 +45,23 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		skipAddingFilesFromTsConfig: true
 	})
 
-	// Limit concurrency to prevent overwhelming the system
-	const limit = pLimit(options.concurrencyLimit)
-
 	const totalFiles = allFiles.length
-	let processedFiles = 0
 
-	await Promise.all(
-		allFiles.map(
-			(file): Promise<void> =>
-				limit(async (): Promise<void> => {
-					try {
-						const message = await processFile(project, file, options)
-						processedFiles++
-						console.info(`${processedFiles}/${totalFiles}: ${message}`)
-					} catch (error) {
-						console.error(`Error processing file ${file}:`, error)
-						process.exit(1)
-					}
-				})
-		)
+	for (const [index, file] of allFiles.entries()) {
+		try {
+			const message = await processFile(project, file, options)
+			console.info(`${index + 1}/${totalFiles}: ${message}`)
+		} catch (error) {
+			console.error(`Error processing file ${file}:`, error)
+			process.exit(1)
+		}
+	}
+
+	const endTime = Date.now()
+	console.info(
+		'Processing complete after %d seconds',
+		(endTime - startTime) / 1000
 	)
-
-	console.info('Processing complete.')
 }
 
 /**
