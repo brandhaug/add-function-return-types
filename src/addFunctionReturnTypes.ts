@@ -53,17 +53,18 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	let processedFiles = 0
 
 	await Promise.all(
-		allFiles.map((file) =>
-			limit(async (): Promise<void> => {
-				try {
-					const message = await processFile(project, file, options)
-					processedFiles++
-					console.info(`${processedFiles}/${totalFiles}: ${message}`)
-				} catch (error) {
-					console.error(`Error processing file ${file}:`, error)
-					process.exit(1)
-				}
-			})
+		allFiles.map(
+			(file): Promise<void> =>
+				limit(async (): Promise<void> => {
+					try {
+						const message = await processFile(project, file, options)
+						processedFiles++
+						console.info(`${processedFiles}/${totalFiles}: ${message}`)
+					} catch (error) {
+						console.error(`Error processing file ${file}:`, error)
+						process.exit(1)
+					}
+				})
 		)
 	)
 
