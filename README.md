@@ -38,11 +38,13 @@ By default, the tool:
 - `--ignore-iifes`: Ignore immediately-invoked function expressions.
 - `--ignore-names <names>`: Comma-separated list of function or method names to ignore during processing (e.g., `--ignore-names "getData,processItem"`).
 - `--ignore-anonymous-object-types`: Ignore functions that return anonymous object types.
+- `--ignore-any-type`: Ignore functions that return the any type.
+- `--ignore-unknown-type`: Ignore functions that return the unknown type.
 
 ## Example
 
 ```bash
-add-function-return-types --ignore "src/generated/**,tests/**" --concurrency 20
+add-function-return-types --ignore "src/generated/**,tests/**" --concurrency 20 --ignore-unknown-type
 ```
 
 ## Contributing

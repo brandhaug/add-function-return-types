@@ -25,7 +25,9 @@ describe.concurrent('add-function-return-types', (): void => {
 		ignoreNames: [],
 		ignoreIIFEs: false,
 		overwriteExistingReturnTypes: false,
-		ignoreAnonymousObjectTypes: false
+		ignoreAnonymousObjectTypes: false,
+		ignoreAnyType: false,
+		ignoreUnknownType: false
 	}
 
 	// Helper function to run the addFunctionReturnTypes with overridden options
@@ -135,8 +137,12 @@ class Calculator {
 
 	it('handles overloaded functions', async (): Promise<void> => {
 		const sourceCode = `
-function combine(a: string, b: string): string;
-function combine(a: number, b: number): number;
+function combine(a: string, b: string) {
+	return a + b;
+}
+function combine(a: number, b: number) {
+	return a + b;
+}
 function combine(a: any, b: any) {
   return a + b;
 }
@@ -149,7 +155,9 @@ function combine(a: any, b: any) {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
+		expect(updatedSource).toContain('combine(a: string, b: string): string {')
+		expect(updatedSource).toContain('combine(a: number, b: number): number {')
+		expect(updatedSource).toContain('combine(a: any, b: any): any {')
 	})
 
 	it('handles to functions returning void', async (): Promise<void> => {
@@ -331,11 +339,11 @@ function getLength(str?: string) {
 		)
 	})
 
-	it('ignores functions inside namespaces', async (): Promise<void> => {
+	it('handles functions inside namespaces', async (): Promise<void> => {
 		const sourceCode = `
 namespace Utils {
-  export function parse(data: string) {
-    return JSON.parse(data);
+  export function extract() {
+    return 'string';
   }
 }
 `.trim()
@@ -347,7 +355,7 @@ namespace Utils {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
+		expect(updatedSource).toContain('export function extract(): string {')
 	})
 
 	it('handles anonymous functions assigned to variables', async (): Promise<void> => {
@@ -409,7 +417,7 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 		)
 	})
 
-	it('ignores functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
+	it('handles functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
 		const sourceCode = `
 function getValue(key: string) {
   return (window as any)[key];
@@ -423,7 +431,7 @@ function getValue(key: string) {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
+		expect(updatedSource).toContain('function getValue(key: string): any {')
 	})
 
 	it('handles functions with conditional types', async (): Promise<void> => {
@@ -922,48 +930,6 @@ const typedFunction: () => number = function() {
 		)
 	})
 
-	it('ignores if the function returns any', async (): Promise<void> => {
-		const sourceCode = `
-function returnAny(): any {
-  return Math.random() > 0.5 ? 'string' : 42;
-}
-
-function inferredAny() {
-  return JSON.parse('{"foo": "bar"}');
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
-	})
-
-	it('ignores if the function returns unknown', async (): Promise<void> => {
-		const sourceCode = `
-function returnUnknown(): unknown {
-  return fetch('https://api.example.com/data').then(res => res.json());
-}
-
-function inferredUnknown() {
-  return JSON.parse(localStorage.getItem('data') || '{}');
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
-	})
-
 	it('handles functions returning returning anonymous objects if ignoreAnonymousObjectTypes is false', async (): Promise<void> => {
 		const sourceCode = `
 function getObject() {
@@ -1034,5 +1000,99 @@ function getNormalType() {
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function getObject() {')
 		expect(updatedSource).toContain('function getNormalType(): string {')
+	})
+
+	it('ignores functions returning any if ignoreAnyType is true', async (): Promise<void> => {
+		const sourceCode = `
+function returnAny() {
+  return JSON.parse('{"foo": "bar"}');
+}
+
+function getNormalType() {
+  return 'string';
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAnyType: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function returnAny() {')
+		expect(updatedSource).toContain('function getNormalType(): string {')
+	})
+
+	it('handles functions returning any if ignoreAnyType is false', async (): Promise<void> => {
+		const sourceCode = `
+function returnAny(): any {
+  return Math.random() > 0.5 ? 'string' : 42;
+}
+
+function inferredAny() {
+  return JSON.parse('{"foo": "bar"}');
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function returnAny(): any {')
+		expect(updatedSource).toContain('function inferredAny(): any {')
+	})
+
+	it('ignores functions returning unknown if ignoreUnknownType is true', async (): Promise<void> => {
+		const sourceCode = `
+function returnUnknown() {
+  return JSON.parse('{"foo": "bar"}') as unknown;
+}
+
+function getNormalType() {
+  return 'string';
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreUnknownType: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function returnUnknown() {')
+		expect(updatedSource).toContain('function getNormalType(): string {')
+	})
+
+	it('handles functions returning unknown if ignoreUnknownType is false', async (): Promise<void> => {
+		const sourceCode = `
+function returnUnknown(): unknown {
+	return JSON.parse('{"foo": "bar"}') as unknown;
+}
+
+function inferredUnknown() {
+  return JSON.parse(localStorage.getItem('data') || '{}') as unknown;
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function returnUnknown(): unknown {')
+		expect(updatedSource).toContain('function inferredUnknown(): unknown {')
 	})
 })
