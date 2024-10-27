@@ -15,10 +15,16 @@ export async function main(): Promise<void> {
 			'--ignore-files <patterns>',
 			'Comma-separated list of file patterns to ignore'
 		)
-		.option('--overwrite', 'Overwrite existing return types')
 		.option(
-			'--ignore-concise-arrow-function-expressions-starting-with-void',
-			'Ignore arrow functions that start with the `void` keyword.'
+			'--ignore-functions <names>',
+			'Comma-separated list of function/method names to ignore'
+		)
+		.option('--overwrite', 'Overwrite existing return types')
+		.option('--ignore-any', 'Ignore functions that return the any type')
+		.option('--ignore-unknown', 'Ignore functions that return the unknown type')
+		.option(
+			'--ignore-anonymous-objects',
+			'Ignore functions that return anonymous object types'
 		)
 		.option(
 			'--ignore-expressions',
@@ -41,15 +47,9 @@ export async function main(): Promise<void> {
 			'Ignore immediately invoked function expressions (IIFEs)'
 		)
 		.option(
-			'--ignore-functions <names>',
-			'Comma-separated list of function/method names to ignore'
+			'--ignore-concise-arrow-function-expressions-starting-with-void',
+			'Ignore arrow functions that start with the `void` keyword.'
 		)
-		.option(
-			'--ignore-anonymous-objects',
-			'Ignore functions that return anonymous object types'
-		)
-		.option('--ignore-any', 'Ignore functions that return the any type')
-		.option('--ignore-unknown', 'Ignore functions that return the unknown type')
 
 	program.parse(process.argv)
 
