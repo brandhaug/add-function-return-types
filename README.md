@@ -37,6 +37,7 @@ By default, the tool:
 - `--ignore-typed-function-expressions`: Ignore function expressions that already have type annotations on the variable.
 - `--ignore-iifes`: Ignore immediately-invoked function expressions.
 - `--ignore-names <names>`: Comma-separated list of function or method names to ignore during processing (e.g., `--ignore-names "getData,processItem"`).
+- `--ignore-anonymous-object-types`: Ignore functions that return anonymous object types.
 
 ## Example
 

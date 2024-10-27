@@ -53,6 +53,10 @@ export async function main(): Promise<void> {
 			'--overwrite-existing-return-types',
 			'Overwrite existing return types'
 		)
+		.option(
+			'--ignore-anonymous-object-types',
+			'Ignore functions that return anonymous object types'
+		)
 
 	program.parse(process.argv)
 
@@ -74,6 +78,7 @@ export async function main(): Promise<void> {
 		options.ignoreTypedFunctionExpressions || false
 	const ignoreIIFEs = options.ignoreIifes || false
 	const ignoreNames = options.ignoreNames ? options.ignoreNames.split(',') : []
+	const ignoreAnonymousObjectTypes = options.ignoreAnonymousObjectTypes || false
 
 	await addFunctionReturnTypes({
 		path,
@@ -87,6 +92,7 @@ export async function main(): Promise<void> {
 		ignoreHigherOrderFunctions,
 		ignoreTypedFunctionExpressions,
 		ignoreIIFEs,
-		ignoreNames
+		ignoreNames,
+		ignoreAnonymousObjectTypes
 	})
 }

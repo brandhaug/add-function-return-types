@@ -16,6 +16,7 @@ export type Options = {
 	ignoreTypedFunctionExpressions: boolean
 	ignoreNames: string[]
 	overwriteExistingReturnTypes: boolean
+	ignoreAnonymousObjectTypes: boolean
 }
 
 /**
@@ -225,8 +226,13 @@ async function processFile(
 			const type = node.getReturnType()
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
 
+			// Add this check before setting the return type
+			if (options.ignoreAnonymousObjectTypes && typeText.startsWith('{')) {
+				return
+			}
+
 			// Avoid any, unknown, and anonymous object types
-			if (type.isAny() || type.isUnknown() || typeText.includes('{')) {
+			if (type.isAny() || type.isUnknown()) {
 				return
 			}
 

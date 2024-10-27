@@ -24,7 +24,8 @@ describe.concurrent('add-function-return-types', (): void => {
 		ignoreTypedFunctionExpressions: false,
 		ignoreNames: [],
 		ignoreIIFEs: false,
-		overwriteExistingReturnTypes: false
+		overwriteExistingReturnTypes: false,
+		ignoreAnonymousObjectTypes: false
 	}
 
 	// Helper function to run the addFunctionReturnTypes with overridden options
@@ -963,14 +964,14 @@ function inferredUnknown() {
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('ignores functions returning returning anonymous objects', async (): Promise<void> => {
+	it('handles functions returning returning anonymous objects if ignoreAnonymousObjectTypes is false', async (): Promise<void> => {
 		const sourceCode = `
-function returnObject(): object {
-  return { foo: 'bar' };
+function getObject() {
+  return { foo: 'bar', baz: 42 };
 }
 
-function inferredObject() {
-  return { baz: 42 };
+function getNormalType() {
+  return 'string';
 }
 `.trim()
 
@@ -981,7 +982,10 @@ function inferredObject() {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
+		expect(updatedSource).toContain(
+			'function getObject(): { foo: string; baz: number; } {'
+		)
+		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
 	it('handles functions returning a defined object type', async (): Promise<void> => {
@@ -1005,5 +1009,30 @@ return user;
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function getUser(): User {')
+	})
+
+	it('ignores functions returning anonymous object types if ignoreAnonymousObjectTypes is true', async (): Promise<void> => {
+		const sourceCode = `
+function getObject() {
+  return { foo: 'bar', baz: 42 };
+}
+
+function getNormalType() {
+  return 'string';
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAnonymousObjectTypes: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function getObject() {')
+		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 })
