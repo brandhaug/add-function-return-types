@@ -225,7 +225,7 @@ async function processFile(
 			const type = node.getReturnType()
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
 
-			// Avoid any, unknown, and object types
+			// Avoid any, unknown, and anonymous object types
 			if (type.isAny() || type.isUnknown() || typeText.includes('{')) {
 				return
 			}

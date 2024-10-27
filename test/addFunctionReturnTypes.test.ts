@@ -12,12 +12,11 @@ describe.concurrent('add-function-return-types', (): void => {
 	// Use RUNNER_TEMP if available to avoid access errors in GHA
 	const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
 
-	// Define default options
 	const defaultOptions: Options = {
 		path: '.',
 		shallow: false,
 		ignorePatterns: [],
-		concurrencyLimit: 10, // Assuming 10 as a reasonable default
+		concurrencyLimit: 5,
 		ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
 		ignoreExpressions: false,
 		ignoreFunctionsWithoutTypeParameters: false,
@@ -36,7 +35,7 @@ describe.concurrent('add-function-return-types', (): void => {
 		await addFunctionReturnTypes(options)
 	}
 
-	it('handles to functions without explicit return types', async (): Promise<void> => {
+	it('handles functions without explicit return types', async (): Promise<void> => {
 		const sourceCode = `
 function greet(name: string) {
   return 'Hello, ' + name;
@@ -56,23 +55,6 @@ const getNumber = () => {
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function greet(name: string): string {')
 		expect(updatedSource).toContain('const getNumber = (): number =>')
-	})
-
-	it('does not modify functions with explicit return types', async (): Promise<void> => {
-		const sourceCode = `
-function sum(a: number, b: number): number {
-  return a + b;
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
 	})
 
 	it('handles arrow functions correctly', async (): Promise<void> => {
@@ -114,7 +96,7 @@ async function fetchData(url: string) {
 		)
 	})
 
-	it('does not modify constructors', async (): Promise<void> => {
+	it('ignores constructors', async (): Promise<void> => {
 		const sourceCode = `
 class Person {
   constructor(public name: string) {}
@@ -150,60 +132,7 @@ class Calculator {
 		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
 
-	it('skips functions returning any or unknown types', async (): Promise<void> => {
-		const sourceCode = `
-function parseData(data: string) {
-  return JSON.parse(data);
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		// Assuming the script does not add return types for functions returning any or unknown
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
-	})
-
-	it('does not modify functions with existing return types', async (): Promise<void> => {
-		const sourceCode = `
-function getUser(): { name: string; age: number } {
-  return { name: 'Alice', age: 30 };
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
-	})
-
-	it('handles functions returning anonymous objects', async (): Promise<void> => {
-		const sourceCode = `
-function createUser(name: string, age: number) {
-  return { name, age };
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		// Assuming the script does not add return types for anonymous objects
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toBe(sourceCode)
-	})
-
-	it('handles overloaded functions correctly', async (): Promise<void> => {
+	it('handles overloaded functions', async (): Promise<void> => {
 		const sourceCode = `
 function combine(a: string, b: string): string;
 function combine(a: number, b: number): number;
@@ -218,7 +147,6 @@ function combine(a: any, b: any) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		// Assuming the script does not modify overloaded functions
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
@@ -402,7 +330,7 @@ function getLength(str?: string) {
 		)
 	})
 
-	it('does not modify functions inside namespaces', async (): Promise<void> => {
+	it('ignores functions inside namespaces', async (): Promise<void> => {
 		const sourceCode = `
 namespace Utils {
   export function parse(data: string) {
@@ -417,7 +345,6 @@ namespace Utils {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		// Assuming the script does not handle functions inside namespaces
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
@@ -481,7 +408,7 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 		)
 	})
 
-	it('does not modify functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
+	it('ignores functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
 		const sourceCode = `
 function getValue(key: string) {
   return (window as any)[key];
@@ -494,7 +421,6 @@ function getValue(key: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		// Should not modify because return type is any
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
@@ -512,7 +438,6 @@ function isType<T>(value: any): value is T {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		// Should not modify because return type is already specified
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toBe(sourceCode)
 	})
@@ -557,7 +482,7 @@ function toNumber(value: string) {
 		)
 	})
 
-	it('handles array item types', async (): Promise<void> => {
+	it('handles function returning an array item', async (): Promise<void> => {
 		const sourceCode = `
 function firstItem(values: string[]) {
   return values[0];
@@ -576,8 +501,7 @@ function firstItem(values: string[]) {
 		)
 	})
 
-	it('handles shallow option', async (): Promise<void> => {
-		// Create files in the top-level directory and in a subdirectory
+	it('ignores sub directories if shallow is true', async (): Promise<void> => {
 		const topLevelFile = `
 function topLevelFunction() {
   return 'Top Level';
@@ -601,24 +525,19 @@ function subDirFunction() {
 		const subDirFilePath = path.join(subDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(subDirFilePath, subDirFile)
 
-		// Run the function with shallow option
 		await runAddFunctionReturnTypes({ path: testDir, shallow: true })
 
-		// Read the files back
 		const updatedTopLevelFile = await fs.readFile(topLevelFilePath, 'utf-8')
 		const updatedSubDirFile = await fs.readFile(subDirFilePath, 'utf-8')
 
-		// Check that the top-level file was modified
 		expect(updatedTopLevelFile).toContain(
 			'function topLevelFunction(): string {'
 		)
 
-		// Check that the subdirectory file was not modified
 		expect(updatedSubDirFile).toBe(subDirFile)
 	})
 
-	it('handles ignorePatterns option', async (): Promise<void> => {
-		// Create files
+	it('ignores files matching ignorePatterns', async (): Promise<void> => {
 		const fileToProcess = `
 function shouldBeProcessed() {
   return 1;
@@ -631,7 +550,6 @@ function shouldBeIgnored() {
 }
 `.trim()
 
-		// Write the files
 		const testDir = await fs.mkdtemp(tmpDir)
 		const processFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(processFilePath, fileToProcess)
@@ -640,26 +558,22 @@ function shouldBeIgnored() {
 		const ignoreFilePath = path.join(testDir, ignoreFileName)
 		await fs.writeFile(ignoreFilePath, fileToIgnore)
 
-		// Run the function with ignorePatterns option
 		await runAddFunctionReturnTypes({
 			path: testDir,
 			ignorePatterns: [ignoreFileName]
 		})
 
-		// Read the files back
 		const updatedProcessFile = await fs.readFile(processFilePath, 'utf-8')
 		const updatedIgnoreFile = await fs.readFile(ignoreFilePath, 'utf-8')
 
-		// Check that the file to process was modified
 		expect(updatedProcessFile).toContain(
 			'function shouldBeProcessed(): number {'
 		)
 
-		// Check that the ignored file was not modified
 		expect(updatedIgnoreFile).toBe(fileToIgnore)
 	})
 
-	it('ignores function expressions when ignoreExpressions is true', async (): Promise<void> => {
+	it('ignores function expressions if ignoreExpressions is true', async (): Promise<void> => {
 		const sourceCode = `
 const myFunction = function() {
   return 42;
@@ -677,11 +591,10 @@ const myArrowFunction = () => {
 		await runAddFunctionReturnTypes({ path: testDir, ignoreExpressions: true })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		// Should not have added return types
 		expect(updatedSource).toBe(sourceCode)
 	})
 
-	it('ignores functions without type parameters when ignoreFunctionsWithoutTypeParameters is true', async (): Promise<void> => {
+	it('ignores functions without type parameters if ignoreFunctionsWithoutTypeParameters is true', async (): Promise<void> => {
 		const sourceCode = `
 function noTypeParams() {
   return 'hello';
@@ -702,8 +615,8 @@ function withTypeParams<T>() {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function noTypeParams() {') // Should not have return type added
-		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
+		expect(updatedSource).toContain('function noTypeParams() {')
+		expect(updatedSource).toContain('function withTypeParams<T>(): string {')
 	})
 
 	it('ignores functions with names in ignoreNames', async (): Promise<void> => {
@@ -727,11 +640,11 @@ function notAllowedFunction() {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function allowedFunction() {') // Should not have return type added
-		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
+		expect(updatedSource).toContain('function allowedFunction() {')
+		expect(updatedSource).toContain('function notAllowedFunction(): number {')
 	})
 
-	it('ignores higher order functions when ignoreHigherOrderFunctions is true', async (): Promise<void> => {
+	it('ignores higher order functions if ignoreHigherOrderFunctions is true', async (): Promise<void> => {
 		const sourceCode = `
 function higherOrder() {
   return function() {
@@ -754,11 +667,11 @@ function normalFunction() {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function higherOrder() {') // Should not have return type added
-		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
+		expect(updatedSource).toContain('function higherOrder() {')
+		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
 
-	it('ignores typed function expressions when ignoreTypedFunctionExpressions is true', async (): Promise<void> => {
+	it('ignores typed function expressions if ignoreTypedFunctionExpressions is true', async (): Promise<void> => {
 		const sourceCode = `
 const typedFunction: () => number = function() {
   return 42;
@@ -779,17 +692,15 @@ const untypedFunction = function() {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		// typedFunction should not have return type added
 		expect(updatedSource).toContain(
 			'const typedFunction: () => number = function() {'
 		)
-		// untypedFunction should have return type added
 		expect(updatedSource).toContain(
 			'const untypedFunction = function(): number {'
 		)
 	})
 
-	it('ignores concise arrow functions starting with void when ignoreConciseArrowFunctionExpressionsStartingWithVoid is true', async (): Promise<void> => {
+	it('ignores concise arrow functions starting with void if ignoreConciseArrowFunctionExpressionsStartingWithVoid is true', async (): Promise<void> => {
 		const sourceCode = `
 const arrowVoid = () => void doSomething();
 const arrowNormal = () => 42;
@@ -805,15 +716,13 @@ const arrowNormal = () => 42;
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		// arrowVoid should not have return type added
 		expect(updatedSource).toContain(
 			'const arrowVoid = () => void doSomething();'
 		)
-		// arrowNormal should have return type added
 		expect(updatedSource).toContain('const arrowNormal = (): number => 42;')
 	})
 
-	it('overwrites existing return types when overwriteExistingReturnTypes is true', async (): Promise<void> => {
+	it('handles functions with existing return types if overwriteExistingReturnTypes is true', async (): Promise<void> => {
 		// Source code with an incorrect existing return type
 		const sourceCode = `
 function greet(name: string): number {
@@ -821,52 +730,41 @@ function greet(name: string): number {
 }
 `.trim()
 
-		// Write the source code to a temporary file
 		const testDir = await fs.mkdtemp(tmpDir)
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		// Run the function with overwriteExistingReturnTypes option
 		await runAddFunctionReturnTypes({
 			path: testDir,
 			overwriteExistingReturnTypes: true
 		})
 
-		// Read the updated source code
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 
-		// Check that the incorrect return type has been corrected
 		expect(updatedSource).toContain('function greet(name: string): string {')
 	})
 
-	it('ignores functions with correct existing return types when overwriteExistingReturnTypes is true', async (): Promise<void> => {
-		// Source code with correct existing return types
+	it('ignores existing return types if overwriteExistingReturnTypes is false', async (): Promise<void> => {
+		// Source code with an incorrect existing return type
 		const sourceCode = `
-function sum(a: number, b: number): number {
-  return a + b;
+function greet(name: string): number {
+  return 'Hello, ' + name;
 }
 `.trim()
 
-		// Write the source code to a temporary file
 		const testDir = await fs.mkdtemp(tmpDir)
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		// Run the function with overwriteExistingReturnTypes option
 		await runAddFunctionReturnTypes({
-			path: testDir,
-			overwriteExistingReturnTypes: true
+			path: testDir
 		})
 
-		// Read the updated source code
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-
-		// Check that the function remains unchanged
-		expect(updatedSource).toBe(sourceCode)
+		expect(updatedSource).toContain('function greet(name: string): number {')
 	})
 
-	// Additional tests where options are not used
-	it('adds return types when ignoreExpressions is not used', async (): Promise<void> => {
+	it('handles expressions if ignoreExpressions is false', async (): Promise<void> => {
 		const sourceCode = `
 const myFunction = function() {
   return 42;
@@ -884,12 +782,11 @@ const myArrowFunction = () => {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		// Should have added return types
 		expect(updatedSource).toContain('const myFunction = function(): number {')
 		expect(updatedSource).toContain('const myArrowFunction = (): number =>')
 	})
 
-	it('adds return types when ignoreFunctionsWithoutTypeParameters is not used', async (): Promise<void> => {
+	it('handles functions without type parameters if ignoreFunctionsWithoutTypeParameters is false', async (): Promise<void> => {
 		const sourceCode = `
 function noTypeParams() {
   return 'hello';
@@ -907,33 +804,11 @@ function withTypeParams<T>() {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function noTypeParams(): string {') // Should have return type added
-		expect(updatedSource).toContain('function withTypeParams<T>(): string {') // Should have return type added
+		expect(updatedSource).toContain('function noTypeParams(): string {')
+		expect(updatedSource).toContain('function withTypeParams<T>(): string {')
 	})
 
-	it('adds return types when ignoreNames is not used', async (): Promise<void> => {
-		const sourceCode = `
-function allowedFunction() {
-  return 1;
-}
-
-function notAllowedFunction() {
-  return 2;
-}
-`.trim()
-
-		const testDir = await fs.mkdtemp(tmpDir)
-		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
-		await fs.writeFile(filePath, sourceCode)
-
-		await runAddFunctionReturnTypes({ path: testDir })
-
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function allowedFunction(): number {') // Should have return type added
-		expect(updatedSource).toContain('function notAllowedFunction(): number {') // Should have return type added
-	})
-
-	it('adds return types when ignoreHigherOrderFunctions is not used', async (): Promise<void> => {
+	it('handles higher order functions if ignoreHigherOrderFunctions is false', async (): Promise<void> => {
 		const sourceCode = `
 function higherOrder() {
   return function() {
@@ -953,11 +828,11 @@ function normalFunction() {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function higherOrder(): () => number {') // Should have return type added
-		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
+		expect(updatedSource).toContain('function higherOrder(): () => number {')
+		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
 
-	it('adds return types when ignoreTypedFunctionExpressions is not used', async (): Promise<void> => {
+	it('handles typed function expressions if ignoreTypedFunctionExpressions is false', async (): Promise<void> => {
 		const sourceCode = `
 const typedFunction: () => number = function() {
   return 42;
@@ -971,13 +846,12 @@ const typedFunction: () => number = function() {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		// typedFunction should have return type added
 		expect(updatedSource).toContain(
 			'const typedFunction: () => number = function(): number {'
 		)
 	})
 
-	it('handles IIFEs when ignoreIIFEs is not used', async (): Promise<void> => {
+	it('handles IIFEs if ignoreIIFEs is false', async (): Promise<void> => {
 		const sourceCode = `
 		(function() {
 			return 42;
@@ -991,10 +865,10 @@ const typedFunction: () => number = function() {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('(function(): number {') // Should have return type added
+		expect(updatedSource).toContain('(function(): number {')
 	})
 
-	it('ignores IIFEs when ignoreIIFEs is true', async (): Promise<void> => {
+	it('ignores IIFEs if ignoreIIFEs is true', async (): Promise<void> => {
 		const sourceCode = `
 	  (function() {
 		return 42;
@@ -1015,13 +889,13 @@ const typedFunction: () => number = function() {
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('(function() {') // Should not have return type added
-		expect(updatedSource).toContain('function normalFunction(): number {') // Should have return type added
+		expect(updatedSource).toContain('(function() {')
+		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
 
-	it('should not overwrite return type when overwriteExistingReturnTypes is true with ignoreHigherOrderFunctions o', async (): Promise<void> => {
+	it('ignores return type if overwriteExistingReturnTypes is true and ignoreHigherOrderFunctions is true', async (): Promise<void> => {
 		const sourceCode = `
-			function higherOrder(callback: () => number): number {
+			function higherOrder(callback: () => number): number | null {
 				return callback();
 			}
 		`
@@ -1043,7 +917,93 @@ const typedFunction: () => number = function() {
 		})
 
 		expect(updatedSource).toContain(
-			'function higherOrder(callback: () => number): number {'
+			'function higherOrder(callback: () => number): number | null {'
 		)
+	})
+
+	it('ignores if the function returns any', async (): Promise<void> => {
+		const sourceCode = `
+function returnAny(): any {
+  return Math.random() > 0.5 ? 'string' : 42;
+}
+
+function inferredAny() {
+  return JSON.parse('{"foo": "bar"}');
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toBe(sourceCode)
+	})
+
+	it('ignores if the function returns unknown', async (): Promise<void> => {
+		const sourceCode = `
+function returnUnknown(): unknown {
+  return fetch('https://api.example.com/data').then(res => res.json());
+}
+
+function inferredUnknown() {
+  return JSON.parse(localStorage.getItem('data') || '{}');
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toBe(sourceCode)
+	})
+
+	it('ignores functions returning returning anonymous objects', async (): Promise<void> => {
+		const sourceCode = `
+function returnObject(): object {
+  return { foo: 'bar' };
+}
+
+function inferredObject() {
+  return { baz: 42 };
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toBe(sourceCode)
+	})
+
+	it('handles functions returning a defined object type', async (): Promise<void> => {
+		const sourceCode = `
+interface User {
+  name: string;
+  age: number;
+}
+
+function getUser() {
+	const user: User = { name: 'John Doe', age: 30 };
+return user;
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function getUser(): User {')
 	})
 })
