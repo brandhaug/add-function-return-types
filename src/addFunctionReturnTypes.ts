@@ -17,6 +17,7 @@ export type Options = {
 	ignoreAnonymousObjects: boolean
 	ignoreAny: boolean
 	ignoreUnknown: boolean
+	ignoreAnonymousFunctions: boolean
 }
 
 /**
@@ -213,6 +214,21 @@ async function processFile(
 					parent.getExpression() === node
 				) {
 					return
+				}
+			}
+
+			// ignoreAnonymousFunctions: ignore functions without names
+			if (options.ignoreAnonymousFunctions) {
+				if (Node.isFunctionExpression(node) && !node.getName()) {
+					return
+				}
+
+				if (Node.isArrowFunction(node)) {
+					const parent = node.getParent()
+					// Check if arrow function is assigned to a variable declaration
+					if (!Node.isVariableDeclaration(parent) || !parent.getName()) {
+						return
+					}
 				}
 			}
 

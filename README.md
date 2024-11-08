@@ -38,6 +38,7 @@ By default, the tool:
 - `--ignore-any`: Ignore functions that return the any type.
 - `--ignore-unknown`: Ignore functions that return the unknown type.
 - `--ignore-anonymous-objects`: Ignore functions that return anonymous object types.
+- `--ignore-anonymous-functions`: Ignore anonymous functions (functions without names).
 - `--ignore-expressions`: Ignore function expressions (functions that are not part of a declaration).
 - `--ignore-functions-without-type-parameters`: Ignore functions that don't have generic type parameters.
 - `--ignore-higher-order-functions`: Ignore functions that immediately return another function expression.

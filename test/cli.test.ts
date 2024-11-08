@@ -45,7 +45,8 @@ describe.concurrent('cli', (): void => {
 			ignoreFunctions: [],
 			ignoreAnonymousObjects: false,
 			ignoreAny: false,
-			ignoreUnknown: false
+			ignoreUnknown: false,
+			ignoreAnonymousFunctions: false
 		}
 
 		// Assert that addFunctionReturnTypes was called with default options
@@ -70,7 +71,8 @@ describe.concurrent('cli', (): void => {
 			'--ignore-functions=foo,bar',
 			'--ignore-anonymous-objects',
 			'--ignore-any',
-			'--ignore-unknown'
+			'--ignore-unknown',
+			'--ignore-anonymous-functions'
 		]
 
 		// Call the main function
@@ -90,7 +92,8 @@ describe.concurrent('cli', (): void => {
 			ignoreFunctions: ['foo', 'bar'],
 			ignoreAnonymousObjects: true,
 			ignoreAny: true,
-			ignoreUnknown: true
+			ignoreUnknown: true,
+			ignoreAnonymousFunctions: true
 		}
 
 		// Assert that addFunctionReturnTypes was called with the expected options
@@ -118,7 +121,8 @@ describe.concurrent('cli', (): void => {
 			ignoreFunctions: [],
 			ignoreAnonymousObjects: false,
 			ignoreAny: false,
-			ignoreUnknown: false
+			ignoreUnknown: false,
+			ignoreAnonymousFunctions: false
 		}
 
 		// Assert that addFunctionReturnTypes was called with the expected options

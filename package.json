@@ -1,6 +1,6 @@
 {
 	"name": "add-function-return-types",
-	"version": "3.1.1",
+	"version": "3.2.0",
 	"description": "A CLI tool to add explicit return types to TypeScript functions",
 	"files": ["dist/"],
 	"main": "./dist/index.js",
@@ -28,7 +28,7 @@
 		"build": "parcel build src/index.ts --no-source-maps",
 		"start": "node dist/index.js",
 		"format": "biome format --write",
-		"lint": "biome check --write",
+		"lint": "biome check --fix",
 		"typecheck": "tsc",
 		"prepare": "husky",
 		"test": "vitest"
@@ -54,7 +54,7 @@
 	"author": "Martin Brandhaug",
 	"license": "MIT",
 	"lint-staged": {
-		"*": ["biome format --write", "biome check --write"],
+		"*": ["biome format --write", "biome check --fix"],
 		"*.{ts}": ["tsc-files"]
 	},
 	"engines": {

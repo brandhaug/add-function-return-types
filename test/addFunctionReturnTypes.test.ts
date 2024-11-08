@@ -1,6 +1,6 @@
-import * as crypto from 'node:crypto'
+import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
-import * as os from 'node:os'
+import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
@@ -25,6 +25,7 @@ describe.concurrent('add-function-return-types', (): void => {
 		ignoreIIFEs: false,
 		overwrite: false,
 		ignoreAnonymousObjects: false,
+		ignoreAnonymousFunctions: false,
 		ignoreAny: false,
 		ignoreUnknown: false
 	}
@@ -1093,5 +1094,75 @@ function inferredUnknown() {
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function returnUnknown(): unknown {')
 		expect(updatedSource).toContain('function inferredUnknown(): unknown {')
+	})
+
+	it('ignores anonymous functions if ignoreAnonymousFunctions is true', async (): Promise<void> => {
+		const sourceCode = `
+(function() {
+    return 42;
+})
+
+(() => {
+    return 'string';
+})
+
+function namedFunction() {
+    return true;
+}
+
+const namedArrow = () => {
+    return 456;
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAnonymousFunctions: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('(function() {')
+		expect(updatedSource).toContain('(() => {')
+		expect(updatedSource).toContain('function namedFunction(): boolean {')
+		expect(updatedSource).toContain('const namedArrow = (): number => {')
+	})
+
+	it('handles anonymous functions if ignoreAnonymousFunctions is false', async (): Promise<void> => {
+		const sourceCode = `
+(function() {
+    return 42;
+})
+
+(() => {
+    return 'string';
+})
+
+function namedFunction() {
+    return true;
+}
+
+const namedArrow = () => {
+    return 456;
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAnonymousFunctions: false
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('(function(): number {')
+		expect(updatedSource).toContain('((): string => {')
+		expect(updatedSource).toContain('function namedFunction(): boolean {')
+		expect(updatedSource).toContain('const namedArrow = (): number => {')
 	})
 })

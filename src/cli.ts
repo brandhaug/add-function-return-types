@@ -50,6 +50,10 @@ export async function main(): Promise<void> {
 			'--ignore-concise-arrow-function-expressions-starting-with-void',
 			'Ignore arrow functions that start with the `void` keyword.'
 		)
+		.option(
+			'--ignore-anonymous-functions',
+			'Ignore anonymous functions (functions without names)'
+		)
 
 	program.parse(process.argv)
 
@@ -74,6 +78,7 @@ export async function main(): Promise<void> {
 	const ignoreAnonymousObjects = options.ignoreAnonymousObjects || false
 	const ignoreAny = options.ignoreAny || false
 	const ignoreUnknown = options.ignoreUnknown || false
+	const ignoreAnonymousFunctions = options.ignoreAnonymousFunctions || false
 
 	await addFunctionReturnTypes({
 		path,
@@ -89,6 +94,7 @@ export async function main(): Promise<void> {
 		ignoreFunctions,
 		ignoreAnonymousObjects,
 		ignoreAny,
-		ignoreUnknown
+		ignoreUnknown,
+		ignoreAnonymousFunctions
 	})
 }
