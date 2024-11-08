@@ -239,17 +239,17 @@ async function processFile(
 			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
 
 			// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
-			if (options.ignoreAnonymousObjects && typeText.startsWith('{')) {
+			if (options.ignoreAnonymousObjects && typeText.includes('{')) {
 				return
 			}
 
 			// ignoreAny: ignore functions that return the any type
-			if (options.ignoreAny && type.isAny()) {
+			if (options.ignoreAny && type.getText().includes('any')) {
 				return
 			}
 
 			// ignoreAny: ignore functions that return the unknown type
-			if (options.ignoreUnknown && type.isUnknown()) {
+			if (options.ignoreUnknown && type.getText().includes('unknown')) {
 				return
 			}
 

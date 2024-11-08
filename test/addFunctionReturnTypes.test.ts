@@ -1165,4 +1165,290 @@ const namedArrow = () => {
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
 		expect(updatedSource).toContain('const namedArrow = (): number => {')
 	})
+
+	it('ignores functions returning Promise<any> if ignoreAny is true', async (): Promise<void> => {
+		const sourceCode = `
+async function returnPromiseAny() {
+  return Promise.resolve(JSON.parse('{"foo": "bar"}'));
+}
+
+async function getNormalType() {
+  return Promise.resolve('string');
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAny: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('async function returnPromiseAny() {')
+		expect(updatedSource).toContain(
+			'async function getNormalType(): Promise<string> {'
+		)
+	})
+
+	it('handles functions returning Promise<any> if ignoreAny is false', async (): Promise<void> => {
+		const sourceCode = `
+async function returnPromiseAny(): Promise<any> {
+  return Promise.resolve(Math.random() > 0.5 ? 'string' : 42);
+}
+
+async function inferredPromiseAny() {
+  return Promise.resolve(JSON.parse('{"foo": "bar"}'));
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'async function returnPromiseAny(): Promise<any> {'
+		)
+		expect(updatedSource).toContain(
+			'async function inferredPromiseAny(): Promise<any> {'
+		)
+	})
+
+	it('ignores functions returning Promise<unknown> if ignoreUnknown is true', async (): Promise<void> => {
+		const sourceCode = `
+async function returnPromiseUnknown() {
+  return Promise.resolve(JSON.parse('{"foo": "bar"}') as unknown);
+}
+
+async function getNormalType() {
+  return Promise.resolve('string');
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreUnknown: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('async function returnPromiseUnknown() {')
+		expect(updatedSource).toContain(
+			'async function getNormalType(): Promise<string> {'
+		)
+	})
+
+	it('handles functions returning Promise<unknown> if ignoreUnknown is false', async (): Promise<void> => {
+		const sourceCode = `
+async function returnPromiseUnknown(): Promise<unknown> {
+  return Promise.resolve(JSON.parse('{"foo": "bar"}') as unknown);
+}
+
+async function inferredPromiseUnknown() {
+  return Promise.resolve(JSON.parse(localStorage.getItem('data') || '{}') as unknown);
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'async function returnPromiseUnknown(): Promise<unknown> {'
+		)
+		expect(updatedSource).toContain(
+			'async function inferredPromiseUnknown(): Promise<unknown> {'
+		)
+	})
+
+	it('ignores functions returning Promise with anonymous object types if ignoreAnonymousObjects is true', async (): Promise<void> => {
+		const sourceCode = `
+async function getPromiseObject() {
+    return Promise.resolve({ foo: 'bar', baz: 42 });
+}
+
+async function getNormalType() {
+    return Promise.resolve('string');
+}
+
+function getRegularObject() {
+    return { foo: 'bar' };
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAnonymousObjects: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('async function getPromiseObject() {')
+		expect(updatedSource).toContain(
+			'async function getNormalType(): Promise<string> {'
+		)
+		expect(updatedSource).toContain('function getRegularObject() {')
+	})
+
+	it('handles functions returning Promise with anonymous object types if ignoreAnonymousObjects is false', async (): Promise<void> => {
+		const sourceCode = `
+async function getPromiseObject() {
+    return Promise.resolve({ foo: 'bar', baz: 42 });
+}
+
+async function getNormalType() {
+    return Promise.resolve('string');
+}
+
+function getRegularObject() {
+    return { foo: 'bar' };
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAnonymousObjects: false
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'async function getPromiseObject(): Promise<{ foo: string; baz: number; }> {'
+		)
+		expect(updatedSource).toContain(
+			'async function getNormalType(): Promise<string> {'
+		)
+		expect(updatedSource).toContain(
+			'function getRegularObject(): { foo: string; } {'
+		)
+	})
+
+	it('ignores functions returning Record with any/unknown/anonymous objects if respective options are true', async (): Promise<void> => {
+		const sourceCode = `
+function getRecordAny() {
+    return { key1: JSON.parse('{}'), key2: 'value' } as Record<string, any>;
+}
+
+function getRecordUnknown() {
+    return { key1: JSON.parse('{}'), key2: 'value' } as Record<string, unknown>;
+}
+
+function getRecordAnonymous() {
+    return { key1: { foo: 'bar' }, key2: { baz: 42 } } as Record<string, { [key: string]: any }>;
+}
+
+function getNormalRecord() {
+    return { key1: 'value1', key2: 'value2' } as Record<string, string>;
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAny: true,
+			ignoreUnknown: true,
+			ignoreAnonymousObjects: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function getRecordAny() {')
+		expect(updatedSource).toContain('function getRecordUnknown() {')
+		expect(updatedSource).toContain('function getRecordAnonymous() {')
+		expect(updatedSource).toContain(
+			'function getNormalRecord(): Record<string, string> {'
+		)
+	})
+
+	it('ignores functions returning arrays with any/unknown/anonymous objects if respective options are true', async (): Promise<void> => {
+		const sourceCode = `
+function getArrayAny() {
+    return [JSON.parse('{}'), 'value'];
+}
+
+function getArrayUnknown() {
+    return [JSON.parse('{}'), 'value'] as unknown[];
+}
+
+function getArrayAnonymous() {
+    return [{ foo: 'bar' }, { baz: 42 }];
+}
+
+function getNormalArray() {
+    return ['value1', 'value2'];
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAny: true,
+			ignoreUnknown: true,
+			ignoreAnonymousObjects: true
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain('function getArrayAny() {')
+		expect(updatedSource).toContain('function getArrayUnknown() {')
+		expect(updatedSource).toContain('function getArrayAnonymous() {')
+		expect(updatedSource).toContain('function getNormalArray(): string[] {')
+	})
+
+	it('handles functions returning Record/Array with any/unknown/anonymous objects if respective options are false', async (): Promise<void> => {
+		const sourceCode = `
+function getRecordAny() {
+    return { key1: JSON.parse('{}'), key2: 'value' } as Record<string, any>;
+}
+
+function getArrayUnknown() {
+    return [JSON.parse('{}'), 'value'] as unknown[];
+}
+
+function getArrayAnonymous() {
+    return [{ foo: 'bar', baz: 42 }];
+}
+`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreAny: false,
+			ignoreUnknown: false,
+			ignoreAnonymousObjects: false
+		})
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(
+			'function getRecordAny(): Record<string, any> {'
+		)
+		expect(updatedSource).toContain('function getArrayUnknown(): unknown[] {')
+		expect(updatedSource).toContain(
+			'function getArrayAnonymous(): { foo: string; baz: number; }[] {'
+		)
+	})
 })
