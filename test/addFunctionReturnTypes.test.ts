@@ -1115,7 +1115,13 @@ const namedArrow = () => {
 }
 
 class Class {
-    arrowProp = () => {
+    arrowClassProp = () => {
+        return 456;
+    }
+}
+
+const object = {
+    arrowObjectProp: () => {
         return 456;
     }
 }
@@ -1135,7 +1141,8 @@ class Class {
 		expect(updatedSource).toContain('(() => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
 		expect(updatedSource).toContain('const namedArrow = (): number => {')
-		expect(updatedSource).toContain('arrowProp = (): number => {')
+		expect(updatedSource).toContain('arrowClassProp = (): number => {')
+		expect(updatedSource).toContain('arrowObjectProp: (): number => {')
 	})
 
 	it('handles anonymous functions if ignoreAnonymousFunctions is false', async (): Promise<void> => {
@@ -1155,6 +1162,18 @@ function namedFunction() {
 const namedArrow = () => {
     return 456;
 }
+
+class Class {
+    arrowClassProp = () => {
+        return 456;
+    }
+}
+
+const object = {
+    arrowObjectProp: () => {
+        return 456;
+    }
+}
 `.trim()
 
 		const testDir = await fs.mkdtemp(tmpDir)
@@ -1171,6 +1190,8 @@ const namedArrow = () => {
 		expect(updatedSource).toContain('((): string => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
 		expect(updatedSource).toContain('const namedArrow = (): number => {')
+		expect(updatedSource).toContain('arrowClassProp = (): number => {')
+		expect(updatedSource).toContain('arrowObjectProp: (): number => {')
 	})
 
 	it('ignores functions returning Promise<any> if ignoreAny is true', async (): Promise<void> => {

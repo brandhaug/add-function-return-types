@@ -244,7 +244,8 @@ async function processFile(
 					// Check if arrow function is assigned to a variable or property declaration
 					if (
 						(!Node.isVariableDeclaration(parent) || !parent.getName()) &&
-						!Node.isPropertyDeclaration(parent)
+						!Node.isPropertyDeclaration(parent) &&
+						!Node.isPropertyAssignment(parent)
 					) {
 						return
 					}
