@@ -241,11 +241,16 @@ async function processFile(
 
 				if (Node.isArrowFunction(node)) {
 					const parent = node.getParent()
-					// Check if arrow function is assigned to a variable or property declaration
+					// Check if arrow function is assigned to a variable declaration, property declaration, or
+					// it is a property assignment
 					if (
 						(!Node.isVariableDeclaration(parent) || !parent.getName()) &&
 						!Node.isPropertyDeclaration(parent) &&
-						!Node.isPropertyAssignment(parent)
+						!Node.isPropertyAssignment(parent) &&
+						!(
+							Node.isBinaryExpression(parent) &&
+							parent.getOperatorToken().getKind() === SyntaxKind.EqualsToken
+						)
 					) {
 						return
 					}
