@@ -882,7 +882,7 @@ const typedFunction: () => number = function() {
 	  (function() {
 		return 42;
 	  })();
-	  
+
 	  function normalFunction() {
 		return 43;
 	  }
@@ -1113,6 +1113,12 @@ function namedFunction() {
 const namedArrow = () => {
     return 456;
 }
+
+class Class {
+    arrowProp = () => {
+        return 456;
+    }
+}
 `.trim()
 
 		const testDir = await fs.mkdtemp(tmpDir)
@@ -1129,6 +1135,7 @@ const namedArrow = () => {
 		expect(updatedSource).toContain('(() => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
 		expect(updatedSource).toContain('const namedArrow = (): number => {')
+		expect(updatedSource).toContain('arrowProp = (): number => {')
 	})
 
 	it('handles anonymous functions if ignoreAnonymousFunctions is false', async (): Promise<void> => {
