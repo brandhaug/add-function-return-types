@@ -1,6 +1,14 @@
 import path from 'node:path'
 import fg from 'fast-glob'
-import { ModuleKind, Node, Project, ScriptTarget, ts } from 'ts-morph'
+import {
+	type Expression,
+	ModuleKind,
+	Node,
+	Project,
+	ScriptTarget,
+	SyntaxKind,
+	ts
+} from 'ts-morph'
 
 export type Options = {
 	path: string
@@ -235,26 +243,70 @@ async function processFile(
 			// Reset the return type so we get the inferred type
 			if (options.overwrite) node.setReturnType('')
 
-			const type = node.getReturnType()
-			const typeText = type.getText(node, ts.TypeFormatFlags.NoTruncation)
+			let returnTypeSet = false
 
-			// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
-			if (options.ignoreAnonymousObjects && typeText.includes('{')) {
-				return
+			// Attempt to use the type of the returned expression if it's a parameter
+			const body = node.getBody()
+			if (body) {
+				let returnExpr: Expression | Node<ts.Node> | undefined
+
+				if (Node.isBlock(body)) {
+					const returnStatements = body.getDescendantsOfKind(
+						SyntaxKind.ReturnStatement
+					)
+					if (returnStatements.length === 1 && returnStatements[0]) {
+						returnExpr = returnStatements[0].getExpression()
+					}
+				} else {
+					// It's an expression body (arrow function with expression)
+					returnExpr = body
+				}
+
+				if (returnExpr && Node.isIdentifier(returnExpr)) {
+					const param = node
+						.getParameters()
+						.find((p): boolean => p.getName() === returnExpr.getText())
+					if (param) {
+						const paramTypeNode = param.getTypeNode()
+						if (paramTypeNode) {
+							const paramTypeText = paramTypeNode.getText()
+							node.setReturnType(paramTypeText)
+							modified = true
+							returnTypeSet = true
+							return // Return early since we've set the return type
+						}
+					}
+				}
 			}
 
-			// ignoreAny: ignore functions that return the any type
-			if (options.ignoreAny && type.getText().includes('any')) {
-				return
-			}
+			if (!returnTypeSet) {
+				const type = node.getReturnType()
+				const typeText = type.getText(
+					node,
+					ts.TypeFormatFlags.NoTruncation |
+						ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
+						ts.TypeFormatFlags.UseTypeOfFunction |
+						ts.TypeFormatFlags.UseFullyQualifiedType
+				)
 
-			// ignoreAny: ignore functions that return the unknown type
-			if (options.ignoreUnknown && type.getText().includes('unknown')) {
-				return
-			}
+				// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
+				if (options.ignoreAnonymousObjects && typeText.includes('{')) {
+					return
+				}
 
-			node.setReturnType(typeText)
-			modified = true
+				// ignoreAny: ignore functions that return the any type
+				if (options.ignoreAny && type.getText().includes('any')) {
+					return
+				}
+
+				// ignoreUnknown: ignore functions that return the unknown type
+				if (options.ignoreUnknown && type.getText().includes('unknown')) {
+					return
+				}
+
+				node.setReturnType(typeText)
+				modified = true
+			}
 		} catch (error) {
 			const position = node.getStart()
 			const { line, column } = sourceFile.getLineAndColumnAtPos(position)

@@ -1451,4 +1451,35 @@ function getArrayAnonymous() {
 			'function getArrayAnonymous(): { foo: string; baz: number; }[] {'
 		)
 	})
+
+	it('handles nested return types correctly', async (): Promise<void> => {
+		const sourceCode = `
+type TagsQuery = {
+  team: {
+    tags: {
+      edges: Array<{
+        node: {
+          id: string;
+          name: string;
+        };
+      }>;
+    };
+  };
+};
+
+export const useSortTags = (
+  tags: TagsQuery['team']['tags']['edges']
+) => {
+  return tags
+}`.trim()
+
+		const testDir = await fs.mkdtemp(tmpDir)
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		expect(updatedSource).toContain(": TagsQuery['team']['tags']['edges'] => {")
+	})
 })
