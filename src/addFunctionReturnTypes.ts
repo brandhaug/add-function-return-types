@@ -9,6 +9,7 @@ import {
 	SyntaxKind,
 	ts
 } from 'ts-morph'
+import { findPackageJsonFiles, getDependencies } from './repoUtils'
 
 export type Options = {
 	path: string
@@ -37,11 +38,16 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	console.info('Starting process to analyze TypeScript files')
 	const pathToProcess = path.resolve(options.path)
 
-	console.info(`Using directory: ${pathToProcess}`)
+	console.info(`Using directory: "${pathToProcess}"`)
+
+	// Find package.json files
+	const packageJsonFiles = await findPackageJsonFiles(pathToProcess)
+	const dependencies = await getDependencies(packageJsonFiles)
 
 	const allFiles = await getAllTsAndTsxFiles(pathToProcess, options)
 	console.info(`${allFiles.length} TypeScript files found`)
 
+	// Update Project configuration to include node_modules types
 	const project = new Project({
 		compilerOptions: {
 			allowSyntheticDefaultImports: true,
@@ -49,7 +55,9 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 			module: ModuleKind.ESNext,
 			target: ScriptTarget.ESNext,
 			strict: true,
-			noUncheckedIndexedAccess: true
+			noUncheckedIndexedAccess: true,
+			types: dependencies,
+			moduleResolution: ts.ModuleResolutionKind.NodeNext
 		},
 		skipAddingFilesFromTsConfig: true
 	})
