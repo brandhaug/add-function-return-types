@@ -882,7 +882,7 @@ const typedFunction: () => number = function() {
 	  (function() {
 		return 42;
 	  })();
-	  
+
 	  function normalFunction() {
 		return 43;
 	  }
@@ -1113,6 +1113,28 @@ function namedFunction() {
 const namedArrow = () => {
     return 456;
 }
+
+class Class {
+    arrowClassProp = () => {
+        return 456;
+    }
+}
+
+const object = {
+    arrowObjectProp: () => {
+        return 456;
+    }
+};
+
+const object2 = {};
+object2.arrowObject2Prop = () => {
+    return 456;
+};
+
+let variable;
+variable = () => {
+    return 456;
+};
 `.trim()
 
 		const testDir = await fs.mkdtemp(tmpDir)
@@ -1129,6 +1151,10 @@ const namedArrow = () => {
 		expect(updatedSource).toContain('(() => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
 		expect(updatedSource).toContain('const namedArrow = (): number => {')
+		expect(updatedSource).toContain('arrowClassProp = (): number => {')
+		expect(updatedSource).toContain('arrowObjectProp: (): number => {')
+		expect(updatedSource).toContain('arrowObject2Prop = (): number => {')
+		expect(updatedSource).toContain('variable = (): number => {')
 	})
 
 	it('handles anonymous functions if ignoreAnonymousFunctions is false', async (): Promise<void> => {
@@ -1148,6 +1174,28 @@ function namedFunction() {
 const namedArrow = () => {
     return 456;
 }
+
+class Class {
+    arrowClassProp = () => {
+        return 456;
+    }
+}
+
+const object = {
+    arrowObjectProp: () => {
+        return 456;
+    }
+};
+
+const object2 = {};
+object2.arrowObject2Prop = () => {
+    return 456;
+};
+
+let variable;
+variable = () => {
+    return 456;
+};
 `.trim()
 
 		const testDir = await fs.mkdtemp(tmpDir)
@@ -1164,6 +1212,10 @@ const namedArrow = () => {
 		expect(updatedSource).toContain('((): string => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
 		expect(updatedSource).toContain('const namedArrow = (): number => {')
+		expect(updatedSource).toContain('arrowClassProp = (): number => {')
+		expect(updatedSource).toContain('arrowObjectProp: (): number => {')
+		expect(updatedSource).toContain('arrowObject2Prop = (): number => {')
+		expect(updatedSource).toContain('variable = (): number => {')
 	})
 
 	it('ignores functions returning Promise<any> if ignoreAny is true', async (): Promise<void> => {
