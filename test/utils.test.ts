@@ -6,9 +6,9 @@ import {
 	findPackageJsonFiles,
 	findRepoRoot,
 	getDependencies
-} from '../src/repoUtils'
+} from '../src/utils'
 
-describe.concurrent('repoUtils', (): void => {
+describe.concurrent('utils', (): void => {
 	// Use RUNNER_TEMP if available to avoid access errors in GHA
 	const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
 

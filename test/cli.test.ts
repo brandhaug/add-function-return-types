@@ -1,11 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-	type Options,
-	addFunctionReturnTypes
-} from '../src/addFunctionReturnTypes'
+import { addFunctionReturnTypes } from '../src/add-function-return-types'
 import { main } from '../src/cli'
+import type { Options } from '../src/options'
 
-vi.mock('../src/addFunctionReturnTypes', (): object => ({
+vi.mock('../src/add-function-return-types.ts', (): object => ({
 	addFunctionReturnTypes: vi.fn()
 }))
 

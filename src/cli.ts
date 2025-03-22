@@ -1,5 +1,6 @@
 import { Command } from 'commander'
-import { addFunctionReturnTypes } from './addFunctionReturnTypes'
+import { addFunctionReturnTypes } from './add-function-return-types'
+import { defaultOptions } from './options'
 
 export async function main(): Promise<void> {
 	const program = new Command()
@@ -57,44 +58,40 @@ export async function main(): Promise<void> {
 
 	program.parse(process.argv)
 
-	const path = program.args[0] || '.'
-
 	const options = program.opts()
-	const shallow = options.shallow || false
-	const ignoreFiles = options.ignoreFiles ? options.ignoreFiles.split(',') : []
-	const overwrite = options.overwrite || false
-	const ignoreConciseArrowFunctionExpressionsStartingWithVoid =
-		options.ignoreConciseArrowFunctionExpressionsStartingWithVoid || false
-	const ignoreExpressions = options.ignoreExpressions || false
-	const ignoreFunctionsWithoutTypeParameters =
-		options.ignoreFunctionsWithoutTypeParameters || false
-	const ignoreHigherOrderFunctions = options.ignoreHigherOrderFunctions || false
-	const ignoreTypedFunctionExpressions =
-		options.ignoreTypedFunctionExpressions || false
-	const ignoreIIFEs = options.ignoreIifes || false
-	const ignoreFunctions = options.ignoreFunctions
-		? options.ignoreFunctions.split(',')
-		: []
-	const ignoreAnonymousObjects = options.ignoreAnonymousObjects || false
-	const ignoreAny = options.ignoreAny || false
-	const ignoreUnknown = options.ignoreUnknown || false
-	const ignoreAnonymousFunctions = options.ignoreAnonymousFunctions || false
+	const path = program.args[0] || defaultOptions.path
 
 	await addFunctionReturnTypes({
 		path,
-		shallow,
-		ignoreFiles,
-		overwrite: overwrite,
-		ignoreConciseArrowFunctionExpressionsStartingWithVoid,
-		ignoreExpressions,
-		ignoreFunctionsWithoutTypeParameters,
-		ignoreHigherOrderFunctions,
-		ignoreTypedFunctionExpressions,
-		ignoreIIFEs,
-		ignoreFunctions,
-		ignoreAnonymousObjects,
-		ignoreAny,
-		ignoreUnknown,
-		ignoreAnonymousFunctions
+		shallow: options.shallow ?? defaultOptions.shallow,
+		ignoreFiles: options.ignoreFiles
+			? options.ignoreFiles.split(',')
+			: defaultOptions.ignoreFiles,
+		overwrite: options.overwrite ?? defaultOptions.overwrite,
+		ignoreConciseArrowFunctionExpressionsStartingWithVoid:
+			options.ignoreConciseArrowFunctionExpressionsStartingWithVoid ??
+			defaultOptions.ignoreConciseArrowFunctionExpressionsStartingWithVoid,
+		ignoreExpressions:
+			options.ignoreExpressions ?? defaultOptions.ignoreExpressions,
+		ignoreFunctionsWithoutTypeParameters:
+			options.ignoreFunctionsWithoutTypeParameters ??
+			defaultOptions.ignoreFunctionsWithoutTypeParameters,
+		ignoreHigherOrderFunctions:
+			options.ignoreHigherOrderFunctions ??
+			defaultOptions.ignoreHigherOrderFunctions,
+		ignoreTypedFunctionExpressions:
+			options.ignoreTypedFunctionExpressions ??
+			defaultOptions.ignoreTypedFunctionExpressions,
+		ignoreIIFEs: options.ignoreIifes ?? defaultOptions.ignoreIIFEs,
+		ignoreFunctions: options.ignoreFunctions
+			? options.ignoreFunctions.split(',')
+			: defaultOptions.ignoreFunctions,
+		ignoreAnonymousObjects:
+			options.ignoreAnonymousObjects ?? defaultOptions.ignoreAnonymousObjects,
+		ignoreAny: options.ignoreAny ?? defaultOptions.ignoreAny,
+		ignoreUnknown: options.ignoreUnknown ?? defaultOptions.ignoreUnknown,
+		ignoreAnonymousFunctions:
+			options.ignoreAnonymousFunctions ??
+			defaultOptions.ignoreAnonymousFunctions
 	})
 }
