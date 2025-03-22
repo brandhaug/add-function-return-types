@@ -9,25 +9,8 @@ import {
 	SyntaxKind,
 	ts
 } from 'ts-morph'
-import { findPackageJsonFiles, getDependencies } from './repoUtils'
-
-export type Options = {
-	path: string
-	shallow: boolean
-	ignoreFiles: string[]
-	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
-	ignoreExpressions: boolean
-	ignoreFunctionsWithoutTypeParameters: boolean
-	ignoreHigherOrderFunctions: boolean
-	ignoreIIFEs: boolean
-	ignoreTypedFunctionExpressions: boolean
-	ignoreFunctions: string[]
-	overwrite: boolean
-	ignoreAnonymousObjects: boolean
-	ignoreAny: boolean
-	ignoreUnknown: boolean
-	ignoreAnonymousFunctions: boolean
-}
+import type { Options } from './options'
+import { findPackageJsonFiles, getDependencies } from './utils'
 
 /**
  * Processes TypeScript files in the current directory, adding explicit return types to functions where needed.

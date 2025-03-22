@@ -3,32 +3,12 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import {
-	type Options,
-	addFunctionReturnTypes
-} from '../src/addFunctionReturnTypes'
+import { addFunctionReturnTypes } from '../src/add-function-return-types'
+import { type Options, defaultOptions } from '../src/options'
 
 describe.concurrent('add-function-return-types', (): void => {
 	// Use RUNNER_TEMP if available to avoid access errors in GHA
 	const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
-
-	const defaultOptions: Options = {
-		path: '.',
-		shallow: false,
-		ignoreFiles: [],
-		ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
-		ignoreExpressions: false,
-		ignoreFunctionsWithoutTypeParameters: false,
-		ignoreHigherOrderFunctions: false,
-		ignoreTypedFunctionExpressions: false,
-		ignoreFunctions: [],
-		ignoreIIFEs: false,
-		overwrite: false,
-		ignoreAnonymousObjects: false,
-		ignoreAnonymousFunctions: false,
-		ignoreAny: false,
-		ignoreUnknown: false
-	}
 
 	// Helper function to run the addFunctionReturnTypes with overridden options
 	const runAddFunctionReturnTypes = async (
