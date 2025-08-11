@@ -1,64 +1,77 @@
 {
-  "name": "add-function-return-types",
-  "version": "0.0.0",
-  "description": "A CLI tool to add explicit return types to TypeScript functions",
-  "files": ["dist/"],
-  "main": "./dist/index.js",
-  "targets": {
-    "main": {
-      "optimize": true
-    }
-  },
-  "keywords": ["typescript", "cli", "tool", "return", "types", "explicit-function-return-type"],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/brandhaug/add-function-return-types.git"
-  },
-  "bugs": {
-    "url": "https://github.com/brandhaug/add-function-return-types/issues"
-  },
-  "homepage": "https://github.com/brandhaug/add-function-return-types#readme",
-  "type": "module",
-  "bin": {
-    "add-function-return-types": "dist/index.js"
-  },
-  "scripts": {
-    "build": "parcel build src/index.ts --no-source-maps",
-    "start": "node dist/index.js",
-    "lint": "biome lint",
-    "check-fix": "biome check --fix",
-    "typecheck": "tsc",
-    "prepare": "husky",
-    "test": "vitest",
-    "validate": "npm run lint && npm run typecheck && npm run test"
-  },
-  "dependencies": {
-    "commander": "12.1.0",
-    "fast-glob": "3.3.2",
-    "ts-morph": "24.0.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@commitlint/cli": "19.5.0",
-    "@commitlint/config-conventional": "19.5.0",
-    "execa": "9.5.1",
-    "husky": "9.1.7",
-    "lint-staged": "15.2.10",
-    "parcel": "2.13.0",
-    "tsc-files": "1.1.4",
-    "tsx": "4.19.2",
-    "typescript": "5.6.3",
-    "vitest": "2.1.5",
-    "@semantic-release/changelog": "6.0.3",
-    "semantic-release": "24.2.0"
-  },
-  "author": "Martin Brandhaug",
-  "license": "MIT",
-  "lint-staged": {
-    "*.{ts,json}": ["biome check --write"],
-    "*.ts": ["tsc-files"]
-  },
-  "engines": {
-    "node": ">=20"
-  }
+	"name": "add-function-return-types",
+	"version": "0.0.0",
+	"description": "A CLI tool to add explicit return types to TypeScript functions",
+	"files": [
+		"dist/"
+	],
+	"main": "./dist/index.js",
+	"targets": {
+		"main": {
+			"optimize": true
+		}
+	},
+	"keywords": [
+		"typescript",
+		"cli",
+		"tool",
+		"return",
+		"types",
+		"explicit-function-return-type"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/brandhaug/add-function-return-types.git"
+	},
+	"bugs": {
+		"url": "https://github.com/brandhaug/add-function-return-types/issues"
+	},
+	"homepage": "https://github.com/brandhaug/add-function-return-types#readme",
+	"type": "module",
+	"bin": {
+		"add-function-return-types": "dist/index.js"
+	},
+	"scripts": {
+		"build": "parcel build src/index.ts --no-source-maps",
+		"start": "node dist/index.js",
+		"lint": "biome lint",
+		"check-fix": "biome check --fix",
+		"typecheck": "tsc",
+		"prepare": "husky",
+		"test": "vitest",
+		"validate": "npm run lint && npm run typecheck && npm run test"
+	},
+	"dependencies": {
+		"commander": "14.0.0",
+		"fast-glob": "3.3.3",
+		"ts-morph": "26.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.1.4",
+		"@commitlint/cli": "19.8.1",
+		"@commitlint/config-conventional": "19.8.1",
+		"execa": "9.6.0",
+		"husky": "9.1.7",
+		"lint-staged": "16.1.5",
+		"parcel": "2.15.4",
+		"tsc-files": "1.1.4",
+		"tsx": "4.20.3",
+		"typescript": "5.9.2",
+		"vitest": "3.2.4",
+		"@semantic-release/changelog": "6.0.3",
+		"semantic-release": "24.2.7"
+	},
+	"author": "Martin Brandhaug",
+	"license": "MIT",
+	"lint-staged": {
+		"*.{ts,json}": [
+			"biome check --write"
+		],
+		"*.ts": [
+			"tsc-files"
+		]
+	},
+	"engines": {
+		"node": ">=20"
+	}
 }
