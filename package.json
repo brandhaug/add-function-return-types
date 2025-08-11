@@ -6,9 +6,10 @@
 		"dist/"
 	],
 	"main": "./dist/index.js",
-	"targets": {
-		"main": {
-			"optimize": true
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
 		}
 	},
 	"keywords": [
@@ -32,7 +33,7 @@
 		"add-function-return-types": "dist/index.js"
 	},
 	"scripts": {
-		"build": "parcel build src/index.ts --no-source-maps",
+		"build": "tsc",
 		"start": "node dist/index.js",
 		"lint": "biome lint",
 		"check-fix": "biome check --fix",
@@ -53,7 +54,7 @@
 		"execa": "9.6.0",
 		"husky": "9.1.7",
 		"lint-staged": "16.1.5",
-		"parcel": "2.15.4",
+
 		"tsc-files": "1.1.4",
 		"tsx": "4.20.3",
 		"typescript": "5.9.2",
