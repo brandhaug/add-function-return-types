@@ -1,6 +1,6 @@
 import { Command } from 'commander'
-import { addFunctionReturnTypes } from './add-function-return-types'
-import { defaultOptions } from './options'
+import { addFunctionReturnTypes } from './add-function-return-types.js'
+import { defaultOptions } from './options.js'
 
 export async function main(): Promise<void> {
 	const program = new Command()
