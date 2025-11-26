@@ -9,8 +9,8 @@ import {
 	SyntaxKind,
 	ts
 } from 'ts-morph'
-import type { Options } from './options'
-import { findPackageJsonFiles, getDependencies } from './utils'
+import type { Options } from './options.js'
+import { findPackageJsonFiles, getDependencies } from './utils.js'
 
 /**
  * Processes TypeScript files in the current directory, adding explicit return types to functions where needed.
