@@ -75,49 +75,49 @@ add-function-return-types --tsconfig tsconfig.app.json
 The core function can also be imported directly:
 
 ```typescript
-import { addFunctionReturnTypes } from "add-function-return-types";
+import { addFunctionReturnTypes } from 'add-function-return-types'
 
 await addFunctionReturnTypes({
-  path: "./src",
-  shallow: false,
-  overwrite: false,
-  ignoreFiles: ["src/generated/**"],
-  ignoreFunctions: [],
-  ignoreAny: false,
-  ignoreUnknown: false,
-  ignoreAnonymousObjects: false,
-  ignoreAnonymousFunctions: false,
-  ignoreExpressions: false,
-  ignoreFunctionsWithoutTypeParameters: false,
-  ignoreHigherOrderFunctions: false,
-  ignoreTypedFunctionExpressions: false,
-  ignoreIIFEs: false,
-  ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
-  dryRun: false,
-  tsconfig: undefined,
-});
+	path: './src',
+	shallow: false,
+	overwrite: false,
+	ignoreFiles: ['src/generated/**'],
+	ignoreFunctions: [],
+	ignoreAny: false,
+	ignoreUnknown: false,
+	ignoreAnonymousObjects: false,
+	ignoreAnonymousFunctions: false,
+	ignoreExpressions: false,
+	ignoreFunctionsWithoutTypeParameters: false,
+	ignoreHigherOrderFunctions: false,
+	ignoreTypedFunctionExpressions: false,
+	ignoreIIFEs: false,
+	ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
+	dryRun: false,
+	tsconfig: undefined
+})
 ```
 
 ## Options
 
-| Option | Description |
-| --- | --- |
-| `--shallow` | Only process the top-level directory (no recursion) |
-| `--overwrite` | Overwrite functions that already have return types |
-| `--ignore-files <patterns>` | Comma-separated file glob patterns to ignore |
-| `--ignore-functions <names>` | Comma-separated function/method names to ignore |
-| `--ignore-any` | Skip functions that return `any` |
-| `--ignore-unknown` | Skip functions that return `unknown` |
-| `--ignore-anonymous-objects` | Skip functions that return anonymous object types |
-| `--ignore-anonymous-functions` | Skip anonymous functions (functions without names) |
-| `--ignore-expressions` | Skip function expressions (not part of a declaration) |
-| `--ignore-functions-without-type-parameters` | Skip functions without generic type parameters |
-| `--ignore-higher-order-functions` | Skip functions that immediately return another function |
-| `--ignore-typed-function-expressions` | Skip function expressions with type annotations on the variable |
-| `--ignore-iifes` | Skip immediately-invoked function expressions |
-| `--ignore-concise-arrow-function-expressions-starting-with-void` | Skip arrow functions starting with `void` |
-| `--dry-run` | Preview changes without modifying files |
-| `--tsconfig <path>` | Path to a tsconfig.json file for type resolution |
+| Option                                                           | Description                                                     |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| `--shallow`                                                      | Only process the top-level directory (no recursion)             |
+| `--overwrite`                                                    | Overwrite functions that already have return types              |
+| `--ignore-files <patterns>`                                      | Comma-separated file glob patterns to ignore                    |
+| `--ignore-functions <names>`                                     | Comma-separated function/method names to ignore                 |
+| `--ignore-any`                                                   | Skip functions that return `any`                                |
+| `--ignore-unknown`                                               | Skip functions that return `unknown`                            |
+| `--ignore-anonymous-objects`                                     | Skip functions that return anonymous object types               |
+| `--ignore-anonymous-functions`                                   | Skip anonymous functions (functions without names)              |
+| `--ignore-expressions`                                           | Skip function expressions (not part of a declaration)           |
+| `--ignore-functions-without-type-parameters`                     | Skip functions without generic type parameters                  |
+| `--ignore-higher-order-functions`                                | Skip functions that immediately return another function         |
+| `--ignore-typed-function-expressions`                            | Skip function expressions with type annotations on the variable |
+| `--ignore-iifes`                                                 | Skip immediately-invoked function expressions                   |
+| `--ignore-concise-arrow-function-expressions-starting-with-void` | Skip arrow functions starting with `void`                       |
+| `--dry-run`                                                      | Preview changes without modifying files                         |
+| `--tsconfig <path>`                                              | Path to a tsconfig.json file for type resolution                |
 
 ## Contributing
 
