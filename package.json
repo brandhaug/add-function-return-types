@@ -1,6 +1,6 @@
 {
 	"name": "add-function-return-types",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "A CLI tool to add explicit return types to TypeScript functions",
 	"files": [
 		"dist/"
@@ -54,7 +54,6 @@
 		"execa": "9.6.0",
 		"husky": "9.1.7",
 		"lint-staged": "16.1.5",
-
 		"tsc-files": "1.1.4",
 		"tsx": "4.20.3",
 		"typescript": "5.9.2",
