@@ -12,6 +12,5 @@
 		"typescript/no-inferrable-types": "error",
 		"typescript/prefer-as-const": "error",
 		"unicorn/prefer-number-properties": "error"
-	},
-	"ignorePatterns": ["dist"]
+	}
 }

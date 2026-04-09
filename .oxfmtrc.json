@@ -9,22 +9,5 @@
 	"semi": false,
 	"arrowParens": "always",
 	"bracketSameLine": false,
-	"bracketSpacing": true,
-	"ignorePatterns": [
-		"**/.next",
-		"**/dist",
-		"**/.turbo",
-		"**/dev-dist",
-		"**/.zed",
-		"**/.vscode",
-		"**/routeTree.gen.ts",
-		"**/src-tauri",
-		"**/.nuxt",
-		"bts.jsonc",
-		"**/.expo",
-		"**/.output",
-		"**/.nitro",
-		"**/.tanstack",
-		"**/_generated"
-	]
+	"bracketSpacing": true
 }
