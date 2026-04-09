@@ -1,5 +1,7 @@
 import path from 'node:path'
 import fg from 'fast-glob'
+
+type EntryInternal = Awaited<ReturnType<typeof fg>>[number]
 import {
 	type Expression,
 	ModuleKind,
