@@ -58,9 +58,7 @@
 		"tsc-files": "1.1.4",
 		"tsx": "4.20.3",
 		"typescript": "5.9.2",
-		"vitest": "3.2.4",
-		"@semantic-release/changelog": "6.0.3",
-		"semantic-release": "24.2.7"
+		"vitest": "3.2.4"
 	},
 	"author": "Martin Brandhaug",
 	"license": "MIT",
