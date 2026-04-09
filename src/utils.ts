@@ -2,6 +2,8 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import fg from 'fast-glob'
 
+type EntryInternal = Awaited<ReturnType<typeof fg>>[number]
+
 /**
  * Recursively searches for .git directory in parent directories
  * @param currentPath - The current directory path

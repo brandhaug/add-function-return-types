@@ -51,6 +51,7 @@
 		"ts-morph": "26.0.0"
 	},
 	"devDependencies": {
+		"@types/node": "25.5.2",
 		"execa": "9.6.0",
 		"oxfmt": "0.44.0",
 		"oxlint": "1.59.0",
