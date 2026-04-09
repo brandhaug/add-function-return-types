@@ -1,7 +1,2 @@
-#!/usr/bin/env node
-
-import { main } from './cli.js'
-
-void (async (): Promise<void> => {
-	await main()
-})()
+export { addFunctionReturnTypes } from './add-function-return-types.js'
+export { type Options, defaultOptions } from './options.js'

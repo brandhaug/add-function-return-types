@@ -1,0 +1,4 @@
+#!/bin/sh
+
+npx oxfmt --write
+npx oxlint --fix --type-aware

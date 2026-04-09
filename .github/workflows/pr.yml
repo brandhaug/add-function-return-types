@@ -16,24 +16,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
-          
+          fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version: 'lts/*'
 
       - name: Install dependencies
         run: npm install
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint & typecheck
+        run: npm run lint
 
       - name: Run tests
         run: npm run test
 
-      - name: Lint project
-        run: npm run lint
-
       - name: Build project
-        run: npm run build 
+        run: npm run build

@@ -4,7 +4,7 @@ import { describe, it } from 'vitest'
 
 describe('index', (): void => {
 	it('should work', async (): Promise<void> => {
-		const cliPath = path.resolve(__dirname, '../src/index.ts')
+		const cliPath = path.resolve(__dirname, '../src/bin.ts')
 
 		await execa('tsx', [cliPath], {
 			preferLocal: true

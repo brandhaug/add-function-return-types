@@ -3,9 +3,12 @@ import { addFunctionReturnTypes } from '../src/add-function-return-types'
 import { main } from '../src/cli'
 import type { Options } from '../src/options'
 
-vi.mock('../src/add-function-return-types.ts', (): object => ({
-	addFunctionReturnTypes: vi.fn()
-}))
+vi.mock(
+	'../src/add-function-return-types.ts',
+	(): { addFunctionReturnTypes: Mock<Procedure> } => ({
+		addFunctionReturnTypes: vi.fn()
+	})
+)
 
 describe.concurrent('cli', (): void => {
 	// Preserve the original process.argv to restore after tests
@@ -44,7 +47,9 @@ describe.concurrent('cli', (): void => {
 			ignoreAnonymousObjects: false,
 			ignoreAny: false,
 			ignoreUnknown: false,
-			ignoreAnonymousFunctions: false
+			ignoreAnonymousFunctions: false,
+			dryRun: false,
+			tsconfig: undefined
 		}
 
 		// Assert that addFunctionReturnTypes was called with default options
@@ -70,7 +75,9 @@ describe.concurrent('cli', (): void => {
 			'--ignore-anonymous-objects',
 			'--ignore-any',
 			'--ignore-unknown',
-			'--ignore-anonymous-functions'
+			'--ignore-anonymous-functions',
+			'--dry-run',
+			'--tsconfig=tsconfig.app.json'
 		]
 
 		// Call the main function
@@ -91,7 +98,9 @@ describe.concurrent('cli', (): void => {
 			ignoreAnonymousObjects: true,
 			ignoreAny: true,
 			ignoreUnknown: true,
-			ignoreAnonymousFunctions: true
+			ignoreAnonymousFunctions: true,
+			dryRun: true,
+			tsconfig: 'tsconfig.app.json'
 		}
 
 		// Assert that addFunctionReturnTypes was called with the expected options
@@ -120,7 +129,9 @@ describe.concurrent('cli', (): void => {
 			ignoreAnonymousObjects: false,
 			ignoreAny: false,
 			ignoreUnknown: false,
-			ignoreAnonymousFunctions: false
+			ignoreAnonymousFunctions: false,
+			dryRun: false,
+			tsconfig: undefined
 		}
 
 		// Assert that addFunctionReturnTypes was called with the expected options

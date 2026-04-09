@@ -2,9 +2,31 @@
 	"name": "add-function-return-types",
 	"version": "3.6.2",
 	"description": "A CLI tool to add explicit return types to TypeScript functions",
+	"keywords": [
+		"cli",
+		"explicit-function-return-type",
+		"return",
+		"tool",
+		"types",
+		"typescript"
+	],
+	"homepage": "https://github.com/brandhaug/add-function-return-types#readme",
+	"bugs": {
+		"url": "https://github.com/brandhaug/add-function-return-types/issues"
+	},
+	"license": "MIT",
+	"author": "Martin Brandhaug",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/brandhaug/add-function-return-types.git"
+	},
+	"bin": {
+		"add-function-return-types": "dist/bin.js"
+	},
 	"files": [
 		"dist/"
 	],
+	"type": "module",
 	"main": "./dist/index.js",
 	"exports": {
 		".": {
@@ -12,33 +34,14 @@
 			"types": "./dist/index.d.ts"
 		}
 	},
-	"keywords": [
-		"typescript",
-		"cli",
-		"tool",
-		"return",
-		"types",
-		"explicit-function-return-type"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/brandhaug/add-function-return-types.git"
-	},
-	"bugs": {
-		"url": "https://github.com/brandhaug/add-function-return-types/issues"
-	},
-	"homepage": "https://github.com/brandhaug/add-function-return-types#readme",
-	"type": "module",
-	"bin": {
-		"add-function-return-types": "dist/index.js"
-	},
 	"scripts": {
 		"build": "tsc",
 		"start": "node dist/index.js",
-		"lint": "biome lint",
-		"check-fix": "biome check --fix",
-		"typecheck": "tsc",
-		"prepare": "husky",
+		"lint": "oxlint --type-aware",
+		"format": "oxfmt --write",
+		"format:check": "oxfmt --check",
+		"typecheck": "oxlint --type-aware",
+		"prepare": "git config core.hooksPath .githooks",
 		"test": "vitest",
 		"validate": "npm run lint && npm run typecheck && npm run test"
 	},
@@ -48,26 +51,13 @@
 		"ts-morph": "26.0.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.1.4",
-		"@commitlint/cli": "19.8.1",
-		"@commitlint/config-conventional": "19.8.1",
 		"execa": "9.6.0",
-		"husky": "9.1.7",
-		"lint-staged": "16.1.5",
-		"tsc-files": "1.1.4",
+		"oxfmt": "0.44.0",
+		"oxlint": "1.59.0",
+		"oxlint-tsgolint": "0.20.0",
 		"tsx": "4.20.3",
 		"typescript": "5.9.2",
 		"vitest": "3.2.4"
-	},
-	"author": "Martin Brandhaug",
-	"license": "MIT",
-	"lint-staged": {
-		"*.{ts,json}": [
-			"biome check --write"
-		],
-		"*.ts": [
-			"tsc-files"
-		]
 	},
 	"engines": {
 		"node": ">=20"
