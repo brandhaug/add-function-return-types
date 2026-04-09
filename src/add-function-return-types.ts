@@ -23,37 +23,50 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 
 	console.info(`Using directory: "${pathToProcess}"`)
 
-	// Find package.json files
-	const packageJsonFiles = await findPackageJsonFiles(pathToProcess)
-	const dependencies = await getDependencies(packageJsonFiles)
-
 	const allFiles = await getAllTsAndTsxFiles(pathToProcess, options)
 	console.info(`${allFiles.length} TypeScript files found`)
 
-	// Update Project configuration to include node_modules types
-	const project = new Project({
-		compilerOptions: {
-			allowSyntheticDefaultImports: true,
-			esModuleInterop: true,
-			module: ModuleKind.ESNext,
-			target: ScriptTarget.ESNext,
-			strict: true,
-			noUncheckedIndexedAccess: true,
-			types: dependencies,
-			moduleResolution: ts.ModuleResolutionKind.NodeNext
-		},
-		skipAddingFilesFromTsConfig: true
-	})
+	let project: Project
+
+	if (options.tsconfig) {
+		const tsconfigPath = path.resolve(options.tsconfig)
+		console.info(`Using tsconfig: "${tsconfigPath}"`)
+		project = new Project({
+			tsConfigFilePath: tsconfigPath,
+			skipAddingFilesFromTsConfig: true
+		})
+	} else {
+		// Find package.json files
+		const packageJsonFiles = await findPackageJsonFiles(pathToProcess)
+		const dependencies = await getDependencies(packageJsonFiles)
+
+		// Update Project configuration to include node_modules types
+		project = new Project({
+			compilerOptions: {
+				allowSyntheticDefaultImports: true,
+				esModuleInterop: true,
+				module: ModuleKind.ESNext,
+				target: ScriptTarget.ESNext,
+				strict: true,
+				noUncheckedIndexedAccess: true,
+				types: dependencies,
+				moduleResolution: ts.ModuleResolutionKind.NodeNext
+			},
+			skipAddingFilesFromTsConfig: true
+		})
+	}
 
 	const totalFiles = allFiles.length
+	const errors: string[] = []
 
 	for (const [index, file] of allFiles.entries()) {
 		try {
 			const message = await processFile(project, file, options)
 			console.info(`${index + 1}/${totalFiles}: ${message}`)
 		} catch (error) {
-			console.error(`Error processing file ${file}:`, error)
-			process.exit(1)
+			const errorMessage = `Error processing file ${file}: ${error instanceof Error ? error.message : String(error)}`
+			console.error(errorMessage)
+			errors.push(errorMessage)
 		}
 	}
 
@@ -62,6 +75,14 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		'Processing complete after %d seconds',
 		(endTime - startTime) / 1000
 	)
+
+	if (errors.length > 0) {
+		console.error(`\nFailed to process ${errors.length} file(s):`)
+		for (const error of errors) {
+			console.error(`  - ${error}`)
+		}
+		process.exit(1)
+	}
 }
 
 /**
@@ -73,7 +94,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 async function getAllTsAndTsxFiles(
 	rootPath: string,
 	options: Options
-): Promise<string[]> {
+): Promise<EntryInternal[]> {
 	const extensions = ['ts', 'tsx']
 	const patterns = extensions.map((ext): string => `**/*.${ext}`)
 
@@ -114,11 +135,6 @@ async function processFile(
 					Node.isMethodDeclaration(node)
 				)
 			) {
-				return
-			}
-
-			// Check if the node is a constructor
-			if (Node.isConstructorDeclaration(node)) {
 				return
 			}
 
@@ -169,20 +185,29 @@ async function processFile(
 			// ignoreHigherOrderFunctions: ignore functions immediately returning another function expression
 			if (options.ignoreHigherOrderFunctions) {
 				const body = node.getBody()
-				if (!body || !Node.isBlock(body)) return
-
-				const statements = body.getStatements()
-				if (statements.length !== 1) return
-
-				const statement = statements[0]
-				if (!Node.isReturnStatement(statement)) return
-
-				const expr = statement.getExpression()
-				if (
-					expr &&
-					(Node.isFunctionExpression(expr) || Node.isArrowFunction(expr))
-				) {
-					return
+				if (body) {
+					if (Node.isBlock(body)) {
+						const statements = body.getStatements()
+						if (statements.length === 1) {
+							const statement = statements[0]
+							if (Node.isReturnStatement(statement)) {
+								const expr = statement.getExpression()
+								if (
+									expr &&
+									(Node.isFunctionExpression(expr) ||
+										Node.isArrowFunction(expr))
+								) {
+									return
+								}
+							}
+						}
+					} else if (
+						Node.isFunctionExpression(body) ||
+						Node.isArrowFunction(body)
+					) {
+						// Concise arrow function returning another function: () => () => 42
+						return
+					}
 				}
 			}
 
@@ -248,7 +273,7 @@ async function processFile(
 			// Attempt to use the type of the returned expression if it's a parameter
 			const body = node.getBody()
 			if (body) {
-				let returnExpr: Expression | Node<ts.Node> | undefined
+				let returnExpr: Expression | Node | undefined
 
 				if (Node.isBlock(body)) {
 					const returnStatements = body.getDescendantsOfKind(
@@ -295,12 +320,12 @@ async function processFile(
 				}
 
 				// ignoreAny: ignore functions that return the any type
-				if (options.ignoreAny && type.getText().includes('any')) {
+				if (options.ignoreAny && /\bany\b/.test(typeText)) {
 					return
 				}
 
 				// ignoreUnknown: ignore functions that return the unknown type
-				if (options.ignoreUnknown && type.getText().includes('unknown')) {
+				if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
 					return
 				}
 
@@ -311,13 +336,17 @@ async function processFile(
 			const position = node.getStart()
 			const { line, column } = sourceFile.getLineAndColumnAtPos(position)
 			console.error(
-				`Error processing node at ${filePath}:${line}:${column} - ${error instanceof Error ? error.message : error}`
+				`Error processing node at ${filePath}:${line}:${column} - ${error instanceof Error ? error.message : String(error)}`
 			)
 		}
 	})
 
 	if (!modified) {
 		return `No changes made to "${filePath}"`
+	}
+
+	if (options.dryRun) {
+		return `Would modify "${filePath}" (dry run)`
 	}
 
 	await sourceFile.save()

@@ -14,6 +14,8 @@ export type Options = {
 	ignoreAny: boolean
 	ignoreUnknown: boolean
 	ignoreAnonymousFunctions: boolean
+	dryRun: boolean
+	tsconfig: string | undefined
 }
 
 export const defaultOptions: Options = {
@@ -31,5 +33,7 @@ export const defaultOptions: Options = {
 	ignoreAnonymousObjects: false,
 	ignoreAnonymousFunctions: false,
 	ignoreAny: false,
-	ignoreUnknown: false
+	ignoreUnknown: false,
+	dryRun: false,
+	tsconfig: undefined
 }

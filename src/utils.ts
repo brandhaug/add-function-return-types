@@ -52,7 +52,7 @@ export async function findRepoRoot(startPath: string): Promise<string> {
  */
 export async function findPackageJsonFiles(
 	startPath: string
-): Promise<string[]> {
+): Promise<EntryInternal[]> {
 	console.info('Looking for package.json files...')
 	// First find the repository root
 	const repoRoot = await findRepoRoot(startPath)

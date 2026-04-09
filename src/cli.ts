@@ -55,6 +55,11 @@ export async function main(): Promise<void> {
 			'--ignore-anonymous-functions',
 			'Ignore anonymous functions (functions without names)'
 		)
+		.option('--dry-run', 'Preview changes without modifying files')
+		.option(
+			'--tsconfig <path>',
+			'Path to a tsconfig.json file for type resolution'
+		)
 
 	program.parse(process.argv)
 
@@ -92,6 +97,8 @@ export async function main(): Promise<void> {
 		ignoreUnknown: options.ignoreUnknown ?? defaultOptions.ignoreUnknown,
 		ignoreAnonymousFunctions:
 			options.ignoreAnonymousFunctions ??
-			defaultOptions.ignoreAnonymousFunctions
+			defaultOptions.ignoreAnonymousFunctions,
+		dryRun: options.dryRun ?? defaultOptions.dryRun,
+		tsconfig: options.tsconfig ?? defaultOptions.tsconfig
 	})
 }

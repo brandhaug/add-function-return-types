@@ -1,0 +1,17 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript", "unicorn", "oxc"],
+	"categories": {
+		"correctness": "error",
+		"suspicious": "warn"
+	},
+	"rules": {
+		"no-param-reassign": "error",
+		"default-param-last": "error",
+		"no-else-return": "error",
+		"typescript/no-inferrable-types": "error",
+		"typescript/prefer-as-const": "error",
+		"unicorn/prefer-number-properties": "error"
+	},
+	"ignorePatterns": ["dist"]
+}
