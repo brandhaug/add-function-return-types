@@ -41,6 +41,7 @@ npx vitest run test/utils.test.ts     # Run a specific file
 ```
 
 Test files:
+
 - `test/add-function-return-types.test.ts` — Core functionality (extensive edge cases)
 - `test/cli.test.ts` — CLI argument parsing
 - `test/utils.test.ts` — Utility functions

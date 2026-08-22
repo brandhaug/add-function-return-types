@@ -5,7 +5,7 @@ import type { Options } from '../src/options'
 
 vi.mock(
 	'../src/add-function-return-types.ts',
-	(): { addFunctionReturnTypes: Mock<Procedure>; } => ({
+	(): { addFunctionReturnTypes: Mock<Procedure> } => ({
 		addFunctionReturnTypes: vi.fn()
 	})
 )
