@@ -71,7 +71,7 @@
 		"ts-morph": "28.0.0",
 		"@types/node": "26.2.0",
 		"execa": "10.0.1",
-		"oxfmt": "0.44.0",
+		"oxfmt": "0.64.0",
 		"oxlint": "1.59.0",
 		"oxlint-tsgolint": "0.20.0",
 		"tsx": "4.20.3",
