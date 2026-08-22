@@ -45,12 +45,12 @@
 		"test": "vitest",
 		"validate": "npm run lint && npm run typecheck && npm run test"
 	},
-	"dependencies": {
+	"packageManager": "bun@1.4.0",
+	"workspaces": [],
+	"catalog": {
 		"commander": "14.0.0",
 		"fast-glob": "3.3.3",
-		"ts-morph": "26.0.0"
-	},
-	"devDependencies": {
+		"ts-morph": "26.0.0",
 		"@types/node": "25.5.2",
 		"execa": "9.6.0",
 		"oxfmt": "0.44.0",
@@ -60,7 +60,22 @@
 		"typescript": "5.9.2",
 		"vitest": "3.2.4"
 	},
+	"dependencies": {
+		"commander": "14.0.0",
+		"fast-glob": "3.3.3",
+		"ts-morph": "26.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"execa": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"tsx": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
 	"engines": {
-		"node": ">=20"
+		"bun": ">=1.4.0"
 	}
 }
