@@ -23,6 +23,7 @@
 	"bin": {
 		"add-function-return-types": "dist/bin.js"
 	},
+	"workspaces": [],
 	"files": [
 		"dist/"
 	],
@@ -51,6 +52,23 @@
 		"ts-morph": "26.0.0"
 	},
 	"devDependencies": {
+		"@types/node": "catalog:",
+		"execa": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"tsx": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"engines": {
+		"bun": ">=1.4.0"
+	},
+	"packageManager": "bun@1.4.0",
+	"catalog": {
+		"commander": "14.0.0",
+		"fast-glob": "3.3.3",
+		"ts-morph": "26.0.0",
 		"@types/node": "25.5.2",
 		"execa": "9.6.0",
 		"oxfmt": "0.44.0",
@@ -59,8 +77,5 @@
 		"tsx": "4.20.3",
 		"typescript": "5.9.2",
 		"vitest": "3.2.4"
-	},
-	"engines": {
-		"node": ">=20"
 	}
 }
