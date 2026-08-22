@@ -4,21 +4,7 @@ import { vi } from 'vitest'
 // non-interactively. Individual tests can override these with vi.mocked().
 vi.mock(
 	'@clack/prompts',
-	(): {
-		intro: Mock<Procedure>
-		outro: Mock<Procedure>
-		cancel: Mock<Procedure>
-		log: {
-			message: Mock<Procedure>
-			info: Mock<Procedure>
-			warn: Mock<Procedure>
-			error: Mock<Procedure>
-		}
-		isCancel: Mock<() => boolean>
-		text: Mock<({ initialValue }: { initialValue?: string }) => Promise<string>>
-		confirm: Mock<() => Promise<boolean>>
-		multiselect: Mock<() => Promise<never[]>>
-	} => ({
+	(): { intro: Mock<Procedure>; outro: Mock<Procedure>; cancel: Mock<Procedure>; log: { message: Mock<Procedure>; info: Mock<Procedure>; warn: Mock<Procedure>; error: Mock<Procedure>; }; isCancel: Mock<() => boolean>; text: Mock<({ initialValue }: { initialValue?: string; }) => Promise<string>>; confirm: Mock<() => Promise<boolean>>; multiselect: Mock<() => Promise<never[]>>; } => ({
 		intro: vi.fn(),
 		outro: vi.fn(),
 		cancel: vi.fn(),

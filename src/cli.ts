@@ -77,25 +77,7 @@ const buildOptions = (
 			| 'dryRun'
 		>
 	>
-): {
-	path: string
-	shallow: boolean
-	ignoreFiles: string[]
-	overwrite: boolean
-	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
-	ignoreExpressions: boolean
-	ignoreFunctionsWithoutTypeParameters: boolean
-	ignoreHigherOrderFunctions: boolean
-	ignoreTypedFunctionExpressions: boolean
-	ignoreIIFEs: boolean
-	ignoreFunctions: string[]
-	ignoreAnonymousObjects: boolean
-	ignoreAny: boolean
-	ignoreUnknown: boolean
-	ignoreAnonymousFunctions: boolean
-	dryRun: boolean
-	tsconfig: string | undefined
-} => ({
+): { path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; } => ({
 	path,
 	shallow: flags.shallow ?? defaultOptions.shallow,
 	ignoreFiles: flags.ignoreFiles ?? defaultOptions.ignoreFiles,
@@ -215,25 +197,7 @@ const handleCancel = <T>(value: T | symbol): T => {
 	return value as T
 }
 
-const promptForOptions = async (): Promise<{
-	path: string
-	shallow: boolean
-	ignoreFiles: string[]
-	overwrite: boolean
-	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
-	ignoreExpressions: boolean
-	ignoreFunctionsWithoutTypeParameters: boolean
-	ignoreHigherOrderFunctions: boolean
-	ignoreTypedFunctionExpressions: boolean
-	ignoreIIFEs: boolean
-	ignoreFunctions: string[]
-	ignoreAnonymousObjects: boolean
-	ignoreAny: boolean
-	ignoreUnknown: boolean
-	ignoreAnonymousFunctions: boolean
-	dryRun: boolean
-	tsconfig: string | undefined
-}> => {
+const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; }> => {
 	p.intro('add-function-return-types')
 	p.log.message(
 		'A CLI tool to add explicit return types to TypeScript functions'
@@ -258,7 +222,7 @@ const promptForOptions = async (): Promise<{
 					message: `Select ${group.title.toLowerCase()} options to ignore`,
 					required: false,
 					options: group.options.map(
-						(option): { value: IgnoreValue; label: string; hint: string } => ({
+						(option): { value: IgnoreValue; label: string; hint: string; } => ({
 							value: option.value,
 							label: option.label,
 							hint: option.hint
