@@ -10,7 +10,7 @@ vi.mock(
 	})
 )
 
-describe.concurrent('cli', (): void => {
+describe('cli', (): void => {
 	// Preserve the original process.argv to restore after tests
 	const originalArgv = process.argv
 
