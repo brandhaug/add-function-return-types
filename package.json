@@ -1,81 +1,81 @@
 {
-  "name": "add-function-return-types",
-  "version": "3.7.1",
-  "description": "A CLI tool to add explicit return types to TypeScript functions",
-  "keywords": [
-    "cli",
-    "explicit-function-return-type",
-    "return",
-    "tool",
-    "types",
-    "typescript"
-  ],
-  "homepage": "https://github.com/brandhaug/add-function-return-types#readme",
-  "bugs": {
-    "url": "https://github.com/brandhaug/add-function-return-types/issues"
-  },
-  "license": "MIT",
-  "author": "Martin Brandhaug",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/brandhaug/add-function-return-types.git"
-  },
-  "bin": {
-    "add-function-return-types": "dist/bin.js"
-  },
-  "workspaces": [],
-  "files": [
-    "dist/"
-  ],
-  "type": "module",
-  "main": "./dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "lint": "oxlint --type-aware",
-    "format": "oxfmt --write",
-    "format:check": "oxfmt --check",
-    "typecheck": "oxlint --type-aware",
-    "prepare": "git config core.hooksPath .githooks",
-    "test": "vitest",
-    "validate": "npm run lint && npm run typecheck && npm run test"
-  },
-  "dependencies": {
-    "commander": "14.0.0",
-    "fast-glob": "3.3.3",
-    "ts-morph": "26.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "catalog:",
-    "execa": "catalog:",
-    "oxfmt": "catalog:",
-    "oxlint": "catalog:",
-    "oxlint-tsgolint": "catalog:",
-    "tsx": "catalog:",
-    "typescript": "catalog:",
-    "vitest": "catalog:"
-  },
-  "engines": {
-    "bun": ">=1.4.0"
-  },
-  "packageManager": "bun@1.4.0",
-  "catalog": {
-    "commander": "14.0.0",
-    "fast-glob": "3.3.3",
-    "ts-morph": "26.0.0",
-    "@types/node": "25.5.2",
-    "execa": "9.6.0",
-    "oxfmt": "0.44.0",
-    "oxlint": "1.59.0",
-    "oxlint-tsgolint": "0.20.0",
-    "tsx": "4.20.3",
-    "typescript": "5.9.2",
-    "vitest": "4.1.11"
-  }
+	"name": "add-function-return-types",
+	"version": "3.7.1",
+	"description": "A CLI tool to add explicit return types to TypeScript functions",
+	"keywords": [
+		"cli",
+		"explicit-function-return-type",
+		"return",
+		"tool",
+		"types",
+		"typescript"
+	],
+	"homepage": "https://github.com/brandhaug/add-function-return-types#readme",
+	"bugs": {
+		"url": "https://github.com/brandhaug/add-function-return-types/issues"
+	},
+	"license": "MIT",
+	"author": "Martin Brandhaug",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/brandhaug/add-function-return-types.git"
+	},
+	"bin": {
+		"add-function-return-types": "dist/bin.js"
+	},
+	"workspaces": [],
+	"files": [
+		"dist/"
+	],
+	"type": "module",
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"lint": "oxlint --type-aware",
+		"format": "oxfmt --write",
+		"format:check": "oxfmt --check",
+		"typecheck": "oxlint --type-aware",
+		"prepare": "git config core.hooksPath .githooks",
+		"test": "vitest",
+		"validate": "npm run lint && npm run typecheck && npm run test"
+	},
+	"dependencies": {
+		"commander": "14.0.0",
+		"fast-glob": "3.3.3",
+		"ts-morph": "28.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"execa": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"tsx": "catalog:",
+		"typescript": "catalog:",
+		"vitest": "catalog:"
+	},
+	"engines": {
+		"bun": ">=1.4.0"
+	},
+	"packageManager": "bun@1.4.0",
+	"catalog": {
+		"commander": "15.0.0",
+		"fast-glob": "3.3.3",
+		"ts-morph": "28.0.0",
+		"@types/node": "26.2.0",
+		"execa": "10.0.1",
+		"oxfmt": "0.64.0",
+		"oxlint": "1.79.0",
+		"oxlint-tsgolint": "7.0.2001",
+		"tsx": "4.23.12",
+		"typescript": "7.0.2",
+		"vitest": "4.1.11"
+	}
 }
