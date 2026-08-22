@@ -126,7 +126,7 @@ async function processFile(
 
 	let modified = false
 
-	sourceFile.forEachDescendant((node): void => {
+	sourceFile.forEachDescendant((node): undefined => {
 		try {
 			// Check if the node is a function or method
 			if (
