@@ -2,14 +2,13 @@
 
 ## [4.0.0](https://github.com/brandhaug/add-function-return-types/compare/v3.7.1...v4.0.0) (2026-08-22)
 
-
 ### ⚠ BREAKING CHANGES
 
-* replace commander with @clack/prompts ([#24](https://github.com/brandhaug/add-function-return-types/issues/24))
+- replace commander with @clack/prompts ([#24](https://github.com/brandhaug/add-function-return-types/issues/24))
 
 ### Features
 
-* replace commander with @clack/prompts ([#24](https://github.com/brandhaug/add-function-return-types/issues/24)) ([f7de92b](https://github.com/brandhaug/add-function-return-types/commit/f7de92b14c3c078f78fef837490f742a0fb8fa51))
+- replace commander with @clack/prompts ([#24](https://github.com/brandhaug/add-function-return-types/issues/24)) ([f7de92b](https://github.com/brandhaug/add-function-return-types/commit/f7de92b14c3c078f78fef837490f742a0fb8fa51))
 
 ## [3.7.1](https://github.com/brandhaug/add-function-return-types/compare/v3.7.0...v3.7.1) (2026-04-09)
 

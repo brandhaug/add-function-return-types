@@ -43,21 +43,20 @@
 		"format:check": "oxfmt --check",
 		"typecheck": "oxlint --type-aware",
 		"prepare": "git config core.hooksPath .githooks",
-		"test": "vitest",
+		"test": "bun test --isolate --timeout 120000",
 		"validate": "npm run lint && npm run typecheck && npm run test"
 	},
 	"dependencies": {
+		"@clack/prompts": "1.7.0",
 		"fast-glob": "3.3.3",
-		"ts-morph": "28.0.0",
-		"@clack/prompts": "1.7.0"
+		"ts-morph": "28.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "catalog:",
 		"oxfmt": "catalog:",
 		"oxlint": "catalog:",
 		"oxlint-tsgolint": "catalog:",
-		"typescript": "catalog:",
-		"vitest": "catalog:"
+		"typescript": "catalog:"
 	},
 	"engines": {
 		"bun": ">=1.4.0"
@@ -70,7 +69,6 @@
 		"oxfmt": "0.64.0",
 		"oxlint": "1.79.0",
 		"oxlint-tsgolint": "7.0.2001",
-		"typescript": "7.0.2",
-		"vitest": "4.1.11"
+		"typescript": "7.0.2"
 	}
 }

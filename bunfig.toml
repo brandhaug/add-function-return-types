@@ -1,2 +1,7 @@
 [install]
 exact = true
+
+[test]
+preload = ['./test/mocks/setup-clack.ts']
+# NOTE: [test].timeout is not parsed by Bun (silently ignored); the generous
+# timeout for slow ts-morph tests is set via `--timeout` in package.json.

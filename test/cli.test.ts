@@ -1,23 +1,26 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { addFunctionReturnTypes } from '../src/add-function-return-types'
-import { main } from '../src/cli'
+import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import type { Options } from '../src/options'
 
-vi.mock(
-	'../src/add-function-return-types.ts',
-	(): { addFunctionReturnTypes: Mock<Procedure>; } => ({
-		addFunctionReturnTypes: vi.fn()
-	})
+// Mock addFunctionReturnTypes before importing the CLI so main() never
+// touches the filesystem.
+const addFunctionReturnTypes = mock((_options?: Options): Promise<void> =>
+	Promise.resolve()
 )
+
+mock.module(
+	'../src/add-function-return-types.ts',
+	(): { addFunctionReturnTypes: any; } => ({ addFunctionReturnTypes })
+)
+
+const { main } = await import('../src/cli')
 
 describe('cli', (): void => {
 	// Preserve the original process.argv to restore after tests
 	const originalArgv = process.argv
 
 	beforeEach((): void => {
-		// Reset modules and mocks before each test
-		vi.resetModules()
-		vi.clearAllMocks()
+		// Clear mocks before each test
+		addFunctionReturnTypes.mockClear()
 		// Set a default argv (node and script name)
 		process.argv = ['node', 'cli.js']
 	})
@@ -25,7 +28,7 @@ describe('cli', (): void => {
 	afterEach((): void => {
 		// Restore the original process.argv after each test
 		process.argv = originalArgv
-		vi.resetAllMocks()
+		addFunctionReturnTypes.mockReset()
 	})
 
 	it('should pass default options when no arguments are provided', async (): Promise<void> => {
