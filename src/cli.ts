@@ -53,7 +53,27 @@ Options:
 
 export const parseArgv = (
 	argv: string[]
-): Partial<Record<"shallow" | "overwrite" | "ignore-any" | "ignore-unknown" | "ignore-anonymous-objects" | "ignore-expressions" | "ignore-functions-without-type-parameters" | "ignore-higher-order-functions" | "ignore-typed-function-expressions" | "ignore-iifes" | "ignore-concise-arrow-function-expressions-starting-with-void" | "ignore-anonymous-functions" | "dry-run", boolean>> & Partial<Record<"ignore-files" | "ignore-functions" | "tsconfig", string>> & { path?: string; } & { help?: boolean; } => {
+): Partial<
+	Record<
+		| 'shallow'
+		| 'overwrite'
+		| 'ignore-any'
+		| 'ignore-unknown'
+		| 'ignore-anonymous-objects'
+		| 'ignore-expressions'
+		| 'ignore-functions-without-type-parameters'
+		| 'ignore-higher-order-functions'
+		| 'ignore-typed-function-expressions'
+		| 'ignore-iifes'
+		| 'ignore-concise-arrow-function-expressions-starting-with-void'
+		| 'ignore-anonymous-functions'
+		| 'dry-run',
+		boolean
+	>
+> &
+	Partial<Record<'ignore-files' | 'ignore-functions' | 'tsconfig', string>> & {
+		path?: string
+	} & { help?: boolean } => {
 	const parsed: ParsedArgs & { help?: boolean } = {}
 
 	for (const arg of argv) {
@@ -112,7 +132,25 @@ const buildOptions = (
 			| 'dryRun'
 		>
 	>
-): { path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; } => ({
+): {
+	path: string
+	shallow: boolean
+	ignoreFiles: string[]
+	overwrite: boolean
+	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
+	ignoreExpressions: boolean
+	ignoreFunctionsWithoutTypeParameters: boolean
+	ignoreHigherOrderFunctions: boolean
+	ignoreTypedFunctionExpressions: boolean
+	ignoreIIFEs: boolean
+	ignoreFunctions: string[]
+	ignoreAnonymousObjects: boolean
+	ignoreAny: boolean
+	ignoreUnknown: boolean
+	ignoreAnonymousFunctions: boolean
+	dryRun: boolean
+	tsconfig: string | undefined
+} => ({
 	path,
 	shallow: flags.shallow ?? defaultOptions.shallow,
 	ignoreFiles: flags.ignoreFiles ?? defaultOptions.ignoreFiles,
@@ -232,7 +270,25 @@ const handleCancel = <T>(value: T | symbol): T | symbol => {
 	return value
 }
 
-const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; }> => {
+const promptForOptions = async (): Promise<{
+	path: string
+	shallow: boolean
+	ignoreFiles: string[]
+	overwrite: boolean
+	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
+	ignoreExpressions: boolean
+	ignoreFunctionsWithoutTypeParameters: boolean
+	ignoreHigherOrderFunctions: boolean
+	ignoreTypedFunctionExpressions: boolean
+	ignoreIIFEs: boolean
+	ignoreFunctions: string[]
+	ignoreAnonymousObjects: boolean
+	ignoreAny: boolean
+	ignoreUnknown: boolean
+	ignoreAnonymousFunctions: boolean
+	dryRun: boolean
+	tsconfig: string | undefined
+}> => {
 	p.intro('add-function-return-types')
 	p.log.message(
 		'A CLI tool to add explicit return types to TypeScript functions'
@@ -257,7 +313,7 @@ const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ign
 					message: `Select ${group.title.toLowerCase()} options to ignore`,
 					required: false,
 					options: group.options.map(
-						(option): { value: IgnoreValue; label: string; hint: string; } => ({
+						(option): { value: IgnoreValue; label: string; hint: string } => ({
 							value: option.value,
 							label: option.label,
 							hint: option.hint
