@@ -901,6 +901,7 @@ const typedFunction: () => number = function() {
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 
 		await runAddFunctionReturnTypes({
+			path: testDir,
 			overwrite: true,
 			ignoreHigherOrderFunctions: true
 		})
@@ -1514,4 +1515,44 @@ export const useSortTags = (
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(": TagsQuery['team']['tags']['edges'] => {")
 	})
+
+	it('self-hosts: adding return types to a copy of its own source changes nothing', async (): Promise<void> => {
+		// RUNNER_TEMP is set in GitHub Actions; os.tmpdir() covers local runs.
+		const testDir = await fs.mkdtemp(
+			path.join(process.env.RUNNER_TEMP || os.tmpdir(), 'self-host-')
+		)
+		const dest = path.join(testDir, 'src')
+		await fs.cp(path.join(process.cwd(), 'src'), dest, { recursive: true })
+
+		await runAddFunctionReturnTypes({ path: dest })
+
+		const originalFiles = await filesWithContent(
+			path.join(process.cwd(), 'src')
+		)
+		for (const [relativePath, original] of originalFiles) {
+			const processed = await fs.readFile(path.join(dest, relativePath), 'utf8')
+			expect(
+				processed,
+				`self-hosting modified ${relativePath}; the source is expected to be fully typed already`
+			).toBe(original)
+		}
+	})
 })
+
+async function filesWithContent(
+	root: string
+): Promise<Map<string, string>> {
+	const files = new Map<string, string>()
+	async function walk(dir: string): Promise<void> {
+		for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name)
+			if (entry.isDirectory()) {
+				await walk(full)
+			} else if (entry.name.endsWith('.ts')) {
+				files.set(path.relative(root, full), await fs.readFile(full, 'utf8'))
+			}
+		}
+	}
+	await walk(root)
+	return files
+}

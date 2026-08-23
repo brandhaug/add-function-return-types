@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
 import * as clack from '@clack/prompts'
 
 // Mock addFunctionReturnTypes before importing the CLI so main() never
@@ -86,19 +86,26 @@ describe('cli', (): void => {
 		)
 	})
 
-	it('exits gracefully when a prompt is cancelled', async (): Promise<void> => {
+	it('returns gracefully when a prompt is cancelled', async (): Promise<void> => {
 		clack.isCancel.mockReturnValue(true)
-		const exitSpy = spyOn(process, 'exit').mockImplementation((): never => {
-			throw new Error('process.exit called')
-		})
 
-		try {
-			await expect(main()).rejects.toThrow('process.exit called')
-		} finally {
-			exitSpy.mockRestore()
-		}
+		await main()
 
 		expect(clack.cancel).toHaveBeenCalledWith('Operation cancelled')
 		expect(addFunctionReturnTypes).not.toHaveBeenCalled()
+	})
+
+	it('prints usage for --help without running the migration', async (): Promise<void> => {
+		await main(['--help'])
+
+		expect(addFunctionReturnTypes).not.toHaveBeenCalled()
+	})
+
+	it('rejects unknown flags instead of treating them as a path', async (): Promise<void> => {
+		await main(['src', '--dr-run'])
+
+		expect(process.exitCode).toBe(1)
+		expect(addFunctionReturnTypes).not.toHaveBeenCalled()
+		process.exitCode = 0
 	})
 })
