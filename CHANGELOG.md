@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.0.1](https://github.com/brandhaug/add-function-return-types/compare/v4.0.0...v4.0.1) (2026-08-23)
+
+
+### Bug Fixes
+
+* **cli:** strict argument parsing and graceful cancellation ([#29](https://github.com/brandhaug/add-function-return-types/issues/29)) ([b6e158a](https://github.com/brandhaug/add-function-return-types/commit/b6e158a1e71357f7959ede770f0456e373ff0cd6))
+* ignore CHANGELOG.md in oxfmt and apply outstanding formatting ([#27](https://github.com/brandhaug/add-function-return-types/issues/27)) ([73c6772](https://github.com/brandhaug/add-function-return-types/commit/73c677213ee4dd9d91ebe2cf084f90526a371b17))
+
 ## [4.0.0](https://github.com/brandhaug/add-function-return-types/compare/v3.7.1...v4.0.0) (2026-08-22)
 
 
