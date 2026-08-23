@@ -26,12 +26,44 @@ type ParsedArgs = Partial<Record<(typeof booleanFlags)[number], boolean>> &
 const booleanFlagSet: ReadonlySet<string> = new Set(booleanFlags)
 const valueFlagSet: ReadonlySet<string> = new Set(valueFlags)
 
-export const parseArgv = (argv: string[]): ParsedArgs => {
-	const parsed: ParsedArgs = {}
+const usage = `Usage: add-function-return-types [path] [options]
+
+Positional:
+  path                     Directory or file to process
+
+Options:
+  --shallow                Process only the top-level directory
+  --overwrite              Overwrite existing return types
+  --dry-run                Preview changes without modifying files
+  --tsconfig=<path>        Path to a tsconfig.json for type resolution
+  --ignore-files=<glob,..> File patterns to ignore
+  --ignore-functions=<names>
+                           Function names to ignore
+  --ignore-any             Ignore 'any' return types (and more, see README)
+  --ignore-unknown         Ignore 'unknown' return types
+  --ignore-anonymous-objects
+  --ignore-expressions
+  --ignore-functions-without-type-parameters
+  --ignore-higher-order-functions
+  --ignore-typed-function-expressions
+  --ignore-iifes
+  --ignore-concise-arrow-function-expressions-starting-with-void
+  --ignore-anonymous-functions
+  -h, --help               Show this help`
+
+export const parseArgv = (
+	argv: string[]
+): Partial<Record<"shallow" | "overwrite" | "ignore-any" | "ignore-unknown" | "ignore-anonymous-objects" | "ignore-expressions" | "ignore-functions-without-type-parameters" | "ignore-higher-order-functions" | "ignore-typed-function-expressions" | "ignore-iifes" | "ignore-concise-arrow-function-expressions-starting-with-void" | "ignore-anonymous-functions" | "dry-run", boolean>> & Partial<Record<"ignore-files" | "ignore-functions" | "tsconfig", string>> & { path?: string; } & { help?: boolean; } => {
+	const parsed: ParsedArgs & { help?: boolean } = {}
 
 	for (const arg of argv) {
 		const [rawKey, inlineValue] = arg.split('=', 2)
 		const key = (rawKey ?? '').replace(/^--/, '')
+
+		if (key === 'help' || key === 'h') {
+			parsed.help = true
+			continue
+		}
 
 		if (booleanFlagSet.has(key)) {
 			Object.assign(parsed, { [key]: true })
@@ -39,13 +71,16 @@ export const parseArgv = (argv: string[]): ParsedArgs => {
 		}
 
 		if (!valueFlagSet.has(key)) {
+			if (arg.startsWith('-')) {
+				throw new Error(`Unknown option: ${arg}`)
+			}
 			parsed.path = key
 			continue
 		}
 
 		const value = inlineValue ?? ''
 		if (value === '') {
-			throw new Error(`Missing value for --${key}`)
+			throw new Error(`Missing value for --${key} (use --${key}=<value>)`)
 		}
 		Object.assign(parsed, { [key]: value })
 	}
@@ -188,13 +223,13 @@ const ignoreOptionGroups: { title: string; options: IgnoreOption[] }[] = [
 	}
 ]
 
-const handleCancel = <T>(value: T | symbol): T => {
-	const cancelled: boolean = p.isCancel(value)
-	if (cancelled) {
-		p.cancel('Operation cancelled')
-		process.exit(0)
+class CancelledError extends Error {}
+
+const handleCancel = <T>(value: T | symbol): T | symbol => {
+	if (p.isCancel(value)) {
+		throw new CancelledError()
 	}
-	return value as T
+	return value
 }
 
 const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; }> => {
@@ -285,44 +320,69 @@ const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ign
 	})
 }
 
-export async function main(): Promise<void> {
-	const userArguments = process.argv.slice(2)
+export async function main(
+	argv: string[] = process.argv.slice(2)
+): Promise<void> {
+	const userArguments = [...argv]
 
-	let options: Options
-
-	if (userArguments.length > 0) {
-		// Legacy non-interactive mode: flags were passed on the command line.
-		const parsed = parseArgv(userArguments)
-		options = buildOptions(parsed.path ?? defaultOptions.path, {
-			shallow: parsed['shallow'],
-			overwrite: parsed['overwrite'],
-			ignoreAny: parsed['ignore-any'],
-			ignoreUnknown: parsed['ignore-unknown'],
-			ignoreAnonymousObjects: parsed['ignore-anonymous-objects'],
-			ignoreExpressions: parsed['ignore-expressions'],
-			ignoreFunctionsWithoutTypeParameters:
-				parsed['ignore-functions-without-type-parameters'],
-			ignoreHigherOrderFunctions: parsed['ignore-higher-order-functions'],
-			ignoreTypedFunctionExpressions:
-				parsed['ignore-typed-function-expressions'],
-			ignoreIIFEs: parsed['ignore-iifes'],
-			ignoreConciseArrowFunctionExpressionsStartingWithVoid:
-				parsed['ignore-concise-arrow-function-expressions-starting-with-void'],
-			ignoreAnonymousFunctions: parsed['ignore-anonymous-functions'],
-			dryRun: parsed['dry-run'],
-			ignoreFiles: parsed['ignore-files']?.split(','),
-			ignoreFunctions: parsed['ignore-functions']?.split(','),
-			tsconfig: parsed['tsconfig']
-		})
-	} else {
-		options = await promptForOptions()
+	if (userArguments.includes('--help') || userArguments.includes('-h')) {
+		console.log(usage)
+		return
 	}
 
-	await addFunctionReturnTypes(options)
+	try {
+		let options: Options
 
-	p.outro(
-		options.dryRun
-			? 'Dry run complete — no files were modified'
-			: 'Done! Explicit return types have been added.'
-	)
+		if (userArguments.length > 0) {
+			// Non-interactive mode: flags were passed on the command line.
+			let parsed: ReturnType<typeof parseArgv>
+			try {
+				parsed = parseArgv(userArguments)
+			} catch (error) {
+				console.error(error instanceof Error ? error.message : error)
+				console.error(`\n${usage}`)
+				process.exitCode = 1
+				return
+			}
+			options = buildOptions(parsed.path ?? defaultOptions.path, {
+				shallow: parsed['shallow'],
+				overwrite: parsed['overwrite'],
+				ignoreAny: parsed['ignore-any'],
+				ignoreUnknown: parsed['ignore-unknown'],
+				ignoreAnonymousObjects: parsed['ignore-anonymous-objects'],
+				ignoreExpressions: parsed['ignore-expressions'],
+				ignoreFunctionsWithoutTypeParameters:
+					parsed['ignore-functions-without-type-parameters'],
+				ignoreHigherOrderFunctions: parsed['ignore-higher-order-functions'],
+				ignoreTypedFunctionExpressions:
+					parsed['ignore-typed-function-expressions'],
+				ignoreIIFEs: parsed['ignore-iifes'],
+				ignoreConciseArrowFunctionExpressionsStartingWithVoid:
+					parsed[
+						'ignore-concise-arrow-function-expressions-starting-with-void'
+					],
+				ignoreAnonymousFunctions: parsed['ignore-anonymous-functions'],
+				dryRun: parsed['dry-run'],
+				ignoreFiles: parsed['ignore-files']?.split(','),
+				ignoreFunctions: parsed['ignore-functions']?.split(','),
+				tsconfig: parsed['tsconfig']
+			})
+		} else {
+			options = await promptForOptions()
+		}
+
+		await addFunctionReturnTypes(options)
+
+		p.outro(
+			options.dryRun
+				? 'Dry run complete — no files were modified'
+				: 'Done! Explicit return types have been added.'
+		)
+	} catch (error) {
+		if (error instanceof CancelledError) {
+			p.cancel('Operation cancelled')
+			return
+		}
+		throw error
+	}
 }
