@@ -23,16 +23,7 @@ export const log = {
 
 mock.module(
 	'@clack/prompts',
-	(): {
-		intro: any
-		outro: any
-		cancel: any
-		log: { message: any; info: any; warn: any; error: any }
-		isCancel: any
-		text: any
-		confirm: any
-		multiselect: any
-	} => ({
+	(): { intro: any; outro: any; cancel: any; log: { message: any; info: any; warn: any; error: any; }; isCancel: any; text: any; confirm: any; multiselect: any; } => ({
 		intro,
 		outro,
 		cancel,
