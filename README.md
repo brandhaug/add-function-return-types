@@ -7,7 +7,7 @@ A CLI tool and library that adds explicit return types to TypeScript functions u
 
 ## About
 
-TypeScript can infer return types, but explicit return types improve readability, catch accidental changes, and are required by linting rules like [`@typescript-eslint/explicit-function-return-type`](https://typescript-eslint.io/rules/explicit-function-return-type/). This tool adds them automatically by analyzing your code with [ts-morph](https://github.com/dsherret/ts-morph).
+TypeScript infers return types, but explicit ones improve readability, catch accidental changes, and satisfy rules like [`@typescript-eslint/explicit-function-return-type`](https://typescript-eslint.io/rules/explicit-function-return-type/). This tool adds them automatically by analyzing your code with [ts-morph](https://github.com/dsherret/ts-morph).
 
 ## Installation
 
@@ -21,9 +21,7 @@ Or run directly with npx:
 npx add-function-return-types
 ```
 
-### Requirements
-
-- Node.js >= 20
+Requires Node.js >= 20.
 
 ## Usage
 
@@ -31,124 +29,79 @@ npx add-function-return-types
 add-function-return-types [path] [options]
 ```
 
-By default, the tool:
+With no arguments the CLI runs an interactive prompt flow; passing a path or any flag runs non-interactively.
 
-- Uses the current working directory as the root path
-- Processes all `.ts` and `.tsx` files recursively
-- Ignores `node_modules` and `.d.ts` files
-- Saves files in place with the added return types
+By default the tool:
 
-Functions whose inferred return type is `any` (including `Promise<any>` and `any[]`) are always skipped — `any` is never written as an explicit return type, since an explicit `any` is strictly worse than no annotation.
+- Processes all `.ts` and `.tsx` files under the given path, recursively
+- Ignores `node_modules`, `.d.ts`, and generated codegen output (`*.gen.ts`, `*.generated.ts`, `__generated__/`, `generated/`)
+- Never writes `any` return types — `any` (including `Promise<any>` and `any[]`) is always skipped, since an explicit `any` is worse than no annotation
+- Skips function expressions whose type is fixed by context (e.g. callbacks passed to typed functions)
+- Extracts complex inferred return types into named exported type aliases instead of inlining huge types
+- Adds imports for named types referenced by inferred return types
+- Formats modified files with the project's formatter (oxfmt, prettier, or biome), or wraps long types manually when none is detected
+- Type-checks modified files afterwards and auto-reverts any that gained new type errors
+- Processes files in parallel and caches results on disk (`.add-function-return-types-cache.json`) so re-runs skip unchanged files
+
+After each run it prints a summary of annotations, skips, and files changed (`--json` for machine-readable output).
 
 ### Examples
 
-Process the current directory:
-
 ```bash
-add-function-return-types
+add-function-return-types                       # interactive
+add-function-return-types src/                  # process a specific directory
+add-function-return-types src/ --dry-run        # preview without writing files
+add-function-return-types --json                # machine-readable summary
+add-function-return-types --include-generated   # also process codegen output
 ```
 
-Process a specific directory:
+### Configuration
 
-```bash
-add-function-return-types src/
-```
+Key options; run `add-function-return-types --help` for the full list.
 
-Ignore generated files and specific functions:
-
-```bash
-add-function-return-types --ignore-files "src/generated/**,tests/**" --ignore-functions "map,filter"
-```
-
-Preview changes without modifying files:
-
-```bash
-add-function-return-types --dry-run
-```
-
-Use a specific tsconfig for type resolution:
-
-```bash
-add-function-return-types --tsconfig tsconfig.app.json
-```
+| Option                                           | Description                                                 |
+| ------------------------------------------------ | ----------------------------------------------------------- |
+| `--dry-run`                                      | Preview changes without modifying files                     |
+| `--overwrite`                                    | Overwrite functions that already have a return type         |
+| `--ignore-files <glob,..>`                       | Comma-separated file patterns to ignore                     |
+| `--ignore-functions <names>`                     | Comma-separated function names to ignore                    |
+| `--include-generated`                            | Also process generated codegen output                       |
+| `--no-cache` / `--clear-cache`                   | Disable / clear the on-disk incremental cache               |
+| `--max-type-length=<n>` / `--max-type-depth=<n>` | Thresholds that trigger extracting a named type alias       |
+| `--no-format`                                    | Skip formatting modified files with the project's formatter |
+| `--no-verify`                                    | Skip post-run type-checking and auto-revert                 |
+| `--json`                                         | Emit a machine-readable JSON summary                        |
+| `--tsconfig <path>`                              | Use a specific tsconfig.json for type resolution            |
 
 ### Programmatic API
 
-The core function can also be imported directly:
-
 ```typescript
-import { addFunctionReturnTypes } from 'add-function-return-types'
+import {
+	addFunctionReturnTypes,
+	defaultOptions
+} from 'add-function-return-types'
 
 await addFunctionReturnTypes({
+	...defaultOptions,
 	path: './src',
-	shallow: false,
-	overwrite: false,
-	ignoreFiles: ['src/generated/**'],
-	ignoreFunctions: [],
-	ignoreUnknown: false,
-	ignoreAnonymousObjects: false,
-	ignoreAnonymousFunctions: false,
-	ignoreExpressions: false,
-	ignoreFunctionsWithoutTypeParameters: false,
-	ignoreHigherOrderFunctions: false,
-	ignoreTypedFunctionExpressions: false,
-	ignoreIIFEs: false,
-	ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
-	dryRun: false,
-	tsconfig: undefined
+	dryRun: true
 })
 ```
 
-## Options
-
-| Option                                                           | Description                                                                         |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `--shallow`                                                      | Only process the top-level directory (no recursion)                                 |
-| `--overwrite`                                                    | Overwrite functions that already have return types                                  |
-| `--ignore-files <patterns>`                                      | Comma-separated file glob patterns to ignore                                        |
-| `--ignore-functions <names>`                                     | Comma-separated function/method names to ignore                                     |
-| `--ignore-unknown`                                               | Skip functions that return `unknown` (functions returning `any` are always skipped) |
-| `--ignore-anonymous-objects`                                     | Skip functions that return anonymous object types                                   |
-| `--ignore-anonymous-functions`                                   | Skip anonymous functions (functions without names)                                  |
-| `--ignore-expressions`                                           | Skip function expressions (not part of a declaration)                               |
-| `--ignore-functions-without-type-parameters`                     | Skip functions without generic type parameters                                      |
-| `--ignore-higher-order-functions`                                | Skip functions that immediately return another function                             |
-| `--ignore-typed-function-expressions`                            | Skip function expressions with type annotations on the variable                     |
-| `--ignore-iifes`                                                 | Skip immediately-invoked function expressions                                       |
-| `--ignore-concise-arrow-function-expressions-starting-with-void` | Skip arrow functions starting with `void`                                           |
-| `--dry-run`                                                      | Preview changes without modifying files                                             |
-| `--tsconfig <path>`                                              | Path to a tsconfig.json file for type resolution                                    |
+`defaultOptions` (and the `Options` type) are exported; the object accepts the same options as the CLI flags.
 
 ## Contributing
 
-Contributions are welcome! Feel free to [open an issue](https://github.com/brandhaug/add-function-return-types/issues) or submit a pull request.
-
-### Development setup
+Contributions are welcome — feel free to [open an issue](https://github.com/brandhaug/add-function-return-types/issues) or submit a pull request.
 
 ```bash
 git clone https://github.com/brandhaug/add-function-return-types.git
 cd add-function-return-types
 npm install
 npm run build
-```
-
-### Running tests
-
-```bash
 npm test
 ```
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
-### Generated files
-
-By default, common codegen output is ignored:
-
-- `*.gen.ts` / `*.gen.tsx` (e.g. TanStack Router's `routeTree.gen.ts`)
-- `*.generated.ts` / `*.generated.tsx` (e.g. GraphQL codegen)
-- `**/__generated__/**`
-- `**/generated/**`
-
-Pass `--include-generated` to process these files too. You can always add your own patterns with `--ignore-files`.
