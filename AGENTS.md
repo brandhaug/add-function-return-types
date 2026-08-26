@@ -28,24 +28,24 @@ There is no dev server or watch mode — this is a CLI tool.
 
 ## Testing
 
-- **Framework:** Vitest
-- **Config:** `vitest.config.ts`
+- **Framework:** bun test (`bun:test` imports)
 - **Test location:** `test/` directory
 - **Naming convention:** `*.test.ts`
 
 ```sh
-npm test                              # Run all tests (watch mode)
-npx vitest run                        # Run all tests once
-npx vitest run -t "test name"         # Run a specific test
-npx vitest run test/utils.test.ts     # Run a specific file
+npm test                              # Run all tests once (bun test --isolate)
+bun test                              # Run all tests
+bun test -t "test name"               # Run a specific test
+bun test test/utils.test.ts           # Run a specific file
 ```
 
 Test files:
 
 - `test/add-function-return-types.test.ts` — Core functionality (extensive edge cases)
 - `test/cli.test.ts` — CLI argument parsing
+- `test/cache.test.ts` — Incremental cache and cache invalidation
 - `test/utils.test.ts` — Utility functions
-- `test/index.test.ts` — Module exports
+- `test/index.test.ts` — CLI prompt flow (uses `test/mocks/setup-clack.ts`)
 
 ## Linting & Formatting
 
@@ -81,13 +81,13 @@ src/
   add-function-return-types.ts    # Core logic (AST manipulation)
   utils.ts                        # Utility functions
 test/
-  *.test.ts                       # Vitest test files
+  *.test.ts                       # bun test files
 dist/                             # Compiled output (gitignored)
 ```
+
 ## Commit & Release Conventions
 
 - **All commits and PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/)**: `type(scope): subject`, where `type` is one of `feat`, `fix`, `chore`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `revert`. Use `!` or a `BREAKING CHANGE:` footer for breaking changes.
 - This convention is enforced by the **PR Gate** workflow (`.github/workflows/pr-gate.yml`), which fails any PR whose title does not conform.
 - Releases are automated by [release-please](https://github.com/googleapis/release-please-action): merging Conventional Commits to `master` opens a release PR titled `chore(master): release ...`; merging it tags and publishes the release.
 - `CLAUDE.md` is a symlink to this file so Claude Code reads the same conventions.
-

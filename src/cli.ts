@@ -332,7 +332,8 @@ const promptForOptions = async (): Promise<Options> => {
 }
 
 export async function main(
-	argv: string[] = process.argv.slice(2)
+	argv: string[] = process.argv.slice(2),
+	run: typeof addFunctionReturnTypes = addFunctionReturnTypes
 ): Promise<void> {
 	const userArguments = [...argv]
 
@@ -384,7 +385,7 @@ export async function main(
 			options = await promptForOptions()
 		}
 
-		await addFunctionReturnTypes(options)
+		await run(options)
 
 		p.outro(
 			options.dryRun

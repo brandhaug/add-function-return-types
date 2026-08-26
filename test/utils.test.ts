@@ -14,7 +14,7 @@ describe.concurrent('utils', (): void => {
 
 	describe('findRepoRoot', (): void => {
 		it('should find repository root with .git directory', async (): Promise<void> => {
-			const testDir = await fs.mkdtemp(tmpDir)
+			const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 			try {
 				// Create minimal structure needed for this test
 				await fs.mkdir(path.join(testDir, '.git'), { recursive: true })
@@ -29,7 +29,7 @@ describe.concurrent('utils', (): void => {
 		})
 
 		it('should return start path when no .git directory exists', async (): Promise<void> => {
-			const testDir = await fs.mkdtemp(tmpDir)
+			const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 			try {
 				const noGitDir = path.join(testDir, 'no-git')
 				await fs.mkdir(noGitDir, { recursive: true })
@@ -44,7 +44,7 @@ describe.concurrent('utils', (): void => {
 
 	describe('findPackageJsonFiles', (): void => {
 		it('should find all package.json files in the repository', async (): Promise<void> => {
-			const testDir = await fs.mkdtemp(tmpDir)
+			const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 			try {
 				// Create test package.json files
 				await fs.mkdir(path.join(testDir, 'packages', 'a'), { recursive: true })
@@ -68,7 +68,7 @@ describe.concurrent('utils', (): void => {
 
 	describe('getDependencies', (): void => {
 		it('should extract all dependencies from package.json files', async (): Promise<void> => {
-			const testDir = await fs.mkdtemp(tmpDir)
+			const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 			try {
 				// Create test package.json files with dependencies
 				await fs.mkdir(path.join(testDir, 'packages', 'a'), { recursive: true })
@@ -108,7 +108,7 @@ describe.concurrent('utils', (): void => {
 		})
 
 		it('should handle invalid package.json files', async (): Promise<void> => {
-			const testDir = await fs.mkdtemp(tmpDir)
+			const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 			try {
 				// Create one valid and one invalid package.json
 				await fs.mkdir(path.join(testDir, 'packages', 'b'), { recursive: true })
