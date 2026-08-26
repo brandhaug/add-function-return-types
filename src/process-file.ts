@@ -69,6 +69,23 @@ export async function processFile(
 				}
 			}
 
+			// ignoreContextuallyTypedFunctionExpressions: skip function expressions
+			// whose type is already fixed by context (e.g. arguments to a call,
+			// tagged templates, or properties of object literals with a known
+			// contextual type). Annotating these yields huge structural expansions.
+			if (
+				options.ignoreContextuallyTypedFunctionExpressions &&
+				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
+			) {
+				const contextualType = node.getContextualType()
+				if (
+					contextualType !== undefined &&
+					contextualType.getCallSignatures().length > 0
+				) {
+					return
+				}
+			}
+
 			// ignoreFunctionsWithoutTypeParameters: ignore functions that don't have generic type parameters
 			if (
 				options.ignoreFunctionsWithoutTypeParameters &&

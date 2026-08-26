@@ -41,6 +41,8 @@ export function computeOptionsHash(options: Options): string {
 		ignoreHigherOrderFunctions: options.ignoreHigherOrderFunctions,
 		ignoreIIFEs: options.ignoreIIFEs,
 		ignoreTypedFunctionExpressions: options.ignoreTypedFunctionExpressions,
+		ignoreContextuallyTypedFunctionExpressions:
+			options.ignoreContextuallyTypedFunctionExpressions,
 		ignoreFunctions: options.ignoreFunctions.toSorted(),
 		overwrite: options.overwrite,
 		ignoreAnonymousObjects: options.ignoreAnonymousObjects,

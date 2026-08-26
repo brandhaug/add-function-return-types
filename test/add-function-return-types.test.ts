@@ -830,7 +830,10 @@ const typedFunction: () => number = function() {
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
-		await runAddFunctionReturnTypes({ path: testDir })
+		await runAddFunctionReturnTypes({
+			path: testDir,
+			ignoreContextuallyTypedFunctionExpressions: false
+		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain(
@@ -1549,3 +1552,81 @@ async function filesWithContent(root: string): Promise<Map<string, string>> {
 	await walk(root)
 	return files
 }
+
+describe.concurrent('contextually typed function expressions', (): void => {
+	const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
+
+	const run = async (
+		sourceCode: string,
+		overrides: Partial<Options> = {}
+	): Promise<string> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
+		await fs.writeFile(filePath, sourceCode)
+		await addFunctionReturnTypes({
+			...defaultOptions,
+			...overrides,
+			path: testDir
+		})
+		return fs.readFile(filePath, 'utf-8')
+	}
+
+	it('skips arrow function arguments to calls by default', async (): Promise<void> => {
+		const updatedSource = await run(
+			`
+declare function takesCb(cb: () => number): void;
+takesCb(() => 1);
+`.trim()
+		)
+
+		expect(updatedSource).toContain('takesCb(() => 1)')
+	})
+
+	it('skips arrow functions in tagged templates by default', async (): Promise<void> => {
+		const updatedSource = await run(
+			`
+declare function tag(strings: TemplateStringsArray, cb: () => number): string;
+const result = tag\`value: \${() => 42}\`;
+`.trim()
+		)
+
+		expect(updatedSource).toContain('${() => 42}')
+	})
+
+	it('skips object literal properties with a contextual type by default', async (): Promise<void> => {
+		const updatedSource = await run(
+			`
+type Cfg = { get: () => number; name: string };
+declare function make(cfg: Cfg): void;
+make({ name: 'x', get: () => 1 });
+`.trim()
+		)
+
+		expect(updatedSource).toContain('get: () => 1')
+	})
+
+	it('still annotates standalone arrows when skipping contextual callbacks', async (): Promise<void> => {
+		const updatedSource = await run(
+			`
+declare function takesCb(cb: () => number): void;
+takesCb(() => 1);
+const standalone = () => 2;
+`.trim()
+		)
+
+		expect(updatedSource).toContain('takesCb(() => 1)')
+		expect(updatedSource).toContain('const standalone = (): number =>')
+	})
+
+	it('annotates contextual callbacks when the option is disabled', async (): Promise<void> => {
+		const updatedSource = await run(
+			`
+declare function takesCb(cb: () => number): void;
+takesCb(() => 1);
+`.trim(),
+			{ ignoreContextuallyTypedFunctionExpressions: false }
+		)
+
+		expect(updatedSource).toContain('takesCb((): number => 1)')
+	})
+})
