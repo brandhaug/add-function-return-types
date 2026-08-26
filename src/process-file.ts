@@ -214,8 +214,8 @@ export async function processFile(
 					return
 				}
 
-				// ignoreAny: ignore functions that return the any type
-				if (options.ignoreAny && /\bany\b/.test(typeText)) {
+				// Never emit `any`: an explicit `any` annotation is strictly worse than no annotation.
+				if (/\bany\b/.test(typeText)) {
 					return
 				}
 

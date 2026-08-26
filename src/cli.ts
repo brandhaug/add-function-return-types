@@ -5,7 +5,6 @@ import { defaultOptions, type Options } from './options.js'
 const booleanFlags = [
 	'shallow',
 	'overwrite',
-	'ignore-any',
 	'ignore-unknown',
 	'ignore-anonymous-objects',
 	'ignore-expressions',
@@ -48,8 +47,7 @@ Options:
   --ignore-files=<glob,..> File patterns to ignore
   --ignore-functions=<names>
                            Function names to ignore
-  --ignore-any             Ignore 'any' return types (and more, see README)
-  --ignore-unknown         Ignore 'unknown' return types
+    --ignore-unknown         Ignore 'unknown' return types
   --ignore-anonymous-objects
   --ignore-expressions
   --ignore-functions-without-type-parameters
@@ -106,7 +104,6 @@ const buildOptions = (
 		Pick<
 			Options,
 			| 'overwrite'
-			| 'ignoreAny'
 			| 'ignoreUnknown'
 			| 'ignoreAnonymousObjects'
 			| 'ignoreExpressions'
@@ -144,7 +141,6 @@ const buildOptions = (
 	ignoreFunctions: flags.ignoreFunctions ?? defaultOptions.ignoreFunctions,
 	ignoreAnonymousObjects:
 		flags.ignoreAnonymousObjects ?? defaultOptions.ignoreAnonymousObjects,
-	ignoreAny: flags.ignoreAny ?? defaultOptions.ignoreAny,
 	ignoreUnknown: flags.ignoreUnknown ?? defaultOptions.ignoreUnknown,
 	ignoreAnonymousFunctions:
 		flags.ignoreAnonymousFunctions ?? defaultOptions.ignoreAnonymousFunctions,
@@ -189,7 +185,6 @@ const ignoreOptionGroups: { title: string; options: IgnoreOption[] }[] = [
 	{
 		title: 'Return types',
 		options: [
-			{ value: 'ignoreAny', label: 'Ignore any', hint: 'Return type any' },
 			{
 				value: 'ignoreUnknown',
 				label: 'Ignore unknown',
@@ -313,7 +308,6 @@ const promptForOptions = async (): Promise<Options> => {
 		shallow: flagFor('shallow'),
 		ignoreExpressions: flagFor('ignoreExpressions'),
 		ignoreAnonymousFunctions: flagFor('ignoreAnonymousFunctions'),
-		ignoreAny: flagFor('ignoreAny'),
 		ignoreUnknown: flagFor('ignoreUnknown'),
 		ignoreAnonymousObjects: flagFor('ignoreAnonymousObjects'),
 		ignoreFunctionsWithoutTypeParameters: flagFor(
@@ -359,7 +353,6 @@ export async function main(
 			options = buildOptions(parsed.path ?? defaultOptions.path, {
 				shallow: parsed['shallow'],
 				overwrite: parsed['overwrite'],
-				ignoreAny: parsed['ignore-any'],
 				ignoreUnknown: parsed['ignore-unknown'],
 				ignoreAnonymousObjects: parsed['ignore-anonymous-objects'],
 				ignoreExpressions: parsed['ignore-expressions'],
