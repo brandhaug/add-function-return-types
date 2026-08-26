@@ -46,6 +46,8 @@ describe('cli prompts', (): void => {
 			dryRun: false,
 			json: false,
 			includeGenerated: false,
+			maxTypeLength: 150,
+			maxTypeDepth: 4,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
@@ -76,6 +78,8 @@ describe('cli prompts', (): void => {
 				dryRun: true,
 				json: false,
 				includeGenerated: false,
+				maxTypeLength: 150,
+				maxTypeDepth: 4,
 				overwrite: false,
 				ignoreExpressions: false,
 				tsconfig: 'tsconfig.app.json',

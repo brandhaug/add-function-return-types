@@ -1,11 +1,111 @@
-import { type Expression, Node, type Project, SyntaxKind, ts } from 'ts-morph'
+import {
+	type ArrowFunction,
+	type Expression,
+	type FunctionDeclaration,
+	type FunctionExpression,
+	type MethodDeclaration,
+	Node,
+	type Project,
+	type SourceFile,
+	SyntaxKind,
+	ts,
+	type TypeParameterDeclaration
+} from 'ts-morph'
 import type { Options } from './options.js'
+import { getTypeNestingDepth } from './utils.js'
 import { recordAnnotation, recordSkip, type RunStats } from './stats.js'
 import {
 	ensureImports,
 	planAnnotation,
 	type ExternalTypeRef
 } from './add-type-imports.js'
+
+
+type FunctionLikeNode =
+	| FunctionDeclaration
+	| FunctionExpression
+	| ArrowFunction
+	| MethodDeclaration
+
+/**
+ * Derives a base name for a function-like declaration, used for naming
+ * extracted type aliases. Returns undefined when no usable name exists.
+ */
+function getFunctionBaseName(node: FunctionLikeNode): string | undefined {
+	if (
+		Node.isFunctionDeclaration(node) ||
+		Node.isMethodDeclaration(node) ||
+		Node.isFunctionExpression(node)
+	) {
+		return node.getName() ?? undefined
+	}
+
+	if (Node.isArrowFunction(node)) {
+		const parent = node.getParent()
+		if (Node.isVariableDeclaration(parent)) return parent.getName()
+		if (Node.isPropertyDeclaration(parent)) return parent.getName()
+		if (Node.isPropertyAssignment(parent)) return parent.getName()
+		if (
+			Node.isBinaryExpression(parent) &&
+			parent.getOperatorToken().getKind() === SyntaxKind.EqualsToken &&
+			Node.isIdentifier(parent.getLeft())
+		) {
+			return parent.getLeft().getText()
+		}
+	}
+
+	return undefined
+}
+
+/**
+ * Extracts an overly complex inferred return type into an exported type alias
+ * placed near the top of the file (after imports), and returns the alias name.
+ * Returns undefined if extraction is unsafe (anonymous functions, or types
+ * referencing the function's own type parameters).
+ */
+function extractTypeAlias(
+	sourceFile: SourceFile,
+	node: FunctionLikeNode,
+	typeText: string
+): string | undefined {
+	const baseName = getFunctionBaseName(node)
+	if (!baseName) return undefined
+
+	const typeParamNames = new Set(
+		node
+			.getTypeParameters()
+			.map((param: TypeParameterDeclaration): string => param.getName())
+	)
+	for (const name of typeParamNames) {
+		if (new RegExp(`\\b${name}\\b`).test(typeText)) return undefined
+	}
+
+	const pascalName = baseName
+		.replace(/[^a-zA-Z0-9]/g, '')
+		.replace(/^./, (c: string): string => c.toUpperCase())
+	if (!pascalName) return undefined
+
+	let aliasName = `${pascalName}Return`
+	let suffix = 2
+	while (sourceFile.getTypeAlias(aliasName)) {
+		aliasName = `${pascalName}Return${suffix}`
+		suffix++
+	}
+
+	let insertIndex = 0
+	const statements = sourceFile.getStatements()
+	for (const [index, statement] of statements.entries()) {
+		if (Node.isImportDeclaration(statement)) insertIndex = index + 1
+	}
+
+	sourceFile.insertTypeAlias(insertIndex, {
+		isExported: true,
+		name: aliasName,
+		type: typeText
+	})
+
+	return aliasName
+}
 
 /**
  * Processes a single TypeScript file, adding explicit return types to functions where needed.
@@ -267,6 +367,20 @@ export async function processFile(
 				// ignoreUnknown: ignore functions that return the unknown type
 				if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
 					if (stats) recordSkip(stats, 'ignoreUnknown')
+					return
+				}
+
+				// Complexity guard: cap printed length and nesting depth by
+				// extracting the type into a named exported alias when possible.
+				const nestingDepth = getTypeNestingDepth(typeText)
+				if (
+					typeText.length > options.maxTypeLength ||
+					nestingDepth > options.maxTypeDepth
+				) {
+					const aliasName = extractTypeAlias(sourceFile, node, typeText)
+					if (!aliasName) return
+					node.setReturnType(aliasName)
+					modified = true
 					return
 				}
 

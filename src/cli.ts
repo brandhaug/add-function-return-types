@@ -22,7 +22,13 @@ const booleanFlags = [
 	'json'
 ] as const
 
-const valueFlags = ['ignore-files', 'ignore-functions', 'tsconfig'] as const
+const valueFlags = [
+	'ignore-files',
+	'ignore-functions',
+	'tsconfig',
+	'max-type-length',
+	'max-type-depth'
+] as const
 
 type ParsedArgs = Partial<Record<(typeof booleanFlags)[number], boolean>> &
 	Partial<Record<(typeof valueFlags)[number], string>> & {
@@ -46,6 +52,10 @@ Options:
   --dry-run                Preview changes without modifying files
   --no-cache               Disable the incremental cache
   --clear-cache            Delete the cache file before processing
+  --max-type-length=<n>    Max printed type length before extracting a named
+                           type alias (default 150)
+  --max-type-depth=<n>     Max type nesting depth before extracting a named
+                           type alias (default 4)
   --include-generated      Also process generated files (*.gen.ts, *.generated.ts, __generated__/, generated/)
   --json                   Emit machine-readable JSON summary instead of a table
   --tsconfig=<path>        Path to a tsconfig.json for type resolution
@@ -106,6 +116,14 @@ export const parseArgv = (argv: string[]): ParsedArgs => {
 	return parsed
 }
 
+const parseNumberFlag = (key: string, value: string): number => {
+	const parsed = Number(value)
+	if (!Number.isFinite(parsed) || parsed < 0) {
+		throw new Error(`Invalid value for --${key}: ${value}`)
+	}
+	return parsed
+}
+
 const buildOptions = (
 	path: string,
 	flags: {
@@ -131,6 +149,8 @@ const buildOptions = (
 			| 'useCache'
 			| 'clearCache'
 			| 'includeGenerated'
+			| 'maxTypeLength'
+			| 'maxTypeDepth'
 			| 'json'
 		>
 	>
@@ -169,6 +189,8 @@ const buildOptions = (
 	clearCache: flags.clearCache ?? defaultOptions.clearCache,
 	includeGenerated:
 		flags.includeGenerated ?? defaultOptions.includeGenerated,
+	maxTypeLength: flags.maxTypeLength ?? defaultOptions.maxTypeLength,
+	maxTypeDepth: flags.maxTypeDepth ?? defaultOptions.maxTypeDepth,
 	json: flags.json ?? defaultOptions.json
 })
 
@@ -403,6 +425,14 @@ export async function main(
 				useCache: !parsed['no-cache'],
 				clearCache: parsed['clear-cache'],
 				includeGenerated: parsed['include-generated'],
+				maxTypeLength:
+					parsed['max-type-length'] === undefined
+						? undefined
+						: parseNumberFlag('max-type-length', parsed['max-type-length']),
+				maxTypeDepth:
+					parsed['max-type-depth'] === undefined
+						? undefined
+						: parseNumberFlag('max-type-depth', parsed['max-type-depth']),
 				json: parsed['json'],
 				ignoreFiles: parsed['ignore-files']?.split(','),
 				ignoreFunctions: parsed['ignore-functions']?.split(','),

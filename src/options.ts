@@ -16,6 +16,8 @@ export type Options = {
 	ignoreAnonymousFunctions: boolean
 	dryRun: boolean
 	includeGenerated: boolean
+	maxTypeLength: number
+	maxTypeDepth: number
 	json: boolean
 	tsconfig: string | undefined
 	useCache: boolean
@@ -40,6 +42,8 @@ export const defaultOptions: Options = {
 	ignoreUnknown: false,
 	dryRun: false,
 	includeGenerated: false,
+	maxTypeLength: 150,
+	maxTypeDepth: 4,
 	json: false,
 	tsconfig: undefined,
 	useCache: true,
