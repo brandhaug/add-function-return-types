@@ -1698,3 +1698,49 @@ takesCb(() => 1);
 		expect(updatedSource).toContain('takesCb((): number => 1)')
 	})
 })
+
+describe.concurrent('generated files', (): void => {
+	const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
+
+	const run = async (
+		sourceCode: string,
+		fileName: string,
+		overrides: Partial<Options> = {}
+	): Promise<string> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const filePath = path.join(testDir, fileName)
+		await fs.writeFile(filePath, sourceCode)
+		await addFunctionReturnTypes({
+			...defaultOptions,
+			...overrides,
+			path: testDir
+		})
+		return fs.readFile(filePath, 'utf-8')
+	}
+
+	it('skips *.gen.ts files by default', async (): Promise<void> => {
+		const source = 'export function gen() {\n  return 1\n}\n'
+		const updated = await run(source, 'routeTree.gen.ts')
+		expect(updated).toBe(source)
+	})
+
+	it('processes generated files with includeGenerated', async (): Promise<void> => {
+		const updated = await run(
+			'export function gen() {\n  return 1\n}\n',
+			'routeTree.gen.ts',
+			{ includeGenerated: true }
+		)
+		expect(updated).toContain('function gen(): number {')
+	})
+
+	it('skips files in generated/ directories by default', async (): Promise<void> => {
+		const source = 'export function gen() {\n  return 1\n}\n'
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const genDir = path.join(testDir, 'generated')
+		await fs.mkdir(genDir)
+		const filePath = path.join(genDir, 'out.ts')
+		await fs.writeFile(filePath, source)
+		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
+		expect(await fs.readFile(filePath, 'utf-8')).toBe(source)
+	})
+})

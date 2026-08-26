@@ -15,6 +15,7 @@ export type Options = {
 	ignoreUnknown: boolean
 	ignoreAnonymousFunctions: boolean
 	dryRun: boolean
+	includeGenerated: boolean
 	json: boolean
 	tsconfig: string | undefined
 	useCache: boolean
@@ -38,8 +39,18 @@ export const defaultOptions: Options = {
 	ignoreAnonymousFunctions: false,
 	ignoreUnknown: false,
 	dryRun: false,
+	includeGenerated: false,
 	json: false,
 	tsconfig: undefined,
 	useCache: true,
 	clearCache: false
 }
+
+export const defaultGeneratedIgnorePatterns = [
+	'**/*.gen.ts',
+	'**/*.gen.tsx',
+	'**/*.generated.ts',
+	'**/*.generated.tsx',
+	'**/__generated__/**',
+	'**/generated/**'
+]
