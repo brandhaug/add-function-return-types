@@ -141,3 +141,14 @@ npm test
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+### Generated files
+
+By default, common codegen output is ignored:
+
+- `*.gen.ts` / `*.gen.tsx` (e.g. TanStack Router's `routeTree.gen.ts`)
+- `*.generated.ts` / `*.generated.tsx` (e.g. GraphQL codegen)
+- `**/__generated__/**`
+- `**/generated/**`
+
+Pass `--include-generated` to process these files too. You can always add your own patterns with `--ignore-files`.
