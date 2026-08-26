@@ -15,6 +15,7 @@ import {
 	type CacheFile
 } from './cache.js'
 import { detectFormatter, type DetectedFormatter } from './formatter.js'
+import { resolveTsconfigPath, verifyModifiedFiles } from './verify.js'
 import { defaultGeneratedIgnorePatterns, type Options } from './options.js'
 import { createRunStats, formatStatsTable, type RunStats } from './stats.js'
 import * as p from '@clack/prompts'
@@ -103,6 +104,17 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	const newHashes: Record<string, string> = {}
 	const totalFiles = allFiles.length
 
+	const pendingOriginals: Record<string, string> = {}
+	if (options.verify && !options.dryRun && pendingFiles.length > 0) {
+		for (const file of pendingFiles) {
+			try {
+				pendingOriginals[file] = await fs.readFile(file, 'utf-8')
+			} catch {
+				// ignore unreadable files
+			}
+		}
+	}
+
 	if (pendingFiles.length > 0) {
 		const types = options.tsconfig ? [] : await resolveTypes(pathToProcess)
 		await runWorkerPool(
@@ -121,6 +133,43 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	for (const [index, file] of allFiles.entries()) {
 		const status = results.get(file) ?? `Skipped "${file}" (unchanged)`
 		console.info(`${index + 1}/${totalFiles}: ${status}`)
+	}
+
+	// Post-run verification: revert any modified file that gained new type errors.
+	if (
+		options.verify &&
+		!options.dryRun &&
+		pendingOriginals &&
+		Object.keys(pendingOriginals).length > 0
+	) {
+		const modifiedFiles = Object.entries(pendingOriginals)
+			.filter(
+				([file]): boolean => results.get(file)?.startsWith('Processed') ?? false
+			)
+			.map(
+				([filePath, originalText]): {
+					filePath: string
+					originalText: string
+				} => ({
+					filePath,
+					originalText
+				})
+			)
+		if (modifiedFiles.length > 0) {
+			const tsconfigPath = await resolveTsconfigPath(
+				options.tsconfig,
+				pathToProcess
+			)
+			if (tsconfigPath) {
+				const reverted = await verifyModifiedFiles(tsconfigPath, modifiedFiles)
+				for (const file of reverted) {
+					results.set(file, `Reverted "${file}" (introduced new type errors)`)
+					delete newHashes[file]
+					stats.filesModified--
+					stats.filesUnchanged++
+				}
+			}
+		}
 	}
 
 	// Aggregate file-level counts.
@@ -183,7 +232,16 @@ async function runWorkerPool(
 
 	await Promise.all(
 		batches.map((batch): Promise<void> =>
-			runWorker(batch, options, types, results, errors, newHashes, stats, formatter)
+			runWorker(
+				batch,
+				options,
+				types,
+				results,
+				errors,
+				newHashes,
+				stats,
+				formatter
+			)
 		)
 	)
 }

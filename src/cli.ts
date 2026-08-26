@@ -20,7 +20,8 @@ const booleanFlags = [
 	'clear-cache',
 	'include-generated',
 	'json',
-	'format'
+	'format',
+	'verify'
 ] as const
 
 const valueFlags = [
@@ -57,6 +58,8 @@ Options:
                            type alias (default 150)
   --max-type-depth=<n>     Max type nesting depth before extracting a named
                            type alias (default 4)
+  --no-verify              Skip post-run tsc verification and auto-revert of
+                           files that gain new type errors
   --no-format              Skip formatting modified files with the project's
                            formatter (oxfmt/prettier/biome)
   --include-generated      Also process generated files (*.gen.ts, *.generated.ts, __generated__/, generated/)
@@ -155,6 +158,7 @@ const buildOptions = (
 			| 'maxTypeLength'
 			| 'maxTypeDepth'
 			| 'format'
+			| 'verify'
 			| 'json'
 		>
 	>
@@ -191,11 +195,11 @@ const buildOptions = (
 	tsconfig: flags.tsconfig ?? defaultOptions.tsconfig,
 	useCache: flags.useCache ?? defaultOptions.useCache,
 	clearCache: flags.clearCache ?? defaultOptions.clearCache,
-	includeGenerated:
-		flags.includeGenerated ?? defaultOptions.includeGenerated,
+	includeGenerated: flags.includeGenerated ?? defaultOptions.includeGenerated,
 	maxTypeLength: flags.maxTypeLength ?? defaultOptions.maxTypeLength,
 	maxTypeDepth: flags.maxTypeDepth ?? defaultOptions.maxTypeDepth,
 	format: flags.format ?? defaultOptions.format,
+	verify: flags.verify ?? defaultOptions.verify,
 	json: flags.json ?? defaultOptions.json
 })
 
@@ -439,6 +443,7 @@ export async function main(
 						? undefined
 						: parseNumberFlag('max-type-depth', parsed['max-type-depth']),
 				format: parsed['format'],
+				verify: parsed['verify'],
 				json: parsed['json'],
 				ignoreFiles: parsed['ignore-files']?.split(','),
 				ignoreFunctions: parsed['ignore-functions']?.split(','),
