@@ -15,6 +15,7 @@ export type Options = {
 	ignoreUnknown: boolean
 	ignoreAnonymousFunctions: boolean
 	dryRun: boolean
+	json: boolean
 	tsconfig: string | undefined
 	useCache: boolean
 	clearCache: boolean
@@ -37,6 +38,7 @@ export const defaultOptions: Options = {
 	ignoreAnonymousFunctions: false,
 	ignoreUnknown: false,
 	dryRun: false,
+	json: false,
 	tsconfig: undefined,
 	useCache: true,
 	clearCache: false

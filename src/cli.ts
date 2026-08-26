@@ -17,7 +17,8 @@ const booleanFlags = [
 	'ignore-anonymous-functions',
 	'dry-run',
 	'no-cache',
-	'clear-cache'
+	'clear-cache',
+	'json'
 ] as const
 
 const valueFlags = ['ignore-files', 'ignore-functions', 'tsconfig'] as const
@@ -44,6 +45,7 @@ Options:
   --dry-run                Preview changes without modifying files
   --no-cache               Disable the incremental cache
   --clear-cache            Delete the cache file before processing
+  --json                   Emit machine-readable JSON summary instead of a table
   --tsconfig=<path>        Path to a tsconfig.json for type resolution
   --ignore-files=<glob,..> File patterns to ignore
   --ignore-functions=<names>
@@ -126,6 +128,7 @@ const buildOptions = (
 			| 'dryRun'
 			| 'useCache'
 			| 'clearCache'
+			| 'json'
 		>
 	>
 ): Options => ({
@@ -160,7 +163,8 @@ const buildOptions = (
 	dryRun: flags.dryRun ?? defaultOptions.dryRun,
 	tsconfig: flags.tsconfig ?? defaultOptions.tsconfig,
 	useCache: flags.useCache ?? defaultOptions.useCache,
-	clearCache: flags.clearCache ?? defaultOptions.clearCache
+	clearCache: flags.clearCache ?? defaultOptions.clearCache,
+	json: flags.json ?? defaultOptions.json
 })
 
 type IgnoreValue = Exclude<
@@ -393,6 +397,7 @@ export async function main(
 				dryRun: parsed['dry-run'],
 				useCache: !parsed['no-cache'],
 				clearCache: parsed['clear-cache'],
+				json: parsed['json'],
 				ignoreFiles: parsed['ignore-files']?.split(','),
 				ignoreFunctions: parsed['ignore-functions']?.split(','),
 				tsconfig: parsed['tsconfig']

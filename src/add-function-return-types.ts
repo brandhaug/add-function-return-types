@@ -15,13 +15,15 @@ import {
 	type CacheFile
 } from './cache.js'
 import type { Options } from './options.js'
+import { createRunStats, formatStatsTable, type RunStats } from './stats.js'
+import * as p from '@clack/prompts'
 import { findPackageJsonFiles, getDependencies } from './utils.js'
 import fs from 'node:fs/promises'
 
 type ResultMessage =
 	| { type: 'result'; file: string; status: string }
 	| { type: 'error'; file: string; message: string }
-	| { type: 'done'; hashes: Record<string, string> }
+	| { type: 'done'; hashes: Record<string, string>; stats: RunStats }
 
 /**
  * Processes TypeScript files in the given directory, adding explicit return types to functions where needed.
@@ -82,6 +84,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 
 	const results = new Map<string, string>()
 	const errors: string[] = []
+	const stats = createRunStats()
 	const newHashes: Record<string, string> = {}
 	const totalFiles = allFiles.length
 
@@ -93,7 +96,8 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 			types,
 			results,
 			errors,
-			newHashes
+			newHashes,
+			stats
 		)
 	}
 
@@ -101,6 +105,20 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	for (const [index, file] of allFiles.entries()) {
 		const status = results.get(file) ?? `Skipped "${file}" (unchanged)`
 		console.info(`${index + 1}/${totalFiles}: ${status}`)
+	}
+
+	// Aggregate file-level counts.
+	for (const status of results.values()) {
+		if (status.startsWith('Processed')) stats.filesModified++
+		else if (status.startsWith('No changes')) stats.filesUnchanged++
+	}
+	stats.filesErrored = errors.length
+	stats.filesUnchanged += skippedCount
+
+	if (options.json) {
+		console.log(JSON.stringify(stats))
+	} else if (!options.dryRun || results.size > 0) {
+		p.log.message(formatStatsTable(stats))
 	}
 
 	// Persist the cache so unchanged files are skipped on the next run.
@@ -140,14 +158,15 @@ async function runWorkerPool(
 	types: string[],
 	results: Map<string, string>,
 	errors: string[],
-	newHashes: Record<string, string>
+	newHashes: Record<string, string>,
+	stats: RunStats
 ): Promise<void> {
 	const workerCount = Math.max(1, Math.min(os.cpus().length, files.length))
 	const batches = partitionFiles(files, workerCount)
 
 	await Promise.all(
 		batches.map((batch): Promise<void> =>
-			runWorker(batch, options, types, results, errors, newHashes)
+			runWorker(batch, options, types, results, errors, newHashes, stats)
 		)
 	)
 }
@@ -158,7 +177,8 @@ function runWorker(
 	types: string[],
 	results: Map<string, string>,
 	errors: string[],
-	newHashes: Record<string, string>
+	newHashes: Record<string, string>,
+	stats: RunStats
 ): Promise<void> {
 	return new Promise((resolve, reject): void => {
 		const worker = new Worker(getWorkerModuleUrl(), {
@@ -176,6 +196,16 @@ function runWorker(
 					break
 				case 'done':
 					Object.assign(newHashes, message.hashes)
+					for (const key of Object.keys(
+						stats.annotations
+					) as (keyof typeof stats.annotations)[]) {
+						stats.annotations[key] += message.stats.annotations[key]
+					}
+					for (const key of Object.keys(
+						stats.skipped
+					) as (keyof typeof stats.skipped)[]) {
+						stats.skipped[key] += message.stats.skipped[key]
+					}
 					break
 			}
 		})

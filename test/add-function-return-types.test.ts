@@ -1248,9 +1248,7 @@ async function inferredPromiseAny() {
 		expect(updatedSource).toContain(
 			'async function returnPromiseAny(): Promise<any> {'
 		)
-		expect(updatedSource).toContain(
-			'async function inferredPromiseAny() {'
-		)
+		expect(updatedSource).toContain('async function inferredPromiseAny() {')
 	})
 
 	it('ignores functions returning Promise<unknown> if ignoreUnknown is true', async (): Promise<void> => {

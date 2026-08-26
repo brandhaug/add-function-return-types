@@ -2,6 +2,7 @@ import { parentPort, type MessagePort, workerData } from 'node:worker_threads'
 import fs from 'node:fs/promises'
 import { computeContentHash, type CacheFile } from './cache.js'
 import { createProject, processFile } from './process-file.js'
+import { createRunStats, type RunStats } from './stats.js'
 import type { Options } from './options.js'
 
 type WorkerData = {
@@ -13,7 +14,7 @@ type WorkerData = {
 type ResultMessage =
 	| { type: 'result'; file: string; status: string }
 	| { type: 'error'; file: string; message: string }
-	| { type: 'done'; hashes: CacheFile['files'] }
+	| { type: 'done'; hashes: CacheFile['files']; stats: RunStats }
 
 const port: MessagePort | null = parentPort
 if (!port) {
@@ -24,10 +25,11 @@ const { files, options, types } = workerData as WorkerData
 
 const project = await createProject(options, types)
 const hashes: CacheFile['files'] = {}
+const stats = createRunStats()
 
 for (const file of files) {
 	try {
-		const status = await processFile(project, file, options)
+		const status = await processFile(project, file, options, stats)
 		port.postMessage({ type: 'result', file, status } satisfies ResultMessage)
 
 		if (!options.dryRun) {
@@ -43,4 +45,4 @@ for (const file of files) {
 	}
 }
 
-port.postMessage({ type: 'done', hashes } satisfies ResultMessage)
+port.postMessage({ type: 'done', hashes, stats } satisfies ResultMessage)

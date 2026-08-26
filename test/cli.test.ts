@@ -43,6 +43,7 @@ describe('cli', (): void => {
 			ignoreUnknown: false,
 			ignoreAnonymousFunctions: false,
 			dryRun: false,
+			json: false,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
@@ -93,6 +94,7 @@ describe('cli', (): void => {
 			ignoreUnknown: true,
 			ignoreAnonymousFunctions: true,
 			dryRun: true,
+			json: false,
 			tsconfig: 'tsconfig.app.json',
 			useCache: true,
 			clearCache: false
@@ -123,6 +125,7 @@ describe('cli', (): void => {
 			ignoreUnknown: false,
 			ignoreAnonymousFunctions: false,
 			dryRun: false,
+			json: false,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
