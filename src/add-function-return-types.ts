@@ -164,17 +164,18 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 				for (const file of reverted) {
 					results.set(file, `Reverted "${file}" (introduced new type errors)`)
 					newHashes.delete(file)
-					stats.filesModified--
-					stats.filesUnchanged++
 				}
 			}
 		}
 	}
 
-	// Aggregate file-level counts.
+	// Aggregate file-level counts. Runs after verification so reverted files
+	// (status rewritten to `Reverted "..."`) count as unchanged in one pass.
 	for (const status of results.values()) {
 		if (status.startsWith('Processed')) stats.filesModified++
-		else if (status.startsWith('No changes')) stats.filesUnchanged++
+		else if (status.startsWith('No changes') || status.startsWith('Reverted')) {
+			stats.filesUnchanged++
+		}
 	}
 	stats.filesErrored = errors.length
 	stats.filesUnchanged += skippedCount
