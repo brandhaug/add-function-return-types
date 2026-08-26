@@ -15,10 +15,7 @@ import {
 	type CacheFile
 } from './cache.js'
 import { detectFormatter, type DetectedFormatter } from './formatter.js'
-import {
-	resolveTsconfigPath,
-	verifyModifiedFiles
-} from './verify.js'
+import { resolveTsconfigPath, verifyModifiedFiles } from './verify.js'
 import { defaultGeneratedIgnorePatterns, type Options } from './options.js'
 import { createRunStats, formatStatsTable, type RunStats } from './stats.js'
 import * as p from '@clack/prompts'
@@ -146,13 +143,23 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		Object.keys(pendingOriginals).length > 0
 	) {
 		const modifiedFiles = Object.entries(pendingOriginals)
-			.filter(([file]): boolean => results.get(file)?.startsWith('Processed') ?? false)
-			.map(([filePath, originalText]): { filePath: string; originalText: string } => ({
-				filePath,
-				originalText
-			}))
+			.filter(
+				([file]): boolean => results.get(file)?.startsWith('Processed') ?? false
+			)
+			.map(
+				([filePath, originalText]): {
+					filePath: string
+					originalText: string
+				} => ({
+					filePath,
+					originalText
+				})
+			)
 		if (modifiedFiles.length > 0) {
-			const tsconfigPath = await resolveTsconfigPath(options.tsconfig, pathToProcess)
+			const tsconfigPath = await resolveTsconfigPath(
+				options.tsconfig,
+				pathToProcess
+			)
 			if (tsconfigPath) {
 				const reverted = await verifyModifiedFiles(tsconfigPath, modifiedFiles)
 				for (const file of reverted) {
@@ -225,7 +232,16 @@ async function runWorkerPool(
 
 	await Promise.all(
 		batches.map((batch): Promise<void> =>
-			runWorker(batch, options, types, results, errors, newHashes, stats, formatter)
+			runWorker(
+				batch,
+				options,
+				types,
+				results,
+				errors,
+				newHashes,
+				stats,
+				formatter
+			)
 		)
 	)
 }

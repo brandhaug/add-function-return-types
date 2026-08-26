@@ -20,7 +20,8 @@ const booleanFlags = [
 	'clear-cache',
 	'include-generated',
 	'json',
-	'format'
+	'format',
+	'verify'
 ] as const
 
 const valueFlags = [
@@ -194,8 +195,7 @@ const buildOptions = (
 	tsconfig: flags.tsconfig ?? defaultOptions.tsconfig,
 	useCache: flags.useCache ?? defaultOptions.useCache,
 	clearCache: flags.clearCache ?? defaultOptions.clearCache,
-	includeGenerated:
-		flags.includeGenerated ?? defaultOptions.includeGenerated,
+	includeGenerated: flags.includeGenerated ?? defaultOptions.includeGenerated,
 	maxTypeLength: flags.maxTypeLength ?? defaultOptions.maxTypeLength,
 	maxTypeDepth: flags.maxTypeDepth ?? defaultOptions.maxTypeDepth,
 	format: flags.format ?? defaultOptions.format,

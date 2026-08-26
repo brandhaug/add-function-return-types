@@ -12,7 +12,11 @@ import {
 	type TypeParameterDeclaration
 } from 'ts-morph'
 import type { Options } from './options.js'
-import { formatFile, wrapLongType, type DetectedFormatter } from './formatter.js'
+import {
+	formatFile,
+	wrapLongType,
+	type DetectedFormatter
+} from './formatter.js'
 import { getTypeNestingDepth } from './utils.js'
 import { recordAnnotation, recordSkip, type RunStats } from './stats.js'
 import {
@@ -20,7 +24,6 @@ import {
 	planAnnotation,
 	type ExternalTypeRef
 } from './add-type-imports.js'
-
 
 type FunctionLikeNode =
 	| FunctionDeclaration
