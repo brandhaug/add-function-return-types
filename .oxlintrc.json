@@ -1,16 +1,329 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["typescript", "unicorn", "oxc"],
+	"plugins": ["typescript", "unicorn", "oxc", "import", "promise"],
+	"options": {
+		// Type-aware rules run through oxlint-tsgolint (devDependency). This is
+		// equivalent to the `--type-aware` flag the npm scripts pass, but makes
+		// a bare `oxlint` invocation type-aware too.
+		"typeAware": true,
+		// A disable directive that suppresses nothing is a lie about the code it
+		// sits on. Denying them keeps stale suppressions from accumulating now
+		// that oxlint owns the rule set. When a rule here is turned off or
+		// renamed, its directives have to go in the same change.
+		"reportUnusedDisableDirectives": "deny"
+	},
 	"categories": {
 		"correctness": "error",
-		"suspicious": "warn"
+		// `suspicious` and `perf` are clean once the fixes in this repo land:
+		// the `typescript/no-unsafe-type-assertion` sites are replaced with
+		// real type guards, and `perf` has nothing left to report. `pedantic`
+		// stays off: it is mostly max-lines/max-dependencies-style policing
+		// that does not belong in a small CLI.
+		"suspicious": "error",
+		"perf": "error"
 	},
+	"env": {
+		"node": true,
+		"builtin": true,
+		"es2024": true
+	},
+	"ignorePatterns": ["node_modules/**", "dist/**"],
 	"rules": {
+		// ESLint core. `--type-aware` (package.json `lint` script) routes the
+		// `typescript` plugin through oxlint-tsgolint, so the type-aware rules
+		// below are real checks, not decoration.
+		"eqeqeq": "error",
+		"no-eq-null": "error",
+		"radix": "error",
+		"prefer-const": "error",
+		"no-var": "error",
+		"prefer-template": "error",
+		"prefer-destructuring": ["error", { "array": false }],
+		"object-shorthand": "error",
+		"curly": ["error", "multi-line"],
+		"default-case-last": "error",
+		"no-case-declarations": "error",
 		"no-param-reassign": "error",
+		"no-else-return": ["error", { "allowElseIf": false }],
 		"default-param-last": "error",
-		"no-else-return": "error",
-		"typescript/no-inferrable-types": "error",
-		"typescript/prefer-as-const": "error",
-		"unicorn/prefer-number-properties": "error"
-	}
+		// Unused function args are named `_arg` on purpose (test mocks); the
+		// underscore prefix is the repo's "intentionally unused" marker.
+		"no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+		"array-callback-return": "error",
+		"no-promise-executor-return": "error",
+		"no-useless-concat": "error",
+		"no-self-compare": "error",
+		"no-template-curly-in-string": "error",
+		"no-unneeded-ternary": "error",
+		"no-useless-rename": "error",
+		"no-lone-blocks": "error",
+		"no-sequences": "error",
+		"prefer-exponentiation-operator": "error",
+		"prefer-object-spread": "error",
+		"preserve-caught-error": "error",
+		"block-scoped-var": "error",
+		"guard-for-in": "error",
+		"no-constructor-return": "error",
+		"no-empty": "error",
+		"no-fallthrough": "error",
+		"no-labels": "error",
+		"no-loop-func": "error",
+		"no-new-wrappers": "error",
+		"no-object-constructor": "error",
+		"no-prototype-builtins": "error",
+		"no-regex-spaces": "error",
+		"no-return-assign": "error",
+		"no-shadow": "error",
+		"no-unmodified-loop-condition": "error",
+		"no-unreachable-loop": "error",
+		"prefer-object-has-own": "error",
+		"prefer-regex-literals": "error",
+		"no-lonely-if": "error",
+		"no-nested-ternary": "error",
+		// This is a CLI whose stdout/stderr is its interface: progress goes to
+		// console.info, JSON output to console.log, warnings and errors to
+		// console.warn/error. Every console method is used deliberately, so the
+		// rule would only nag about the tool's own interface.
+		"no-console": "off",
+		// Underscore-prefixed identifiers are the repo's unused-argument
+		// convention (see no-unused-vars above); this rule would fight it.
+		"no-underscore-dangle": "off",
+		// Each worker processes its batch of files sequentially on purpose (one
+		// shared ts-morph Project), and the cache check loop reads a handful of
+		// files before deciding what to process. Parallelizing either is not a
+		// win, so the rule would just be disabled at every real call site.
+		"no-await-in-loop": "off",
+
+		// typescript-eslint port (tsgolint). Rules marked type-aware run only
+		// under `--type-aware`.
+		"@typescript-eslint/ban-ts-comment": [
+			"error",
+			{ "minimumDescriptionLength": 10 }
+		],
+		"no-array-constructor": "error",
+		"@typescript-eslint/no-duplicate-enum-values": "error",
+		"@typescript-eslint/no-dynamic-delete": "error",
+		"@typescript-eslint/no-empty-object-type": "error",
+		"@typescript-eslint/no-explicit-any": "error",
+		"@typescript-eslint/no-extra-non-null-assertion": "error",
+		"@typescript-eslint/no-extraneous-class": "error",
+		"@typescript-eslint/no-misused-new": "error",
+		"@typescript-eslint/no-namespace": "error",
+		"@typescript-eslint/no-non-null-asserted-nullish-coalescing": "error",
+		"@typescript-eslint/no-non-null-asserted-optional-chain": "error",
+		"@typescript-eslint/no-non-null-assertion": "error",
+		"@typescript-eslint/no-require-imports": "error",
+		"@typescript-eslint/no-this-alias": "error",
+		// Type-aware: reports branches whose condition is statically known.
+		// Paired with tsconfig's noUncheckedIndexedAccess, this keeps index
+		// reads honest. `allowConstantLoopConditions` permits the `while (true)`
+		// upward-directory-search loops (formatter detection, tsconfig lookup),
+		// which are the idiomatic form for walking to the filesystem root.
+		"@typescript-eslint/no-unnecessary-condition": [
+			"error",
+			{ "allowConstantLoopConditions": true }
+		],
+		"@typescript-eslint/no-unnecessary-type-constraint": "error",
+		"@typescript-eslint/no-unsafe-declaration-merging": "error",
+		"@typescript-eslint/no-unsafe-function-type": "error",
+		"no-unused-expressions": "error",
+		"no-useless-constructor": "error",
+		"@typescript-eslint/no-wrapper-object-types": "error",
+		"@typescript-eslint/prefer-as-const": "error",
+		"@typescript-eslint/prefer-literal-enum-member": "error",
+		"@typescript-eslint/prefer-namespace-keyword": "error",
+		"@typescript-eslint/require-await": "error",
+		"@typescript-eslint/triple-slash-reference": "error",
+		"@typescript-eslint/adjacent-overload-signatures": "error",
+		"@typescript-eslint/ban-tslint-comment": "error",
+		"@typescript-eslint/consistent-generic-constructors": "error",
+		"@typescript-eslint/consistent-indexed-object-style": ["error", "record"],
+		// The repo spells every object shape as a `type` alias (there is no
+		// `interface` in src/); `interface` stays available where declaration
+		// merging genuinely needs it.
+		"@typescript-eslint/consistent-type-definitions": ["error", "type"],
+		// Type-only imports are erasable and keep the emitted JS free of
+		// unused import side effects. The repo already leans inline (`import {
+		// type X }`), so inline is the enforced style.
+		"@typescript-eslint/consistent-type-imports": [
+			"error",
+			{ "prefer": "type-imports", "fixStyle": "inline-type-imports" }
+		],
+		"@typescript-eslint/no-confusing-non-null-assertion": "error",
+		"no-empty-function": "error",
+		"@typescript-eslint/prefer-enum-initializers": "error",
+		"@typescript-eslint/prefer-for-of": "error",
+		"@typescript-eslint/prefer-function-type": "error",
+		"@typescript-eslint/prefer-optional-chain": "error",
+		"@typescript-eslint/prefer-ts-expect-error": "error",
+		"@typescript-eslint/no-invalid-void-type": "error",
+		"@typescript-eslint/no-floating-promises": "error",
+		"@typescript-eslint/no-misused-promises": "error",
+		"@typescript-eslint/await-thenable": "error",
+		"@typescript-eslint/no-misused-spread": "error",
+		"@typescript-eslint/no-for-in-array": "error",
+		"@typescript-eslint/no-array-delete": "error",
+		"@typescript-eslint/no-mixed-enums": "error",
+		"@typescript-eslint/no-duplicate-type-constituents": "error",
+		"@typescript-eslint/no-unsafe-enum-comparison": "error",
+		"@typescript-eslint/unbound-method": "error",
+		"@typescript-eslint/no-base-to-string": "error",
+		"@typescript-eslint/return-await": "error",
+		"@typescript-eslint/switch-exhaustiveness-check": "error",
+		"@typescript-eslint/restrict-plus-operands": "error",
+		"@typescript-eslint/require-array-sort-compare": "error",
+		"@typescript-eslint/no-unnecessary-boolean-literal-compare": "error",
+		"@typescript-eslint/use-unknown-in-catch-callback-variable": "error",
+		"@typescript-eslint/no-unnecessary-template-expression": "error",
+		// Type-aware: flags deprecated API usage. The dependency surface is
+		// small (ts-morph, node builtins, clack), so new deprecations surface
+		// here instead of at runtime.
+		"@typescript-eslint/no-deprecated": "error",
+		// no-unnecessary-type-assertion stays off: under oxlint-tsgolint 7.x it
+		// still reports false positives on necessary casts (e.g. casts needed to
+		// satisfy TS2571 after `Response.json()`), and `oxlint --fix` in the
+		// pre-commit hook would silently strip a needed cast. Re-evaluate on the
+		// next tsgolint upgrade.
+		"@typescript-eslint/no-unnecessary-type-assertion": "off",
+		// consistent-return is off: guard-clause functions that `return` early
+		// and fall through to the implicit `undefined` are the repo's normal
+		// shape, and the rule would demand explicit `return undefined` where the
+		// fall-through is already the intent.
+		"@typescript-eslint/consistent-return": "off",
+		"@typescript-eslint/no-confusing-void-expression": [
+			"error",
+			{ "ignoreArrowShorthand": true }
+		],
+
+		// unicorn (CLI-relevant subset; no DOM rules apply to this repo).
+		"unicorn/catch-error-name": "error",
+		"unicorn/filename-case": "error",
+		"unicorn/new-for-builtins": "error",
+		"unicorn/no-abusive-eslint-disable": "error",
+		"unicorn/no-empty-file": "error",
+		"unicorn/no-negated-condition": "error",
+		"unicorn/no-new-array": "error",
+		"unicorn/no-typeof-undefined": "error",
+		"unicorn/no-useless-promise-resolve-reject": "error",
+		"unicorn/no-useless-spread": "error",
+		"unicorn/no-useless-switch-case": "error",
+		// `return undefined` in guard clauses is kept (see consistent-return);
+		// only argument-position and arrow-body `undefined` are policed.
+		"unicorn/no-useless-undefined": [
+			"error",
+			{ "checkArguments": false, "checkArrowFunctionBody": false }
+		],
+		"unicorn/no-zero-fractions": "error",
+		"unicorn/numeric-separators-style": "error",
+		"unicorn/prefer-array-find": "error",
+		"unicorn/prefer-array-flat-map": "error",
+		"unicorn/prefer-array-some": "error",
+		"unicorn/prefer-date-now": "error",
+		"unicorn/prefer-logical-operator-over-ternary": "error",
+		"unicorn/prefer-native-coercion-functions": "error",
+		// `fs` becomes `node:fs`, `path` becomes `node:path`, ... which is the
+		// unambiguous import form under Node >= 16 and the ESM output this repo
+		// publishes.
+		"unicorn/prefer-node-protocol": "error",
+		"unicorn/prefer-number-properties": "error",
+		"unicorn/prefer-object-from-entries": "error",
+		"unicorn/prefer-regexp-test": "error",
+		"unicorn/prefer-set-has": "error",
+		"unicorn/prefer-spread": "error",
+		"unicorn/prefer-string-replace-all": "error",
+		"unicorn/prefer-string-slice": "error",
+		"unicorn/require-array-join-separator": "error",
+		"unicorn/switch-case-braces": "error",
+		"unicorn/text-encoding-identifier-case": "error",
+		"unicorn/consistent-empty-array-spread": "error",
+		"unicorn/error-message": "error",
+		"unicorn/no-array-sort": "error",
+		"unicorn/no-await-expression-member": "error",
+		"unicorn/no-confusing-array-with": "error",
+		"unicorn/no-instanceof-array": "error",
+		"unicorn/no-length-as-slice-end": "error",
+		"unicorn/no-negation-in-equality-check": "error",
+		"unicorn/no-object-as-default-parameter": "error",
+		"unicorn/no-unnecessary-array-splice-count": "error",
+		"unicorn/no-unnecessary-await": "error",
+		"unicorn/no-unnecessary-slice-end": "error",
+		"unicorn/no-unreadable-array-destructuring": "error",
+		"unicorn/no-useless-length-check": "error",
+		"unicorn/prefer-math-min-max": "error",
+		"unicorn/prefer-set-size": "error",
+		"unicorn/prefer-type-error": "error",
+		"unicorn/throw-new-error": "error",
+		// no-instanceof-builtins stays off. The repo's error-handling idiom is
+		// `error instanceof Error ? error.message : String(error)` at every
+		// catch site; probing the thrown value this way is deliberate, and the
+		// rule's helper-based alternative adds no robustness here.
+		"unicorn/no-instanceof-builtins": "off",
+		// consistent-function-scoping is relaxed only in tests via override;
+		// test helpers live next to the cases they serve.
+		"unicorn/consistent-function-scoping": "error",
+
+		// import
+		// Matches the `inline-type-imports` fixStyle on consistent-type-imports
+		// above, so both halves of the type-import style are enforced.
+		"import/consistent-type-specifier-style": ["error", "prefer-inline"],
+		"import/no-duplicates": "error",
+		"import/no-empty-named-blocks": "error",
+		"import/no-mutable-exports": "error",
+		"import/no-named-as-default": "error",
+		"import/no-self-import": "error",
+
+		// oxc
+		"oxc/approx-constant": "error",
+		"oxc/bad-array-method-on-arguments": "error",
+		"oxc/bad-bitwise-operator": "error",
+		"oxc/bad-char-at-comparison": "error",
+		"oxc/bad-comparison-sequence": "error",
+		"oxc/bad-match-all-arg": "error",
+		"oxc/bad-min-max-func": "error",
+		"oxc/bad-object-literal-comparison": "error",
+		"oxc/bad-replace-all-arg": "error",
+		"oxc/branches-sharing-code": "error",
+		"oxc/const-comparisons": "error",
+		"oxc/double-comparisons": "error",
+		"oxc/erasing-op": "error",
+		"oxc/misrefactored-assign-op": "error",
+		"oxc/missing-throw": "error",
+		"oxc/no-accumulating-spread": "error",
+		"oxc/number-arg-out-of-range": "error",
+		"oxc/only-used-in-recursion": "error",
+		"oxc/uninvoked-array-callback": "error",
+
+		// promise
+		"promise/always-return": "error",
+		"promise/no-callback-in-promise": "error",
+		"promise/no-multiple-resolved": "error",
+		"promise/no-nesting": "error",
+		"promise/no-new-statics": "error",
+		"promise/no-promise-in-callback": "error",
+		"promise/no-return-wrap": "error",
+		"promise/param-names": "error",
+		"promise/prefer-catch": "error",
+		"promise/spec-only": "error",
+		"promise/valid-params": "error"
+	},
+	"overrides": [
+		{
+			// Test files. These rules genuinely do not apply to test code:
+			// - consistent-function-scoping: helpers like `run` belong beside the
+			//   cases they serve, not hoisted to module scope.
+			// - require-await: async mocks (e.g. `mock(async () => ...)`) satisfy
+			//   Promise-typed interfaces without awaiting.
+			// - no-explicit-any: the @clack/prompts mock (setup-clack.ts) loosens
+			//   types on purpose to provide deterministic handles.
+			// - no-empty-function: no-op mocks (setup-clack.ts) implement the
+			//   clack API with empty bodies on purpose.
+			"files": ["test/**", "**/*.test.ts"],
+			"rules": {
+				"unicorn/consistent-function-scoping": "off",
+				"@typescript-eslint/require-await": "off",
+				"@typescript-eslint/no-explicit-any": "off",
+				"no-empty-function": "off"
+			}
+		}
+	]
 }
