@@ -8,6 +8,7 @@ export type Options = {
 	ignoreHigherOrderFunctions: boolean
 	ignoreIIFEs: boolean
 	ignoreTypedFunctionExpressions: boolean
+	ignoreContextuallyTypedFunctionExpressions: boolean
 	ignoreFunctions: string[]
 	overwrite: boolean
 	ignoreAnonymousObjects: boolean
@@ -28,6 +29,7 @@ export const defaultOptions: Options = {
 	ignoreFunctionsWithoutTypeParameters: false,
 	ignoreHigherOrderFunctions: false,
 	ignoreTypedFunctionExpressions: false,
+	ignoreContextuallyTypedFunctionExpressions: true,
 	ignoreFunctions: [],
 	ignoreIIFEs: false,
 	overwrite: false,

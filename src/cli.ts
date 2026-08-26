@@ -11,6 +11,7 @@ const booleanFlags = [
 	'ignore-functions-without-type-parameters',
 	'ignore-higher-order-functions',
 	'ignore-typed-function-expressions',
+	'ignore-contextually-typed-function-expressions',
 	'ignore-iifes',
 	'ignore-concise-arrow-function-expressions-starting-with-void',
 	'ignore-anonymous-functions',
@@ -53,6 +54,9 @@ Options:
   --ignore-functions-without-type-parameters
   --ignore-higher-order-functions
   --ignore-typed-function-expressions
+  --no-ignore-contextually-typed-function-expressions
+                           Annotate function expressions even when their type is
+                           fixed by context (skipping is the default)
   --ignore-iifes
   --ignore-concise-arrow-function-expressions-starting-with-void
   --ignore-anonymous-functions
@@ -72,6 +76,11 @@ export const parseArgv = (argv: string[]): ParsedArgs => {
 
 		if (booleanFlagSet.has(key)) {
 			Object.assign(parsed, { [key]: true })
+			continue
+		}
+
+		if (key.startsWith('no-') && booleanFlagSet.has(key.slice(3))) {
+			Object.assign(parsed, { [key.slice(3)]: false })
 			continue
 		}
 
@@ -110,6 +119,7 @@ const buildOptions = (
 			| 'ignoreFunctionsWithoutTypeParameters'
 			| 'ignoreHigherOrderFunctions'
 			| 'ignoreTypedFunctionExpressions'
+			| 'ignoreContextuallyTypedFunctionExpressions'
 			| 'ignoreIIFEs'
 			| 'ignoreConciseArrowFunctionExpressionsStartingWithVoid'
 			| 'ignoreAnonymousFunctions'
@@ -137,6 +147,9 @@ const buildOptions = (
 	ignoreTypedFunctionExpressions:
 		flags.ignoreTypedFunctionExpressions ??
 		defaultOptions.ignoreTypedFunctionExpressions,
+	ignoreContextuallyTypedFunctionExpressions:
+		flags.ignoreContextuallyTypedFunctionExpressions ??
+		defaultOptions.ignoreContextuallyTypedFunctionExpressions,
 	ignoreIIFEs: flags.ignoreIIFEs ?? defaultOptions.ignoreIIFEs,
 	ignoreFunctions: flags.ignoreFunctions ?? defaultOptions.ignoreFunctions,
 	ignoreAnonymousObjects:
@@ -174,6 +187,11 @@ const ignoreOptionGroups: { title: string; options: IgnoreOption[] }[] = [
 				value: 'ignoreExpressions',
 				label: 'Ignore expressions',
 				hint: 'Ignore function expressions (not part of a declaration)'
+			},
+			{
+				value: 'ignoreContextuallyTypedFunctionExpressions',
+				label: 'Ignore contextually typed function expressions',
+				hint: 'Function expressions whose type is fixed by context (default)'
 			},
 			{
 				value: 'ignoreAnonymousFunctions',
@@ -307,6 +325,9 @@ const promptForOptions = async (): Promise<Options> => {
 	return buildOptions(path, {
 		shallow: flagFor('shallow'),
 		ignoreExpressions: flagFor('ignoreExpressions'),
+		ignoreContextuallyTypedFunctionExpressions: flagFor(
+			'ignoreContextuallyTypedFunctionExpressions'
+		),
 		ignoreAnonymousFunctions: flagFor('ignoreAnonymousFunctions'),
 		ignoreUnknown: flagFor('ignoreUnknown'),
 		ignoreAnonymousObjects: flagFor('ignoreAnonymousObjects'),
@@ -366,6 +387,8 @@ export async function main(
 					parsed[
 						'ignore-concise-arrow-function-expressions-starting-with-void'
 					],
+				ignoreContextuallyTypedFunctionExpressions:
+					parsed['ignore-contextually-typed-function-expressions'],
 				ignoreAnonymousFunctions: parsed['ignore-anonymous-functions'],
 				dryRun: parsed['dry-run'],
 				useCache: !parsed['no-cache'],

@@ -33,6 +33,7 @@ describe('cli prompts', (): void => {
 			ignoreFiles: [],
 			overwrite: false,
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: false,
+			ignoreContextuallyTypedFunctionExpressions: true,
 			ignoreExpressions: false,
 			ignoreFunctionsWithoutTypeParameters: false,
 			ignoreHigherOrderFunctions: false,
