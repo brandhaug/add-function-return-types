@@ -1,21 +1,33 @@
 import path from 'node:path'
+import { Worker } from 'node:worker_threads'
+import os from 'node:os'
 import fg from 'fast-glob'
 
 type EntryInternal = Awaited<ReturnType<typeof fg>>[number]
 import {
-	type Expression,
-	ModuleKind,
-	Node,
-	Project,
-	ScriptTarget,
-	SyntaxKind,
-	ts
-} from 'ts-morph'
+	CACHE_VERSION,
+	computeContentHash,
+	computeOptionsHash,
+	getCachePath,
+	loadCache,
+	removeCache,
+	saveCache,
+	type CacheFile
+} from './cache.js'
 import type { Options } from './options.js'
 import { findPackageJsonFiles, getDependencies } from './utils.js'
+import fs from 'node:fs/promises'
+
+type ResultMessage =
+	| { type: 'result'; file: string; status: string }
+	| { type: 'error'; file: string; message: string }
+	| { type: 'done'; hashes: Record<string, string> }
 
 /**
- * Processes TypeScript files in the current directory, adding explicit return types to functions where needed.
+ * Processes TypeScript files in the given directory, adding explicit return types to functions where needed.
+ * Files are partitioned into batches that are processed in parallel by a bounded pool of worker threads,
+ * each with its own ts-morph Project. An on-disk cache keyed by file content hash + options hash + cache
+ * version is used to skip unchanged files on re-runs.
  * @param options - The options object.
  */
 export async function addFunctionReturnTypes(options: Options): Promise<void> {
@@ -28,48 +40,79 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	const allFiles = await getAllTsAndTsxFiles(pathToProcess, options)
 	console.info(`${allFiles.length} TypeScript files found`)
 
-	let project: Project
+	const cachePath = getCachePath(pathToProcess)
 
-	if (options.tsconfig) {
-		const tsconfigPath = path.resolve(options.tsconfig)
-		console.info(`Using tsconfig: "${tsconfigPath}"`)
-		project = new Project({
-			tsConfigFilePath: tsconfigPath,
-			skipAddingFilesFromTsConfig: true
-		})
-	} else {
-		// Find package.json files
-		const packageJsonFiles = await findPackageJsonFiles(pathToProcess)
-		const dependencies = await getDependencies(packageJsonFiles)
-
-		// Update Project configuration to include node_modules types
-		project = new Project({
-			compilerOptions: {
-				allowSyntheticDefaultImports: true,
-				esModuleInterop: true,
-				module: ModuleKind.ESNext,
-				target: ScriptTarget.ESNext,
-				strict: true,
-				noUncheckedIndexedAccess: true,
-				types: dependencies,
-				moduleResolution: ts.ModuleResolutionKind.NodeNext
-			},
-			skipAddingFilesFromTsConfig: true
-		})
+	if (options.clearCache) {
+		await removeCache(cachePath)
+		console.info('Cache cleared')
 	}
 
-	const totalFiles = allFiles.length
-	const errors: string[] = []
+	const optionsHash = computeOptionsHash(options)
+	const canUseCache = options.useCache && !options.dryRun && !options.clearCache
+	const cachedEntries = canUseCache
+		? await loadCache(cachePath, optionsHash)
+		: {}
 
-	for (const [index, file] of allFiles.entries()) {
-		try {
-			const message = await processFile(project, file, options)
-			console.info(`${index + 1}/${totalFiles}: ${message}`)
-		} catch (error) {
-			const errorMessage = `Error processing file ${file}: ${error instanceof Error ? error.message : String(error)}`
-			console.error(errorMessage)
-			errors.push(errorMessage)
+	// Determine which files are unchanged since the last run.
+	const pendingFiles: string[] = []
+	let skippedCount = 0
+
+	for (const file of allFiles) {
+		const cachedHash = cachedEntries[file]
+		if (cachedHash === undefined) {
+			pendingFiles.push(file)
+			continue
 		}
+
+		try {
+			const content = await fs.readFile(file, 'utf-8')
+			if (computeContentHash(content) === cachedHash) {
+				skippedCount++
+				continue
+			}
+		} catch {
+			// File could not be read; fall through and try processing it.
+		}
+		pendingFiles.push(file)
+	}
+
+	console.info(
+		`${pendingFiles.length} file(s) to process, ${skippedCount} skipped by cache`
+	)
+
+	const results = new Map<string, string>()
+	const errors: string[] = []
+	const newHashes: Record<string, string> = {}
+	const totalFiles = allFiles.length
+
+	if (pendingFiles.length > 0) {
+		const types = options.tsconfig ? [] : await resolveTypes(pathToProcess)
+		await runWorkerPool(
+			pendingFiles,
+			options,
+			types,
+			results,
+			errors,
+			newHashes
+		)
+	}
+
+	// Print results in stable file order regardless of completion order.
+	for (const [index, file] of allFiles.entries()) {
+		const status = results.get(file) ?? `Skipped "${file}" (unchanged)`
+		console.info(`${index + 1}/${totalFiles}: ${status}`)
+	}
+
+	// Persist the cache so unchanged files are skipped on the next run.
+	if (!options.dryRun && !options.clearCache && options.useCache) {
+		const cache: CacheFile = {
+			version: CACHE_VERSION,
+			optionsHash,
+			files: { ...cachedEntries, ...newHashes }
+		}
+		await saveCache(cachePath, cache).catch((error: unknown): void => {
+			console.warn(`Warning: Could not write cache file "${cachePath}":`, error)
+		})
 	}
 
 	const endTime = Date.now()
@@ -85,6 +128,97 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		}
 		process.exit(1)
 	}
+}
+
+/**
+ * Runs the pending files through a bounded pool of worker threads. Each worker
+ * gets its own ts-morph Project and reuses it for every file in its batch.
+ */
+async function runWorkerPool(
+	files: string[],
+	options: Options,
+	types: string[],
+	results: Map<string, string>,
+	errors: string[],
+	newHashes: Record<string, string>
+): Promise<void> {
+	const workerCount = Math.max(1, Math.min(os.cpus().length, files.length))
+	const batches = partitionFiles(files, workerCount)
+
+	await Promise.all(
+		batches.map((batch): Promise<void> =>
+			runWorker(batch, options, types, results, errors, newHashes)
+		)
+	)
+}
+
+function runWorker(
+	files: string[],
+	options: Options,
+	types: string[],
+	results: Map<string, string>,
+	errors: string[],
+	newHashes: Record<string, string>
+): Promise<void> {
+	return new Promise((resolve, reject): void => {
+		const worker = new Worker(getWorkerModuleUrl(), {
+			workerData: { files, options, types }
+		})
+
+		worker.on('message', (message: ResultMessage): void => {
+			switch (message.type) {
+				case 'result':
+					results.set(message.file, message.status)
+					break
+				case 'error':
+					console.error(message.message)
+					errors.push(message.message)
+					break
+				case 'done':
+					Object.assign(newHashes, message.hashes)
+					break
+			}
+		})
+
+		worker.on('error', reject)
+		worker.on('exit', (code): void => {
+			if (code !== 0) {
+				reject(new Error(`Worker stopped with exit code ${code}`))
+				return
+			}
+			resolve()
+		})
+	})
+}
+
+/**
+ * Resolves the URL of the worker module, accounting for whether we are running
+ * from TypeScript sources (e.g. via bun) or from compiled JavaScript in dist/.
+ */
+function getWorkerModuleUrl(): URL {
+	const isTypeScript = import.meta.url.endsWith('.ts')
+	return new URL(`./worker.${isTypeScript ? 'ts' : 'js'}`, import.meta.url)
+}
+
+/**
+ * Partitions files into roughly equal batches using round-robin distribution
+ * so each worker gets a balanced mix of files.
+ */
+function partitionFiles(files: string[], batchCount: number): string[][] {
+	const batches: string[][] = Array.from(
+		{ length: batchCount },
+		(): string[] => []
+	)
+	for (const [index, file] of files.entries()) {
+		batches[index % batchCount]?.push(file)
+	}
+	return batches.filter((batch): boolean => batch.length > 0)
+}
+
+async function resolveTypes(pathToProcess: string): Promise<string[]> {
+	// Find package.json files
+	const packageJsonFiles = await findPackageJsonFiles(pathToProcess)
+	return getDependencies(packageJsonFiles)
 }
 
 /**
@@ -107,250 +241,4 @@ async function getAllTsAndTsxFiles(
 		absolute: true,
 		deep: options.shallow ? 0 : undefined // Recursive by default, shallow if specified
 	})
-}
-
-/**
- * Processes a TypeScript file, adding explicit return types to functions where needed.
- * @param project - The ts-morph Project instance.
- * @param filePath - The path to the file to process.
- * @param options - The options object.
- * @returns A promise that resolves when processing is complete.
- */
-async function processFile(
-	project: Project,
-	filePath: string,
-	options: Options
-): Promise<string> {
-	const sourceFile =
-		project.getSourceFile(filePath) || project.addSourceFileAtPath(filePath)
-
-	let modified = false
-
-	sourceFile.forEachDescendant((node): undefined => {
-		try {
-			// Check if the node is a function or method
-			if (
-				!(
-					Node.isFunctionDeclaration(node) ||
-					Node.isFunctionExpression(node) ||
-					Node.isArrowFunction(node) ||
-					Node.isMethodDeclaration(node)
-				)
-			) {
-				return
-			}
-
-			// Check if node already has a return type
-			if (!options.overwrite && node.getReturnTypeNode()) {
-				return
-			}
-
-			// Check for allowedNames
-			const name =
-				Node.isMethodDeclaration(node) || Node.isFunctionDeclaration(node)
-					? node.getName()
-					: undefined
-
-			if (name && options.ignoreFunctions.includes(name)) {
-				return
-			}
-
-			// Ignore functions based on options
-
-			// ignoreExpressions: ignore function expressions (functions not part of a declaration)
-			if (
-				options.ignoreExpressions &&
-				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
-			) {
-				return
-			}
-
-			// ignoreTypedFunctionExpressions: ignore function expressions with type annotations on the variable
-			if (
-				options.ignoreTypedFunctionExpressions &&
-				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
-			) {
-				const parent = node.getParent()
-				if (Node.isVariableDeclaration(parent) && parent.getTypeNode()) {
-					return
-				}
-			}
-
-			// ignoreFunctionsWithoutTypeParameters: ignore functions that don't have generic type parameters
-			if (
-				options.ignoreFunctionsWithoutTypeParameters &&
-				node.getTypeParameters().length === 0
-			) {
-				return
-			}
-
-			// ignoreHigherOrderFunctions: ignore functions immediately returning another function expression
-			if (options.ignoreHigherOrderFunctions) {
-				const body = node.getBody()
-				if (body) {
-					if (Node.isBlock(body)) {
-						const statements = body.getStatements()
-						if (statements.length === 1) {
-							const statement = statements[0]
-							if (Node.isReturnStatement(statement)) {
-								const expr = statement.getExpression()
-								if (
-									expr &&
-									(Node.isFunctionExpression(expr) ||
-										Node.isArrowFunction(expr))
-								) {
-									return
-								}
-							}
-						}
-					} else if (
-						Node.isFunctionExpression(body) ||
-						Node.isArrowFunction(body)
-					) {
-						// Concise arrow function returning another function: () => () => 42
-						return
-					}
-				}
-			}
-
-			// ignoreConciseArrowFunctionExpressionsStartingWithVoid: ignore arrow functions starting with `void`
-			if (
-				options.ignoreConciseArrowFunctionExpressionsStartingWithVoid &&
-				Node.isArrowFunction(node)
-			) {
-				const body = node.getBody()
-				if (Node.isVoidExpression(body)) {
-					return
-				}
-			}
-
-			// ignoreIIFEs: ignore immediately invoked function expressions
-			if (options.ignoreIIFEs) {
-				const parent = node.getParent()
-				if (Node.isParenthesizedExpression(parent)) {
-					const grandParent = parent.getParent()
-					if (
-						Node.isCallExpression(grandParent) &&
-						grandParent.getExpression() === parent
-					) {
-						return
-					}
-				} else if (
-					Node.isCallExpression(parent) &&
-					parent.getExpression() === node
-				) {
-					return
-				}
-			}
-
-			// ignoreAnonymousFunctions: ignore functions without names
-			if (options.ignoreAnonymousFunctions) {
-				if (Node.isFunctionExpression(node) && !node.getName()) {
-					return
-				}
-
-				if (Node.isArrowFunction(node)) {
-					const parent = node.getParent()
-					// Check if arrow function is assigned to a variable declaration, property declaration, or
-					// it is a property assignment
-					if (
-						(!Node.isVariableDeclaration(parent) || !parent.getName()) &&
-						!Node.isPropertyDeclaration(parent) &&
-						!Node.isPropertyAssignment(parent) &&
-						!(
-							Node.isBinaryExpression(parent) &&
-							parent.getOperatorToken().getKind() === SyntaxKind.EqualsToken
-						)
-					) {
-						return
-					}
-				}
-			}
-
-			// Reset the return type so we get the inferred type
-			if (options.overwrite) node.setReturnType('')
-
-			let returnTypeSet = false
-
-			// Attempt to use the type of the returned expression if it's a parameter
-			const body = node.getBody()
-			if (body) {
-				let returnExpr: Expression | Node | undefined
-
-				if (Node.isBlock(body)) {
-					const returnStatements = body.getDescendantsOfKind(
-						SyntaxKind.ReturnStatement
-					)
-					if (returnStatements.length === 1 && returnStatements[0]) {
-						returnExpr = returnStatements[0].getExpression()
-					}
-				} else {
-					// It's an expression body (arrow function with expression)
-					returnExpr = body
-				}
-
-				if (returnExpr && Node.isIdentifier(returnExpr)) {
-					const param = node
-						.getParameters()
-						.find((p): boolean => p.getName() === returnExpr.getText())
-					if (param) {
-						const paramTypeNode = param.getTypeNode()
-						if (paramTypeNode) {
-							const paramTypeText = paramTypeNode.getText()
-							node.setReturnType(paramTypeText)
-							modified = true
-							returnTypeSet = true
-							return // Return early since we've set the return type
-						}
-					}
-				}
-			}
-
-			if (!returnTypeSet) {
-				const type = node.getReturnType()
-				const typeText = type.getText(
-					node,
-					ts.TypeFormatFlags.NoTruncation |
-						ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
-						ts.TypeFormatFlags.UseTypeOfFunction |
-						ts.TypeFormatFlags.UseFullyQualifiedType
-				)
-
-				// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
-				if (options.ignoreAnonymousObjects && typeText.includes('{')) {
-					return
-				}
-
-				// ignoreAny: ignore functions that return the any type
-				if (options.ignoreAny && /\bany\b/.test(typeText)) {
-					return
-				}
-
-				// ignoreUnknown: ignore functions that return the unknown type
-				if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
-					return
-				}
-
-				node.setReturnType(typeText)
-				modified = true
-			}
-		} catch (error) {
-			const position = node.getStart()
-			const { line, column } = sourceFile.getLineAndColumnAtPos(position)
-			console.error(
-				`Error processing node at ${filePath}:${line}:${column} - ${error instanceof Error ? error.message : String(error)}`
-			)
-		}
-	})
-
-	if (!modified) {
-		return `No changes made to "${filePath}"`
-	}
-
-	if (options.dryRun) {
-		return `Would modify "${filePath}" (dry run)`
-	}
-
-	await sourceFile.save()
-	return `Processed and saved "${filePath}"`
 }

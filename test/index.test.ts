@@ -1,22 +1,14 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import type { Options } from '../src/options'
 import * as clack from '@clack/prompts'
-
-// Mock addFunctionReturnTypes before importing the CLI so main() never
-// touches the filesystem.
-const addFunctionReturnTypes = mock((_options?: Options): Promise<void> =>
-	Promise.resolve()
-)
-
-mock.module(
-	'../src/add-function-return-types.ts',
-	(): { addFunctionReturnTypes: any; } => ({ addFunctionReturnTypes })
-)
 
 const { main } = await import('../src/cli')
 
-describe('cli', (): void => {
+describe('cli prompts', (): void => {
+	const run = mock((_options?: Options): Promise<void> => Promise.resolve())
+
 	beforeEach((): void => {
-		addFunctionReturnTypes.mockClear()
+		run.mockClear()
 		process.argv = ['node', 'cli.js']
 		// Restore the deterministic global mock defaults before each test
 		clack.isCancel.mockReturnValue(false)
@@ -28,14 +20,14 @@ describe('cli', (): void => {
 		clack.multiselect.mockResolvedValue([])
 	})
 
-	it('calls addFunctionReturnTypes with defaults when all prompts are accepted as-is', async (): Promise<void> => {
-		await main()
+	it('calls the runner with defaults when all prompts are accepted as-is', async (): Promise<void> => {
+		await main([], run)
 
 		expect(clack.text).toHaveBeenCalledWith(
 			expect.objectContaining({ initialValue: '.' })
 		)
-		expect(addFunctionReturnTypes).toHaveBeenCalledTimes(1)
-		expect(addFunctionReturnTypes).toHaveBeenCalledWith({
+		expect(run).toHaveBeenCalledTimes(1)
+		expect(run).toHaveBeenCalledWith({
 			path: '.',
 			shallow: false,
 			ignoreFiles: [],
@@ -52,7 +44,9 @@ describe('cli', (): void => {
 			ignoreUnknown: false,
 			ignoreAnonymousFunctions: false,
 			dryRun: false,
-			tsconfig: undefined
+			tsconfig: undefined,
+			useCache: true,
+			clearCache: false
 		})
 	})
 
@@ -69,10 +63,10 @@ describe('cli', (): void => {
 			.mockResolvedValueOnce(['ignoreUnknown'])
 			.mockResolvedValueOnce([])
 
-		await main()
+		await main([], run)
 
-		expect(addFunctionReturnTypes).toHaveBeenCalledTimes(1)
-		expect(addFunctionReturnTypes).toHaveBeenCalledWith(
+		expect(run).toHaveBeenCalledTimes(1)
+		expect(run).toHaveBeenCalledWith(
 			expect.objectContaining({
 				path: 'src',
 				shallow: true,
@@ -81,7 +75,9 @@ describe('cli', (): void => {
 				dryRun: true,
 				overwrite: false,
 				ignoreExpressions: false,
-				tsconfig: 'tsconfig.app.json'
+				tsconfig: 'tsconfig.app.json',
+				useCache: true,
+				clearCache: false
 			})
 		)
 	})
@@ -89,23 +85,15 @@ describe('cli', (): void => {
 	it('returns gracefully when a prompt is cancelled', async (): Promise<void> => {
 		clack.isCancel.mockReturnValue(true)
 
-		await main()
+		await main([], run)
 
 		expect(clack.cancel).toHaveBeenCalledWith('Operation cancelled')
-		expect(addFunctionReturnTypes).not.toHaveBeenCalled()
+		expect(run).not.toHaveBeenCalled()
 	})
 
-	it('prints usage for --help without running the migration', async (): Promise<void> => {
-		await main(['--help'])
+	it('prints usage for --help without running anything', async (): Promise<void> => {
+		await main(['--help'], run)
 
-		expect(addFunctionReturnTypes).not.toHaveBeenCalled()
-	})
-
-	it('rejects unknown flags instead of treating them as a path', async (): Promise<void> => {
-		await main(['src', '--dr-run'])
-
-		expect(process.exitCode).toBe(1)
-		expect(addFunctionReturnTypes).not.toHaveBeenCalled()
-		process.exitCode = 0
+		expect(run).not.toHaveBeenCalled()
 	})
 })

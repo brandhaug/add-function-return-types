@@ -15,13 +15,20 @@ const booleanFlags = [
 	'ignore-iifes',
 	'ignore-concise-arrow-function-expressions-starting-with-void',
 	'ignore-anonymous-functions',
-	'dry-run'
+	'dry-run',
+	'no-cache',
+	'clear-cache'
 ] as const
 
 const valueFlags = ['ignore-files', 'ignore-functions', 'tsconfig'] as const
 
 type ParsedArgs = Partial<Record<(typeof booleanFlags)[number], boolean>> &
-	Partial<Record<(typeof valueFlags)[number], string>> & { path?: string }
+	Partial<Record<(typeof valueFlags)[number], string>> & {
+		path?: string
+		help?: boolean
+	}
+
+export type { ParsedArgs }
 
 const booleanFlagSet: ReadonlySet<string> = new Set(booleanFlags)
 const valueFlagSet: ReadonlySet<string> = new Set(valueFlags)
@@ -35,6 +42,8 @@ Options:
   --shallow                Process only the top-level directory
   --overwrite              Overwrite existing return types
   --dry-run                Preview changes without modifying files
+  --no-cache               Disable the incremental cache
+  --clear-cache            Delete the cache file before processing
   --tsconfig=<path>        Path to a tsconfig.json for type resolution
   --ignore-files=<glob,..> File patterns to ignore
   --ignore-functions=<names>
@@ -51,9 +60,7 @@ Options:
   --ignore-anonymous-functions
   -h, --help               Show this help`
 
-export const parseArgv = (
-	argv: string[]
-): Partial<Record<"shallow" | "overwrite" | "ignore-any" | "ignore-unknown" | "ignore-anonymous-objects" | "ignore-expressions" | "ignore-functions-without-type-parameters" | "ignore-higher-order-functions" | "ignore-typed-function-expressions" | "ignore-iifes" | "ignore-concise-arrow-function-expressions-starting-with-void" | "ignore-anonymous-functions" | "dry-run", boolean>> & Partial<Record<"ignore-files" | "ignore-functions" | "tsconfig", string>> & { path?: string; } & { help?: boolean; } => {
+export const parseArgv = (argv: string[]): ParsedArgs => {
 	const parsed: ParsedArgs & { help?: boolean } = {}
 
 	for (const arg of argv) {
@@ -110,9 +117,11 @@ const buildOptions = (
 			| 'ignoreConciseArrowFunctionExpressionsStartingWithVoid'
 			| 'ignoreAnonymousFunctions'
 			| 'dryRun'
+			| 'useCache'
+			| 'clearCache'
 		>
 	>
-): { path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; } => ({
+): Options => ({
 	path,
 	shallow: flags.shallow ?? defaultOptions.shallow,
 	ignoreFiles: flags.ignoreFiles ?? defaultOptions.ignoreFiles,
@@ -140,7 +149,9 @@ const buildOptions = (
 	ignoreAnonymousFunctions:
 		flags.ignoreAnonymousFunctions ?? defaultOptions.ignoreAnonymousFunctions,
 	dryRun: flags.dryRun ?? defaultOptions.dryRun,
-	tsconfig: flags.tsconfig ?? defaultOptions.tsconfig
+	tsconfig: flags.tsconfig ?? defaultOptions.tsconfig,
+	useCache: flags.useCache ?? defaultOptions.useCache,
+	clearCache: flags.clearCache ?? defaultOptions.clearCache
 })
 
 type IgnoreValue = Exclude<
@@ -229,10 +240,10 @@ const handleCancel = <T>(value: T | symbol): T => {
 	if (p.isCancel(value)) {
 		throw new CancelledError()
 	}
-	return value as T
+	return value
 }
 
-const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ignoreFiles: string[]; overwrite: boolean; ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean; ignoreExpressions: boolean; ignoreFunctionsWithoutTypeParameters: boolean; ignoreHigherOrderFunctions: boolean; ignoreTypedFunctionExpressions: boolean; ignoreIIFEs: boolean; ignoreFunctions: string[]; ignoreAnonymousObjects: boolean; ignoreAny: boolean; ignoreUnknown: boolean; ignoreAnonymousFunctions: boolean; dryRun: boolean; tsconfig: string | undefined; }> => {
+const promptForOptions = async (): Promise<Options> => {
 	p.intro('add-function-return-types')
 	p.log.message(
 		'A CLI tool to add explicit return types to TypeScript functions'
@@ -257,7 +268,7 @@ const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ign
 					message: `Select ${group.title.toLowerCase()} options to ignore`,
 					required: false,
 					options: group.options.map(
-						(option): { value: IgnoreValue; label: string; hint: string; } => ({
+						(option): { value: IgnoreValue; label: string; hint: string } => ({
 							value: option.value,
 							label: option.label,
 							hint: option.hint
@@ -321,7 +332,8 @@ const promptForOptions = async (): Promise<{ path: string; shallow: boolean; ign
 }
 
 export async function main(
-	argv: string[] = process.argv.slice(2)
+	argv: string[] = process.argv.slice(2),
+	run: typeof addFunctionReturnTypes = addFunctionReturnTypes
 ): Promise<void> {
 	const userArguments = [...argv]
 
@@ -363,6 +375,8 @@ export async function main(
 					],
 				ignoreAnonymousFunctions: parsed['ignore-anonymous-functions'],
 				dryRun: parsed['dry-run'],
+				useCache: !parsed['no-cache'],
+				clearCache: parsed['clear-cache'],
 				ignoreFiles: parsed['ignore-files']?.split(','),
 				ignoreFunctions: parsed['ignore-functions']?.split(','),
 				tsconfig: parsed['tsconfig']
@@ -371,7 +385,7 @@ export async function main(
 			options = await promptForOptions()
 		}
 
-		await addFunctionReturnTypes(options)
+		await run(options)
 
 		p.outro(
 			options.dryRun

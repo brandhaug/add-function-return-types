@@ -29,7 +29,7 @@ const getNumber = () => {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -47,7 +47,7 @@ const multiply = (a: number, b: number) => {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -67,7 +67,7 @@ async function fetchData(url: string) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -86,7 +86,7 @@ class Person {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -105,7 +105,7 @@ class Calculator {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -128,7 +128,7 @@ function combine(a: any, b: any) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -147,7 +147,7 @@ function logMessage(message: string) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -169,7 +169,7 @@ function* idGenerator() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -188,7 +188,7 @@ function identity<T>(arg: T) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -208,7 +208,7 @@ function toNumber(value: string | number) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -232,7 +232,7 @@ const obj = {
 };
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -250,7 +250,7 @@ function getFullName({ firstName, lastName }: { firstName: string; lastName: str
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -269,7 +269,7 @@ function greet(name: string = 'World') {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -288,7 +288,7 @@ function sum(...numbers: number[]) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -307,7 +307,7 @@ function getLength(str?: string) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -328,7 +328,7 @@ namespace Utils {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -345,7 +345,7 @@ const double = function(n: number) {
 };
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -366,7 +366,7 @@ function createAdder(a: number) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -385,7 +385,7 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -404,7 +404,7 @@ function getValue(key: string) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -421,7 +421,7 @@ function isType<T>(value: any): value is T {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -439,7 +439,7 @@ function toNumber(value: string) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -459,7 +459,7 @@ function toNumber(value: string) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -478,7 +478,7 @@ function firstItem(values: string[]) {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -504,7 +504,7 @@ function subDirFunction() {
 `.trim()
 
 		// Write the top-level file
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const topLevelFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(topLevelFilePath, topLevelFile)
 
@@ -539,7 +539,7 @@ function shouldBeIgnored() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const processFilePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(processFilePath, fileToProcess)
 
@@ -573,7 +573,7 @@ const myArrowFunction = () => {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -594,7 +594,7 @@ function withTypeParams<T>() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -619,7 +619,7 @@ function notAllowedFunction() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -646,7 +646,7 @@ function normalFunction() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -671,7 +671,7 @@ const untypedFunction = function() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -695,7 +695,7 @@ const arrowVoid = () => void doSomething();
 const arrowNormal = () => 42;
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -719,7 +719,7 @@ function greet(name: string): number {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -741,7 +741,7 @@ function greet(name: string): number {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -764,7 +764,7 @@ const myArrowFunction = () => {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -786,7 +786,7 @@ function withTypeParams<T>() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -810,7 +810,7 @@ function normalFunction() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -828,7 +828,7 @@ const typedFunction: () => number = function() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -847,7 +847,7 @@ const typedFunction: () => number = function() {
 		})();
 		`.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -868,7 +868,7 @@ const typedFunction: () => number = function() {
 	  }
 	  `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -889,7 +889,7 @@ const typedFunction: () => number = function() {
 			}
 		`
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -922,7 +922,7 @@ function getNormalType() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -948,7 +948,7 @@ return user;
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -969,7 +969,7 @@ function getNormalType() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -994,7 +994,7 @@ function getNormalType() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1019,7 +1019,7 @@ function inferredAny() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1041,7 +1041,7 @@ function getNormalType() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1066,7 +1066,7 @@ function inferredUnknown() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1118,7 +1118,7 @@ variable = () => {
 };
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1179,7 +1179,7 @@ variable = () => {
 };
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1210,7 +1210,7 @@ async function getNormalType() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1237,7 +1237,7 @@ async function inferredPromiseAny() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1263,7 +1263,7 @@ async function getNormalType() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1290,7 +1290,7 @@ async function inferredPromiseUnknown() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1320,7 +1320,7 @@ function getRegularObject() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1352,7 +1352,7 @@ function getRegularObject() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1392,7 +1392,7 @@ function getNormalRecord() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1431,7 +1431,7 @@ function getNormalArray() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1464,7 +1464,7 @@ function getArrayAnonymous() {
 }
 `.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1506,7 +1506,7 @@ export const useSortTags = (
   return tags
 }`.trim()
 
-		const testDir = await fs.mkdtemp(tmpDir)
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
 		const filePath = path.join(testDir, `${crypto.randomUUID()}.ts`)
 		await fs.writeFile(filePath, sourceCode)
 
@@ -1539,9 +1539,7 @@ export const useSortTags = (
 	})
 })
 
-async function filesWithContent(
-	root: string
-): Promise<Map<string, string>> {
+async function filesWithContent(root: string): Promise<Map<string, string>> {
 	const files = new Map<string, string>()
 	async function walk(dir: string): Promise<void> {
 		for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
