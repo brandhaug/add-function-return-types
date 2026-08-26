@@ -19,7 +19,8 @@ const booleanFlags = [
 	'no-cache',
 	'clear-cache',
 	'include-generated',
-	'json'
+	'json',
+	'format'
 ] as const
 
 const valueFlags = [
@@ -56,6 +57,8 @@ Options:
                            type alias (default 150)
   --max-type-depth=<n>     Max type nesting depth before extracting a named
                            type alias (default 4)
+  --no-format              Skip formatting modified files with the project's
+                           formatter (oxfmt/prettier/biome)
   --include-generated      Also process generated files (*.gen.ts, *.generated.ts, __generated__/, generated/)
   --json                   Emit machine-readable JSON summary instead of a table
   --tsconfig=<path>        Path to a tsconfig.json for type resolution
@@ -151,6 +154,7 @@ const buildOptions = (
 			| 'includeGenerated'
 			| 'maxTypeLength'
 			| 'maxTypeDepth'
+			| 'format'
 			| 'json'
 		>
 	>
@@ -191,6 +195,7 @@ const buildOptions = (
 		flags.includeGenerated ?? defaultOptions.includeGenerated,
 	maxTypeLength: flags.maxTypeLength ?? defaultOptions.maxTypeLength,
 	maxTypeDepth: flags.maxTypeDepth ?? defaultOptions.maxTypeDepth,
+	format: flags.format ?? defaultOptions.format,
 	json: flags.json ?? defaultOptions.json
 })
 
@@ -433,6 +438,7 @@ export async function main(
 					parsed['max-type-depth'] === undefined
 						? undefined
 						: parseNumberFlag('max-type-depth', parsed['max-type-depth']),
+				format: parsed['format'],
 				json: parsed['json'],
 				ignoreFiles: parsed['ignore-files']?.split(','),
 				ignoreFunctions: parsed['ignore-functions']?.split(','),

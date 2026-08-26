@@ -1,6 +1,7 @@
 import { parentPort, type MessagePort, workerData } from 'node:worker_threads'
 import fs from 'node:fs/promises'
 import { computeContentHash, type CacheFile } from './cache.js'
+import type { DetectedFormatter } from './formatter.js'
 import { createProject, processFile } from './process-file.js'
 import { createRunStats, type RunStats } from './stats.js'
 import type { Options } from './options.js'
@@ -9,6 +10,7 @@ type WorkerData = {
 	files: string[]
 	options: Options
 	types: string[]
+	formatter: DetectedFormatter | null
 }
 
 type ResultMessage =
@@ -21,7 +23,7 @@ if (!port) {
 	throw new Error('This module must be run inside a worker thread')
 }
 
-const { files, options, types } = workerData as WorkerData
+const { files, options, types, formatter } = workerData as WorkerData
 
 const project = await createProject(options, types)
 const hashes: CacheFile['files'] = {}
@@ -29,7 +31,7 @@ const stats = createRunStats()
 
 for (const file of files) {
 	try {
-		const status = await processFile(project, file, options, stats)
+		const status = await processFile(project, file, options, stats, formatter)
 		port.postMessage({ type: 'result', file, status } satisfies ResultMessage)
 
 		if (!options.dryRun) {

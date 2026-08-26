@@ -47,6 +47,7 @@ describe('cli', (): void => {
 			includeGenerated: false,
 			maxTypeLength: 150,
 			maxTypeDepth: 4,
+			format: true,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
@@ -101,6 +102,7 @@ describe('cli', (): void => {
 			includeGenerated: false,
 			maxTypeLength: 150,
 			maxTypeDepth: 4,
+			format: true,
 			tsconfig: 'tsconfig.app.json',
 			useCache: true,
 			clearCache: false
@@ -135,6 +137,7 @@ describe('cli', (): void => {
 			includeGenerated: false,
 			maxTypeLength: 150,
 			maxTypeDepth: 4,
+			format: true,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
