@@ -32,11 +32,11 @@ describe.concurrent('verify mode', (): void => {
 			'a.ts': 'export function f() {\n  return 1\n}\n'
 		})
 		const filePath = path.join(testDir, 'a.ts')
-		const original = await fs.readFile(filePath, 'utf-8')
+		const original = await fs.readFile(filePath, 'utf8')
 
 		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
 
-		const updated = await fs.readFile(filePath, 'utf-8')
+		const updated = await fs.readFile(filePath, 'utf8')
 		expect(updated).not.toBe(original)
 		expect(updated).toContain('function f(): number')
 	})

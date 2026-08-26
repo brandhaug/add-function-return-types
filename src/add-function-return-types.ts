@@ -17,7 +17,12 @@ import {
 import { detectFormatter, type DetectedFormatter } from './formatter.js'
 import { resolveTsconfigPath, verifyModifiedFiles } from './verify.js'
 import { defaultGeneratedIgnorePatterns, type Options } from './options.js'
-import { createRunStats, formatStatsTable, type RunStats } from './stats.js'
+import {
+	createRunStats,
+	formatStatsTable,
+	mergeStats,
+	type RunStats
+} from './stats.js'
 import * as p from '@clack/prompts'
 import { findPackageJsonFiles, getDependencies } from './utils.js'
 import fs from 'node:fs/promises'
@@ -69,7 +74,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		}
 
 		try {
-			const content = await fs.readFile(file, 'utf-8')
+			const content = await fs.readFile(file, 'utf8')
 			if (computeContentHash(content) === cachedHash) {
 				skippedCount++
 				continue
@@ -101,14 +106,14 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	const results = new Map<string, string>()
 	const errors: string[] = []
 	const stats = createRunStats()
-	const newHashes: Record<string, string> = {}
+	const newHashes = new Map<string, string>()
 	const totalFiles = allFiles.length
 
 	const pendingOriginals: Record<string, string> = {}
 	if (options.verify && !options.dryRun && pendingFiles.length > 0) {
 		for (const file of pendingFiles) {
 			try {
-				pendingOriginals[file] = await fs.readFile(file, 'utf-8')
+				pendingOriginals[file] = await fs.readFile(file, 'utf8')
 			} catch {
 				// ignore unreadable files
 			}
@@ -139,7 +144,6 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	if (
 		options.verify &&
 		!options.dryRun &&
-		pendingOriginals &&
 		Object.keys(pendingOriginals).length > 0
 	) {
 		const modifiedFiles = Object.entries(pendingOriginals)
@@ -164,7 +168,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 				const reverted = await verifyModifiedFiles(tsconfigPath, modifiedFiles)
 				for (const file of reverted) {
 					results.set(file, `Reverted "${file}" (introduced new type errors)`)
-					delete newHashes[file]
+					newHashes.delete(file)
 					stats.filesModified--
 					stats.filesUnchanged++
 				}
@@ -191,7 +195,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		const cache: CacheFile = {
 			version: CACHE_VERSION,
 			optionsHash,
-			files: { ...cachedEntries, ...newHashes }
+			files: { ...cachedEntries, ...Object.fromEntries(newHashes) }
 		}
 		await saveCache(cachePath, cache).catch((error: unknown): void => {
 			console.warn(`Warning: Could not write cache file "${cachePath}":`, error)
@@ -223,7 +227,7 @@ async function runWorkerPool(
 	types: string[],
 	results: Map<string, string>,
 	errors: string[],
-	newHashes: Record<string, string>,
+	newHashes: Map<string, string>,
 	stats: RunStats,
 	formatter: DetectedFormatter | null
 ): Promise<void> {
@@ -252,7 +256,7 @@ function runWorker(
 	types: string[],
 	results: Map<string, string>,
 	errors: string[],
-	newHashes: Record<string, string>,
+	newHashes: Map<string, string>,
 	stats: RunStats,
 	formatter: DetectedFormatter | null
 ): Promise<void> {
@@ -263,26 +267,22 @@ function runWorker(
 
 		worker.on('message', (message: ResultMessage): void => {
 			switch (message.type) {
-				case 'result':
+				case 'result': {
 					results.set(message.file, message.status)
 					break
-				case 'error':
+				}
+				case 'error': {
 					console.error(message.message)
 					errors.push(message.message)
 					break
-				case 'done':
-					Object.assign(newHashes, message.hashes)
-					for (const key of Object.keys(
-						stats.annotations
-					) as (keyof typeof stats.annotations)[]) {
-						stats.annotations[key] += message.stats.annotations[key]
+				}
+				case 'done': {
+					for (const [file, hash] of Object.entries(message.hashes)) {
+						newHashes.set(file, hash)
 					}
-					for (const key of Object.keys(
-						stats.skipped
-					) as (keyof typeof stats.skipped)[]) {
-						stats.skipped[key] += message.stats.skipped[key]
-					}
+					mergeStats(stats, message.stats)
 					break
+				}
 			}
 		})
 
@@ -347,7 +347,7 @@ async function getAllTsAndTsxFiles(
 	]
 	return fg(patterns, {
 		cwd: rootPath,
-		ignore: defaultIgnorefiles.concat(options.ignoreFiles),
+		ignore: [...defaultIgnorefiles, ...options.ignoreFiles],
 		absolute: true,
 		deep: options.shallow ? 0 : undefined // Recursive by default, shallow if specified
 	})

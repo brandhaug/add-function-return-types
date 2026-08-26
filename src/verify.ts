@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { Diagnostic, Project } from 'ts-morph'
+import { type Diagnostic, Project } from 'ts-morph'
 
 export type ModifiedFile = {
 	filePath: string

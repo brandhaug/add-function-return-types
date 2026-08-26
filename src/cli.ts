@@ -309,7 +309,7 @@ const promptForOptions = async (): Promise<Options> => {
 		})
 	)
 
-	let ignoreValues: string[] = []
+	const ignoreValues: string[] = []
 	const configureIgnore = handleCancel<boolean>(
 		await p.confirm({ message: 'Configure ignore options?' })
 	)

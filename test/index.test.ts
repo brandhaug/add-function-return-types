@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
-import type { Options } from '../src/options'
+import { type Options } from '../src/options'
 import * as clack from '@clack/prompts'
 
 const { main } = await import('../src/cli')

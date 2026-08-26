@@ -11,7 +11,7 @@ import {
 	ts,
 	type TypeParameterDeclaration
 } from 'ts-morph'
-import type { Options } from './options.js'
+import { type Options } from './options.js'
 import {
 	formatFile,
 	wrapLongType,
@@ -85,7 +85,7 @@ function extractTypeAlias(
 	}
 
 	const pascalName = baseName
-		.replace(/[^a-zA-Z0-9]/g, '')
+		.replaceAll(/[^a-zA-Z0-9]/g, '')
 		.replace(/^./, (c: string): string => c.toUpperCase())
 	if (!pascalName) return undefined
 
@@ -199,8 +199,9 @@ export async function processFile(
 					contextualType !== undefined &&
 					contextualType.getCallSignatures().length > 0
 				) {
-					if (stats)
+					if (stats) {
 						recordSkip(stats, 'ignoreContextuallyTypedFunctionExpressions')
+					}
 					return
 				}
 			}
@@ -251,11 +252,12 @@ export async function processFile(
 			) {
 				const body = node.getBody()
 				if (Node.isVoidExpression(body)) {
-					if (stats)
+					if (stats) {
 						recordSkip(
 							stats,
 							'ignoreConciseArrowFunctionExpressionsStartingWithVoid'
 						)
+					}
 					return
 				}
 			}
@@ -311,8 +313,6 @@ export async function processFile(
 				: undefined
 			if (options.overwrite) node.setReturnType('')
 
-			let returnTypeSet = false
-
 			// Attempt to use the type of the returned expression if it's a parameter
 			const body = node.getBody()
 			if (body) {
@@ -342,75 +342,73 @@ export async function processFile(
 								formatter === null ? wrapLongType(paramTypeText) : paramTypeText
 							)
 							modified = true
-							returnTypeSet = true
 							return // Return early since we've set the return type
 						}
 					}
 				}
 			}
 
-			if (!returnTypeSet) {
-				const type = node.getReturnType()
-				const typeText = type.getText(
-					node,
-					ts.TypeFormatFlags.NoTruncation |
-						ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
-						ts.TypeFormatFlags.UseTypeOfFunction |
-						ts.TypeFormatFlags.UseFullyQualifiedType
-				)
+			// Otherwise, annotate with the function's inferred return type.
+			const type = node.getReturnType()
+			const typeText = type.getText(
+				node,
+				ts.TypeFormatFlags.NoTruncation |
+					ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
+					ts.TypeFormatFlags.UseTypeOfFunction |
+					ts.TypeFormatFlags.UseFullyQualifiedType
+			)
 
-				// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
-				if (options.ignoreAnonymousObjects && typeText.includes('{')) {
-					if (stats) recordSkip(stats, 'ignoreAnonymousObjects')
-					return
-				}
-
-				// Never emit `any`: an explicit `any` annotation is strictly worse than no annotation.
-				if (/\bany\b/.test(typeText)) {
-					if (stats) recordSkip(stats, 'anyForbidden')
-					return
-				}
-
-				// ignoreUnknown: ignore functions that return the unknown type
-				if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
-					if (stats) recordSkip(stats, 'ignoreUnknown')
-					return
-				}
-
-				// Complexity guard: cap printed length and nesting depth by
-				// extracting the type into a named exported alias when possible.
-				const nestingDepth = getTypeNestingDepth(typeText)
-				if (
-					typeText.length > options.maxTypeLength ||
-					nestingDepth > options.maxTypeDepth
-				) {
-					const aliasName = extractTypeAlias(sourceFile, node, typeText)
-					if (!aliasName) return
-					node.setReturnType(aliasName)
-					modified = true
-					return
-				}
-
-				// Resolve referenced named types to imports; skip the function
-				// if a referenced type cannot be resolved reliably (would emit TS2304)
-				const plan = planAnnotation(project, type, sourceFile, node, typeText)
-				if (!plan.ok) {
-					if (options.overwrite && priorReturnType !== undefined) {
-						node.setReturnType(priorReturnType)
-					}
-					return
-				}
-
-				for (const ref of plan.imports) {
-					if (!pendingImports.has(ref.name)) {
-						pendingImports.set(ref.name, ref)
-					}
-				}
-
-				node.setReturnType(plan.typeText)
-				modified = true
-				if (stats) recordAnnotation(stats, plan.typeText)
+			// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
+			if (options.ignoreAnonymousObjects && typeText.includes('{')) {
+				if (stats) recordSkip(stats, 'ignoreAnonymousObjects')
+				return
 			}
+
+			// Never emit `any`: an explicit `any` annotation is strictly worse than no annotation.
+			if (/\bany\b/.test(typeText)) {
+				if (stats) recordSkip(stats, 'anyForbidden')
+				return
+			}
+
+			// ignoreUnknown: ignore functions that return the unknown type
+			if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
+				if (stats) recordSkip(stats, 'ignoreUnknown')
+				return
+			}
+
+			// Complexity guard: cap printed length and nesting depth by
+			// extracting the type into a named exported alias when possible.
+			const nestingDepth = getTypeNestingDepth(typeText)
+			if (
+				typeText.length > options.maxTypeLength ||
+				nestingDepth > options.maxTypeDepth
+			) {
+				const aliasName = extractTypeAlias(sourceFile, node, typeText)
+				if (!aliasName) return
+				node.setReturnType(aliasName)
+				modified = true
+				return
+			}
+
+			// Resolve referenced named types to imports; skip the function
+			// if a referenced type cannot be resolved reliably (would emit TS2304)
+			const plan = planAnnotation(project, type, sourceFile, node, typeText)
+			if (!plan.ok) {
+				if (options.overwrite && priorReturnType !== undefined) {
+					node.setReturnType(priorReturnType)
+				}
+				return
+			}
+
+			for (const ref of plan.imports) {
+				if (!pendingImports.has(ref.name)) {
+					pendingImports.set(ref.name, ref)
+				}
+			}
+
+			node.setReturnType(plan.typeText)
+			modified = true
+			if (stats) recordAnnotation(stats, plan.typeText)
 		} catch (error) {
 			const position = node.getStart()
 			const { line, column } = sourceFile.getLineAndColumnAtPos(position)

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import type { Options } from './options.js'
+import { type Options } from './options.js'
 
 /**
  * Bump this whenever processing logic changes in a way that invalidates
@@ -54,18 +54,43 @@ export function computeOptionsHash(options: Options): string {
 	return computeContentHash(JSON.stringify(relevant))
 }
 
+/**
+ * Type guard for the on-disk cache file shape. The cache is written by this
+ * tool, but it is still external input: a stale or hand-edited file must not
+ * be trusted just because `JSON.parse` returned an object.
+ */
+function isCacheFile(value: unknown): value is CacheFile {
+	if (typeof value !== 'object' || value === null) return false
+	if (
+		!('version' in value) ||
+		!('optionsHash' in value) ||
+		!('files' in value)
+	) {
+		return false
+	}
+	if (typeof value.version !== 'number') return false
+	if (typeof value.optionsHash !== 'string') return false
+	if (
+		typeof value.files !== 'object' ||
+		value.files === null ||
+		Array.isArray(value.files)
+	) {
+		return false
+	}
+	return true
+}
+
 export async function loadCache(
 	cachePath: string,
 	optionsHash: string
 ): Promise<Record<string, string>> {
 	try {
-		const content = await fs.readFile(cachePath, 'utf-8')
-		const parsed = JSON.parse(content) as CacheFile
+		const content = await fs.readFile(cachePath, 'utf8')
+		const parsed: unknown = JSON.parse(content)
 		if (
+			!isCacheFile(parsed) ||
 			parsed.version !== CACHE_VERSION ||
-			parsed.optionsHash !== optionsHash ||
-			typeof parsed.files !== 'object' ||
-			parsed.files === null
+			parsed.optionsHash !== optionsHash
 		) {
 			return {}
 		}

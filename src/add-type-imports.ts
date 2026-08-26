@@ -82,8 +82,8 @@ const NON_TYPE_IDENTIFIERS = new Set([
  */
 export function sanitizeTypeText(text: string): string {
 	return text
-		.replace(/\bimport\s*\(([^)]*)\)\s*\.\s*/g, '')
-		.replace(/(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, "''")
+		.replaceAll(/\bimport\s*\(([^)]*)\)\s*\.\s*/g, '')
+		.replaceAll(/(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, "''")
 		.trim()
 }
 
@@ -107,7 +107,7 @@ export function extractTypeIdentifierCandidates(text: string): Set<string> {
  * imported name (`Widget`) once an import for it will be added.
  */
 export function stripQualifiers(text: string, name: string): string {
-	return text.replace(
+	return text.replaceAll(
 		new RegExp(`(?:[A-Za-z_$][\\w$]*\\.)+${name}\\b`, 'g'),
 		name
 	)
@@ -195,9 +195,9 @@ export function collectExternalTypeDeclarations(
 	const consider = (symbol: TsMorphSymbol): void => {
 		const name = symbol.getName()
 		if (!candidates.has(name) || result.has(name)) return
-		for (const decl of symbol.getDeclarations() ?? []) {
-			const declSourceFile = decl.getSourceFile?.()
-			if (!declSourceFile || declSourceFile === sourceFile) continue
+		for (const decl of symbol.getDeclarations()) {
+			const declSourceFile = decl.getSourceFile()
+			if (declSourceFile === sourceFile) continue
 			if (!isExportedDeclaration(decl)) continue
 			result.set(name, declSourceFile)
 			return
@@ -212,7 +212,7 @@ export function collectExternalTypeDeclarations(
 		const symbol = type.getAliasSymbol() ?? type.getSymbol()
 		if (symbol) consider(symbol)
 
-		for (const arg of type.getTypeArguments() ?? []) walk(arg, depth + 1)
+		for (const arg of type.getTypeArguments()) walk(arg, depth + 1)
 		if (type.isUnion()) {
 			for (const member of type.getUnionTypes()) walk(member, depth + 1)
 		}
@@ -229,9 +229,9 @@ export function collectExternalTypeDeclarations(
 		const withTarget = type as Type & { getTarget?: () => Type | undefined }
 		const target = withTarget.getTarget?.()
 		if (target) walk(target, depth + 1)
-		const stringIndex = type.getStringIndexType?.()
+		const stringIndex = type.getStringIndexType()
 		if (stringIndex) walk(stringIndex, depth + 1)
-		const numberIndex = type.getNumberIndexType?.()
+		const numberIndex = type.getNumberIndexType()
 		if (numberIndex) walk(numberIndex, depth + 1)
 		for (const signature of type.getCallSignatures()) {
 			walk(signature.getReturnType(), depth + 1)
@@ -279,10 +279,16 @@ export function getModuleSpecifier(
 			const packageJsonPath = path.join(dir, 'package.json')
 			if (fs.existsSync(packageJsonPath)) {
 				try {
-					const pkg = JSON.parse(
+					const parsed: unknown = JSON.parse(
 						fs.readFileSync(packageJsonPath, 'utf8')
-					) as unknown as Partial<{ name: string }>
-					const pkgName = pkg.name
+					)
+					const pkgName =
+						typeof parsed === 'object' &&
+						parsed !== null &&
+						'name' in parsed &&
+						typeof parsed.name === 'string'
+							? parsed.name
+							: undefined
 					if (!pkgName) return undefined
 					let rel = path.relative(dir, declPath).split(path.sep).join('/')
 					rel = rel.replace(/\.(d\.)?(m|c)?tsx?$/, '')
