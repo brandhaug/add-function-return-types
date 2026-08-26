@@ -9,7 +9,7 @@ const addFunctionReturnTypes = mock((_options?: Options): Promise<void> =>
 
 mock.module(
 	'../src/add-function-return-types.ts',
-	(): { addFunctionReturnTypes: any; } => ({ addFunctionReturnTypes })
+	(): { addFunctionReturnTypes: any } => ({ addFunctionReturnTypes })
 )
 
 const { main } = await import('../src/cli')
@@ -52,7 +52,9 @@ describe('cli', (): void => {
 			ignoreUnknown: false,
 			ignoreAnonymousFunctions: false,
 			dryRun: false,
-			tsconfig: undefined
+			tsconfig: undefined,
+			useCache: true,
+			clearCache: false
 		})
 	})
 
