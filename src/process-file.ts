@@ -12,6 +12,7 @@ import {
 	type TypeParameterDeclaration
 } from 'ts-morph'
 import type { Options } from './options.js'
+import { formatFile, wrapLongType, type DetectedFormatter } from './formatter.js'
 import { getTypeNestingDepth } from './utils.js'
 import { recordAnnotation, recordSkip, type RunStats } from './stats.js'
 import {
@@ -119,7 +120,8 @@ export async function processFile(
 	project: Project,
 	filePath: string,
 	options: Options,
-	stats?: RunStats
+	stats?: RunStats,
+	formatter: DetectedFormatter | null = null
 ): Promise<string> {
 	const sourceFile =
 		project.getSourceFile(filePath) || project.addSourceFileAtPath(filePath)
@@ -333,7 +335,9 @@ export async function processFile(
 						const paramTypeNode = param.getTypeNode()
 						if (paramTypeNode) {
 							const paramTypeText = paramTypeNode.getText()
-							node.setReturnType(paramTypeText)
+							node.setReturnType(
+								formatter === null ? wrapLongType(paramTypeText) : paramTypeText
+							)
 							modified = true
 							returnTypeSet = true
 							return // Return early since we've set the return type
@@ -424,6 +428,15 @@ export async function processFile(
 
 	if (options.dryRun) {
 		return `Would modify "${filePath}" (dry run)`
+	}
+
+	if (formatter !== null) {
+		await formatFile(filePath, formatter).catch((error: unknown): void => {
+			console.warn(
+				`Warning: could not format "${filePath}" with ${formatter.name}:`,
+				error instanceof Error ? error.message : String(error)
+			)
+		})
 	}
 
 	await sourceFile.save()

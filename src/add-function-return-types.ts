@@ -14,6 +14,7 @@ import {
 	saveCache,
 	type CacheFile
 } from './cache.js'
+import { detectFormatter, type DetectedFormatter } from './formatter.js'
 import { defaultGeneratedIgnorePatterns, type Options } from './options.js'
 import { createRunStats, formatStatsTable, type RunStats } from './stats.js'
 import * as p from '@clack/prompts'
@@ -82,6 +83,20 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		`${pendingFiles.length} file(s) to process, ${skippedCount} skipped by cache`
 	)
 
+	let formatter: DetectedFormatter | null = null
+	if (options.format) {
+		formatter = await detectFormatter(pathToProcess)
+		if (formatter) {
+			console.info(
+				`Detected "${formatter.name}" formatter — modified files will be formatted`
+			)
+		} else {
+			console.info(
+				'No formatter detected (oxfmt/prettier/biome) — long type annotations will be wrapped manually'
+			)
+		}
+	}
+
 	const results = new Map<string, string>()
 	const errors: string[] = []
 	const stats = createRunStats()
@@ -97,7 +112,8 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 			results,
 			errors,
 			newHashes,
-			stats
+			stats,
+			formatter
 		)
 	}
 
@@ -159,14 +175,15 @@ async function runWorkerPool(
 	results: Map<string, string>,
 	errors: string[],
 	newHashes: Record<string, string>,
-	stats: RunStats
+	stats: RunStats,
+	formatter: DetectedFormatter | null
 ): Promise<void> {
 	const workerCount = Math.max(1, Math.min(os.cpus().length, files.length))
 	const batches = partitionFiles(files, workerCount)
 
 	await Promise.all(
 		batches.map((batch): Promise<void> =>
-			runWorker(batch, options, types, results, errors, newHashes, stats)
+			runWorker(batch, options, types, results, errors, newHashes, stats, formatter)
 		)
 	)
 }
@@ -178,11 +195,12 @@ function runWorker(
 	results: Map<string, string>,
 	errors: string[],
 	newHashes: Record<string, string>,
-	stats: RunStats
+	stats: RunStats,
+	formatter: DetectedFormatter | null
 ): Promise<void> {
 	return new Promise((resolve, reject): void => {
 		const worker = new Worker(getWorkerModuleUrl(), {
-			workerData: { files, options, types }
+			workerData: { files, options, types, formatter }
 		})
 
 		worker.on('message', (message: ResultMessage): void => {

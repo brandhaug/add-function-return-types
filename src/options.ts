@@ -16,6 +16,7 @@ export type Options = {
 	ignoreAnonymousFunctions: boolean
 	dryRun: boolean
 	includeGenerated: boolean
+	format: boolean
 	maxTypeLength: number
 	maxTypeDepth: number
 	json: boolean
@@ -42,6 +43,7 @@ export const defaultOptions: Options = {
 	ignoreUnknown: false,
 	dryRun: false,
 	includeGenerated: false,
+	format: true,
 	maxTypeLength: 150,
 	maxTypeDepth: 4,
 	json: false,
