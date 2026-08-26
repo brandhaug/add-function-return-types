@@ -11,7 +11,6 @@ export type Options = {
 	ignoreFunctions: string[]
 	overwrite: boolean
 	ignoreAnonymousObjects: boolean
-	ignoreAny: boolean
 	ignoreUnknown: boolean
 	ignoreAnonymousFunctions: boolean
 	dryRun: boolean
@@ -34,7 +33,6 @@ export const defaultOptions: Options = {
 	overwrite: false,
 	ignoreAnonymousObjects: false,
 	ignoreAnonymousFunctions: false,
-	ignoreAny: false,
 	ignoreUnknown: false,
 	dryRun: false,
 	tsconfig: undefined,

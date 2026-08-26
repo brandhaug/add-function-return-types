@@ -59,7 +59,7 @@ const multiply = (a: number, b: number) => {
 		)
 	})
 
-	it('handles async functions', async (): Promise<void> => {
+	it('skips async functions with inferred Promise<any> return type', async (): Promise<void> => {
 		const sourceCode = `
 async function fetchData(url: string) {
   const response = await fetch(url);
@@ -74,9 +74,7 @@ async function fetchData(url: string) {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain(
-			'async function fetchData(url: string): Promise<any> {'
-		)
+		expect(updatedSource).toBe(sourceCode)
 	})
 
 	it('ignores constructors', async (): Promise<void> => {
@@ -137,7 +135,7 @@ function combine(a: any, b: any) {
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('combine(a: string, b: string): string {')
 		expect(updatedSource).toContain('combine(a: number, b: number): number {')
-		expect(updatedSource).toContain('combine(a: any, b: any): any {')
+		expect(updatedSource).toContain('function combine(a: any, b: any) {')
 	})
 
 	it('handles to functions returning void', async (): Promise<void> => {
@@ -397,7 +395,7 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 		)
 	})
 
-	it('handles functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
+	it('skips functions with inferred any return type due to untyped dependencies', async (): Promise<void> => {
 		const sourceCode = `
 function getValue(key: string) {
   return (window as any)[key];
@@ -411,7 +409,7 @@ function getValue(key: string) {
 		await runAddFunctionReturnTypes({ path: testDir })
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain('function getValue(key: string): any {')
+		expect(updatedSource).toBe(sourceCode)
 	})
 
 	it('handles functions with conditional types', async (): Promise<void> => {
@@ -983,7 +981,7 @@ function getNormalType() {
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
-	it('ignores functions returning any if ignoreAny is true', async (): Promise<void> => {
+	it('never emits any: skips functions returning any by default', async (): Promise<void> => {
 		const sourceCode = `
 function returnAny() {
   return JSON.parse('{"foo": "bar"}');
@@ -999,16 +997,16 @@ function getNormalType() {
 		await fs.writeFile(filePath, sourceCode)
 
 		await runAddFunctionReturnTypes({
-			path: testDir,
-			ignoreAny: true
+			path: testDir
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function returnAny() {')
+		expect(updatedSource).not.toContain(': any')
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
-	it('handles functions returning any if ignoreAny is false', async (): Promise<void> => {
+	it('never emits any but keeps existing explicit any annotations without overwrite', async (): Promise<void> => {
 		const sourceCode = `
 function returnAny(): any {
   return Math.random() > 0.5 ? 'string' : 42;
@@ -1027,10 +1025,10 @@ function inferredAny() {
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function returnAny(): any {')
-		expect(updatedSource).toContain('function inferredAny(): any {')
+		expect(updatedSource).toContain('function inferredAny() {')
 	})
 
-	it('ignores functions returning unknown if ignoreAny is true', async (): Promise<void> => {
+	it('ignores functions returning unknown if ignoreUnknown is true', async (): Promise<void> => {
 		const sourceCode = `
 function returnUnknown() {
   return JSON.parse('{"foo": "bar"}') as unknown;
@@ -1055,7 +1053,7 @@ function getNormalType() {
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
 
-	it('handles functions returning unknown if ignoreAny is false', async (): Promise<void> => {
+	it('handles functions returning unknown if ignoreUnknown is false', async (): Promise<void> => {
 		const sourceCode = `
 function returnUnknown(): unknown {
 	return JSON.parse('{"foo": "bar"}') as unknown;
@@ -1199,7 +1197,7 @@ variable = () => {
 		expect(updatedSource).toContain('variable = (): number => {')
 	})
 
-	it('ignores functions returning Promise<any> if ignoreAny is true', async (): Promise<void> => {
+	it('never emits any: skips functions returning Promise<any> by default', async (): Promise<void> => {
 		const sourceCode = `
 async function returnPromiseAny() {
   return Promise.resolve(JSON.parse('{"foo": "bar"}'));
@@ -1215,18 +1213,18 @@ async function getNormalType() {
 		await fs.writeFile(filePath, sourceCode)
 
 		await runAddFunctionReturnTypes({
-			path: testDir,
-			ignoreAny: true
+			path: testDir
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('async function returnPromiseAny() {')
+		expect(updatedSource).not.toContain(': any')
 		expect(updatedSource).toContain(
 			'async function getNormalType(): Promise<string> {'
 		)
 	})
 
-	it('handles functions returning Promise<any> if ignoreAny is false', async (): Promise<void> => {
+	it('never emits any: skips inferred Promise<any> and keeps existing explicit Promise<any>', async (): Promise<void> => {
 		const sourceCode = `
 async function returnPromiseAny(): Promise<any> {
   return Promise.resolve(Math.random() > 0.5 ? 'string' : 42);
@@ -1248,7 +1246,7 @@ async function inferredPromiseAny() {
 			'async function returnPromiseAny(): Promise<any> {'
 		)
 		expect(updatedSource).toContain(
-			'async function inferredPromiseAny(): Promise<any> {'
+			'async function inferredPromiseAny() {'
 		)
 	})
 
@@ -1398,13 +1396,13 @@ function getNormalRecord() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreAny: true,
 			ignoreUnknown: true,
 			ignoreAnonymousObjects: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function getRecordAny() {')
+		expect(updatedSource).not.toMatch(/\): [^;{]*\bany\b/)
 		expect(updatedSource).toContain('function getRecordUnknown() {')
 		expect(updatedSource).toContain('function getRecordAnonymous() {')
 		expect(updatedSource).toContain(
@@ -1437,19 +1435,19 @@ function getNormalArray() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreAny: true,
 			ignoreUnknown: true,
 			ignoreAnonymousObjects: true
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
 		expect(updatedSource).toContain('function getArrayAny() {')
+		expect(updatedSource).not.toMatch(/\): [^;{]*\bany\b/)
 		expect(updatedSource).toContain('function getArrayUnknown() {')
 		expect(updatedSource).toContain('function getArrayAnonymous() {')
 		expect(updatedSource).toContain('function getNormalArray(): string[] {')
 	})
 
-	it('handles functions returning Record/Array with any/unknown/anonymous objects if respective options are false', async (): Promise<void> => {
+	it('never emits any: Record/Array with any-containing types are skipped even when other ignore options are false', async (): Promise<void> => {
 		const sourceCode = `
 function getRecordAny() {
     return { key1: JSON.parse('{}'), key2: 'value' } as Record<string, any>;
@@ -1470,15 +1468,12 @@ function getArrayAnonymous() {
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
-			ignoreAny: false,
 			ignoreUnknown: false,
 			ignoreAnonymousObjects: false
 		})
 
 		const updatedSource = await fs.readFile(filePath, 'utf-8')
-		expect(updatedSource).toContain(
-			'function getRecordAny(): Record<string, any> {'
-		)
+		expect(updatedSource).toContain('function getRecordAny() {')
 		expect(updatedSource).toContain('function getArrayUnknown(): unknown[] {')
 		expect(updatedSource).toContain(
 			'function getArrayAnonymous(): { foo: string; baz: number; }[] {'

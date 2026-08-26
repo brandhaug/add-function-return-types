@@ -44,7 +44,6 @@ export function computeOptionsHash(options: Options): string {
 		ignoreFunctions: options.ignoreFunctions.toSorted(),
 		overwrite: options.overwrite,
 		ignoreAnonymousObjects: options.ignoreAnonymousObjects,
-		ignoreAny: options.ignoreAny,
 		ignoreUnknown: options.ignoreUnknown,
 		ignoreAnonymousFunctions: options.ignoreAnonymousFunctions,
 		tsconfig: options.tsconfig ? path.resolve(options.tsconfig) : undefined,

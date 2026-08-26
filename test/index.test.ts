@@ -40,7 +40,6 @@ describe('cli prompts', (): void => {
 			ignoreIIFEs: false,
 			ignoreFunctions: [],
 			ignoreAnonymousObjects: false,
-			ignoreAny: false,
 			ignoreUnknown: false,
 			ignoreAnonymousFunctions: false,
 			dryRun: false,
@@ -59,7 +58,7 @@ describe('cli prompts', (): void => {
 			.mockResolvedValueOnce(true) // dry run?
 			.mockResolvedValueOnce(true) // overwrite? (skipped on dry run, but safe)
 		clack.multiselect
-			.mockResolvedValueOnce(['shallow', 'ignoreAny'])
+			.mockResolvedValueOnce(['shallow'])
 			.mockResolvedValueOnce(['ignoreUnknown'])
 			.mockResolvedValueOnce([])
 
@@ -70,7 +69,6 @@ describe('cli prompts', (): void => {
 			expect.objectContaining({
 				path: 'src',
 				shallow: true,
-				ignoreAny: true,
 				ignoreUnknown: true,
 				dryRun: true,
 				overwrite: false,
