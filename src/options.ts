@@ -17,6 +17,7 @@ export type Options = {
 	dryRun: boolean
 	includeGenerated: boolean
 	format: boolean
+	verify: boolean
 	maxTypeLength: number
 	maxTypeDepth: number
 	json: boolean
@@ -44,6 +45,7 @@ export const defaultOptions: Options = {
 	dryRun: false,
 	includeGenerated: false,
 	format: true,
+	verify: true,
 	maxTypeLength: 150,
 	maxTypeDepth: 4,
 	json: false,
