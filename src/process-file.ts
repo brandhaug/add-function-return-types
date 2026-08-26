@@ -1,6 +1,11 @@
 import { type Expression, Node, type Project, SyntaxKind, ts } from 'ts-morph'
 import type { Options } from './options.js'
 import { recordAnnotation, recordSkip, type RunStats } from './stats.js'
+import {
+	ensureImports,
+	planAnnotation,
+	type ExternalTypeRef
+} from './add-type-imports.js'
 
 /**
  * Processes a single TypeScript file, adding explicit return types to functions where needed.
@@ -20,6 +25,7 @@ export async function processFile(
 		project.getSourceFile(filePath) || project.addSourceFileAtPath(filePath)
 
 	let modified = false
+	const pendingImports = new Map<string, ExternalTypeRef>()
 
 	sourceFile.forEachDescendant((node): undefined => {
 		try {
@@ -195,6 +201,9 @@ export async function processFile(
 			}
 
 			// Reset the return type so we get the inferred type
+			const priorReturnType = options.overwrite
+				? node.getReturnTypeNode()?.getText()
+				: undefined
 			if (options.overwrite) node.setReturnType('')
 
 			let returnTypeSet = false
@@ -261,9 +270,25 @@ export async function processFile(
 					return
 				}
 
-				node.setReturnType(typeText)
+				// Resolve referenced named types to imports; skip the function
+				// if a referenced type cannot be resolved reliably (would emit TS2304)
+				const plan = planAnnotation(project, type, sourceFile, node, typeText)
+				if (!plan.ok) {
+					if (options.overwrite && priorReturnType !== undefined) {
+						node.setReturnType(priorReturnType)
+					}
+					return
+				}
+
+				for (const ref of plan.imports) {
+					if (!pendingImports.has(ref.name)) {
+						pendingImports.set(ref.name, ref)
+					}
+				}
+
+				node.setReturnType(plan.typeText)
 				modified = true
-				if (stats) recordAnnotation(stats, typeText)
+				if (stats) recordAnnotation(stats, plan.typeText)
 			}
 		} catch (error) {
 			const position = node.getStart()
@@ -273,6 +298,11 @@ export async function processFile(
 			)
 		}
 	})
+
+	if (pendingImports.size > 0) {
+		ensureImports(sourceFile, [...pendingImports.values()])
+		modified = true
+	}
 
 	if (!modified) {
 		return `No changes made to "${filePath}"`

@@ -1533,6 +1533,76 @@ export const useSortTags = (
 			).toBe(original)
 		}
 	})
+
+	it('adds an import for a referenced named type from another module', async (): Promise<void> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const typesFile = path.join(testDir, 'types.ts')
+		const mainFile = path.join(testDir, 'main.ts')
+		await fs.writeFile(
+			typesFile,
+			'export interface Widget {\n  id: string;\n}\n'
+		)
+		const sourceCode = `
+export function makeWidget() {
+  return null as unknown as import('./types.js').Widget;
+}
+`.trim()
+		await fs.writeFile(mainFile, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(mainFile, 'utf-8')
+		expect(updatedSource).toContain('import { type Widget }')
+		expect(updatedSource).toContain('function makeWidget(): Widget {')
+		expect(updatedSource).not.toContain(': import(')
+	})
+
+	it('merges the new name into an existing import statement', async (): Promise<void> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const typesFile = path.join(testDir, 'types.ts')
+		const mainFile = path.join(testDir, 'main.ts')
+		await fs.writeFile(
+			typesFile,
+			"export interface Widget {\n  id: string;\n}\nexport const alphaTag = 'alpha';\n"
+		)
+		const sourceCode = `
+import { alphaTag } from './types.js';
+
+export function makeWidget() {
+  console.log(alphaTag);
+  return null as unknown as import('./types.js').Widget;
+}
+`.trim()
+		await fs.writeFile(mainFile, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(mainFile, 'utf-8')
+		expect(updatedSource).toContain(
+			"import { alphaTag, Widget } from './types.js'"
+		)
+		expect(updatedSource).toContain('function makeWidget(): Widget {')
+		expect(updatedSource).not.toContain(': import(')
+	})
+
+	it('skips annotating when a referenced type cannot be imported', async (): Promise<void> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const hiddenFile = path.join(testDir, 'hidden.ts')
+		const mainFile = path.join(testDir, 'main.ts')
+		await fs.writeFile(hiddenFile, 'interface Hidden {\n  a: number;\n}\n')
+		const sourceCode = `
+export function leak() {
+  return null as unknown as import('./hidden.js').Hidden;
+}
+`.trim()
+		await fs.writeFile(mainFile, sourceCode)
+
+		await runAddFunctionReturnTypes({ path: testDir })
+
+		const updatedSource = await fs.readFile(mainFile, 'utf-8')
+		expect(updatedSource).not.toContain(': Hidden')
+		expect(updatedSource).not.toContain("from './hidden")
+	})
 })
 
 async function filesWithContent(root: string): Promise<Map<string, string>> {
