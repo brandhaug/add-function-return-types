@@ -45,6 +45,8 @@ describe('cli', (): void => {
 			dryRun: false,
 			json: false,
 			includeGenerated: false,
+			maxTypeLength: 150,
+			maxTypeDepth: 4,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
@@ -97,6 +99,8 @@ describe('cli', (): void => {
 			dryRun: true,
 			json: false,
 			includeGenerated: false,
+			maxTypeLength: 150,
+			maxTypeDepth: 4,
 			tsconfig: 'tsconfig.app.json',
 			useCache: true,
 			clearCache: false
@@ -129,6 +133,8 @@ describe('cli', (): void => {
 			dryRun: false,
 			json: false,
 			includeGenerated: false,
+			maxTypeLength: 150,
+			maxTypeDepth: 4,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false

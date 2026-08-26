@@ -78,6 +78,32 @@ export async function findPackageJsonFiles(
 }
 
 /**
+ * Measures the maximum nesting depth of a printed type text.
+ * Counts nesting across object types `{}`, tuples/parentheses `[]` `()`,
+ * and generics `<>`, ignoring arrow function tokens `=>`.
+ * @param typeText - The printed type text.
+ * @returns The maximum nesting depth (0 for flat types).
+ */
+export function getTypeNestingDepth(typeText: string): number {
+	let depth = 0
+	let maxDepth = 0
+	for (let i = 0; i < typeText.length; i++) {
+		const char = typeText[i]
+		if (char === '=' && typeText[i + 1] === '>') {
+			i++
+			continue
+		}
+		if (char === '{' || char === '[' || char === '(' || char === '<') {
+			depth++
+			if (depth > maxDepth) maxDepth = depth
+		} else if (char === '}' || char === ']' || char === ')' || char === '>') {
+			if (depth > 0) depth--
+		}
+	}
+	return maxDepth
+}
+
+/**
  * Gets dependencies from package.json files
  * @param packageJsonPaths - Array of paths to package.json files
  * @returns Array of dependency package names

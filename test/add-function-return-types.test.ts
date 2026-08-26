@@ -1744,3 +1744,37 @@ describe.concurrent('generated files', (): void => {
 		expect(await fs.readFile(filePath, 'utf-8')).toBe(source)
 	})
 })
+
+describe.concurrent('complex return types', (): void => {
+	const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
+
+	it('extracts overly complex return types into a named alias', async (): Promise<void> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const filePath = path.join(testDir, 'a.ts')
+		const sourceCode = `
+const config = {
+	settings: { theme: { colors: { primary: '#fff', secondary: '#000' }, flags: { beta: true } }, nested: { deep: { deeper: { deepest: { level: 5 } } } } },
+	labels: { main: 'main', sub: 'sub' }
+}
+export function make() {
+	return config
+}
+`.trim()
+		await fs.writeFile(filePath, `${sourceCode}\n`)
+		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
+		const updated = await fs.readFile(filePath, 'utf-8')
+		expect(updated).toContain('type MakeReturn =')
+		expect(updated).toContain('function make(): MakeReturn')
+	})
+
+	it('keeps simple types inline', async (): Promise<void> => {
+		const testDir = await fs.mkdtemp(path.join(tmpDir, 'test-'))
+		const filePath = path.join(testDir, 'b.ts')
+		const sourceCode = 'export function one() {\n  return 1\n}\n'
+		await fs.writeFile(filePath, sourceCode)
+		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
+		const updated = await fs.readFile(filePath, 'utf-8')
+		expect(updated).toContain('function one(): number')
+		expect(updated).not.toContain('type OneReturn')
+	})
+})
