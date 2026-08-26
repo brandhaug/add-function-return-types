@@ -1,5 +1,6 @@
 import { type Expression, Node, type Project, SyntaxKind, ts } from 'ts-morph'
 import type { Options } from './options.js'
+import { recordAnnotation, recordSkip, type RunStats } from './stats.js'
 
 /**
  * Processes a single TypeScript file, adding explicit return types to functions where needed.
@@ -12,7 +13,8 @@ import type { Options } from './options.js'
 export async function processFile(
 	project: Project,
 	filePath: string,
-	options: Options
+	options: Options,
+	stats?: RunStats
 ): Promise<string> {
 	const sourceFile =
 		project.getSourceFile(filePath) || project.addSourceFileAtPath(filePath)
@@ -35,6 +37,7 @@ export async function processFile(
 
 			// Check if node already has a return type
 			if (!options.overwrite && node.getReturnTypeNode()) {
+				if (stats) recordSkip(stats, 'alreadyAnnotated')
 				return
 			}
 
@@ -45,6 +48,7 @@ export async function processFile(
 					: undefined
 
 			if (name && options.ignoreFunctions.includes(name)) {
+				if (stats) recordSkip(stats, 'ignoreFunctions')
 				return
 			}
 
@@ -55,6 +59,7 @@ export async function processFile(
 				options.ignoreExpressions &&
 				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
 			) {
+				if (stats) recordSkip(stats, 'ignoreExpressions')
 				return
 			}
 
@@ -65,6 +70,7 @@ export async function processFile(
 			) {
 				const parent = node.getParent()
 				if (Node.isVariableDeclaration(parent) && parent.getTypeNode()) {
+					if (stats) recordSkip(stats, 'ignoreTypedFunctionExpressions')
 					return
 				}
 			}
@@ -82,6 +88,8 @@ export async function processFile(
 					contextualType !== undefined &&
 					contextualType.getCallSignatures().length > 0
 				) {
+					if (stats)
+						recordSkip(stats, 'ignoreContextuallyTypedFunctionExpressions')
 					return
 				}
 			}
@@ -91,6 +99,7 @@ export async function processFile(
 				options.ignoreFunctionsWithoutTypeParameters &&
 				node.getTypeParameters().length === 0
 			) {
+				if (stats) recordSkip(stats, 'ignoreFunctionsWithoutTypeParameters')
 				return
 			}
 
@@ -118,6 +127,7 @@ export async function processFile(
 						Node.isArrowFunction(body)
 					) {
 						// Concise arrow function returning another function: () => () => 42
+						if (stats) recordSkip(stats, 'ignoreHigherOrderFunctions')
 						return
 					}
 				}
@@ -130,6 +140,11 @@ export async function processFile(
 			) {
 				const body = node.getBody()
 				if (Node.isVoidExpression(body)) {
+					if (stats)
+						recordSkip(
+							stats,
+							'ignoreConciseArrowFunctionExpressionsStartingWithVoid'
+						)
 					return
 				}
 			}
@@ -149,6 +164,7 @@ export async function processFile(
 					Node.isCallExpression(parent) &&
 					parent.getExpression() === node
 				) {
+					if (stats) recordSkip(stats, 'ignoreIIFEs')
 					return
 				}
 			}
@@ -172,6 +188,7 @@ export async function processFile(
 							parent.getOperatorToken().getKind() === SyntaxKind.EqualsToken
 						)
 					) {
+						if (stats) recordSkip(stats, 'ignoreAnonymousFunctions')
 						return
 					}
 				}
@@ -228,21 +245,25 @@ export async function processFile(
 
 				// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
 				if (options.ignoreAnonymousObjects && typeText.includes('{')) {
+					if (stats) recordSkip(stats, 'ignoreAnonymousObjects')
 					return
 				}
 
 				// Never emit `any`: an explicit `any` annotation is strictly worse than no annotation.
 				if (/\bany\b/.test(typeText)) {
+					if (stats) recordSkip(stats, 'anyForbidden')
 					return
 				}
 
 				// ignoreUnknown: ignore functions that return the unknown type
 				if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
+					if (stats) recordSkip(stats, 'ignoreUnknown')
 					return
 				}
 
 				node.setReturnType(typeText)
 				modified = true
+				if (stats) recordAnnotation(stats, typeText)
 			}
 		} catch (error) {
 			const position = node.getStart()

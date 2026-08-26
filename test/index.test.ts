@@ -44,6 +44,7 @@ describe('cli prompts', (): void => {
 			ignoreUnknown: false,
 			ignoreAnonymousFunctions: false,
 			dryRun: false,
+			json: false,
 			tsconfig: undefined,
 			useCache: true,
 			clearCache: false
@@ -72,6 +73,7 @@ describe('cli prompts', (): void => {
 				shallow: true,
 				ignoreUnknown: true,
 				dryRun: true,
+				json: false,
 				overwrite: false,
 				ignoreExpressions: false,
 				tsconfig: 'tsconfig.app.json',
