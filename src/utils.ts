@@ -116,7 +116,7 @@ export async function getDependencies(
 
 	for (const packageJsonPath of packageJsonPaths) {
 		try {
-			const content = await fs.readFile(packageJsonPath, 'utf-8')
+			const content = await fs.readFile(packageJsonPath, 'utf8')
 			const packageJson = JSON.parse(content)
 
 			// Add all types of dependencies
@@ -131,7 +131,7 @@ export async function getDependencies(
 				`Processing ${depsCount} dependencies from "${packageJsonPath}"`
 			)
 
-			for (const dep in allDeps) {
+			for (const dep of Object.keys(allDeps)) {
 				dependencies.add(dep)
 			}
 		} catch (error) {
@@ -139,7 +139,7 @@ export async function getDependencies(
 		}
 	}
 
-	const finalDeps = Array.from(dependencies)
+	const finalDeps = [...dependencies]
 	console.info(`Total unique dependencies: ${finalDeps.length}`)
 	return finalDeps
 }

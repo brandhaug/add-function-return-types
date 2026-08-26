@@ -105,6 +105,35 @@ const annotationOrder: AnnotationKind[] = [
 	'complex'
 ]
 
+const skipOrder: SkipReason[] = [
+	'ignoreExpressions',
+	'ignoreTypedFunctionExpressions',
+	'ignoreFunctionsWithoutTypeParameters',
+	'ignoreHigherOrderFunctions',
+	'ignoreConciseArrowFunctionExpressionsStartingWithVoid',
+	'ignoreIIFEs',
+	'ignoreAnonymousFunctions',
+	'ignoreFunctions',
+	'ignoreAnonymousObjects',
+	'ignoreUnknown',
+	'ignoreContextuallyTypedFunctionExpressions',
+	'anyForbidden',
+	'alreadyAnnotated'
+]
+
+/**
+ * Adds the counters from one stats object into another. Used to aggregate the
+ * per-worker stats of each batch back into the main run's totals.
+ */
+export function mergeStats(target: RunStats, source: RunStats): void {
+	for (const kind of annotationOrder) {
+		target.annotations[kind] += source.annotations[kind]
+	}
+	for (const reason of skipOrder) {
+		target.skipped[reason] += source.skipped[reason]
+	}
+}
+
 const pad = (label: string): string => label.padEnd(12)
 
 export function formatStatsTable(stats: RunStats): string {

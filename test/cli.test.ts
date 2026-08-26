@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import type { Options } from '../src/options'
+import { type Options } from '../src/options'
 import { defaultOptions } from '../src/options'
 
 const { main } = await import('../src/cli')

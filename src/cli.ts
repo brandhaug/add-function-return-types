@@ -309,7 +309,7 @@ const promptForOptions = async (): Promise<Options> => {
 		})
 	)
 
-	let ignoreValues: string[] = []
+	const ignoreValues: string[] = []
 	const configureIgnore = handleCancel<boolean>(
 		await p.confirm({ message: 'Configure ignore options?' })
 	)
@@ -320,13 +320,7 @@ const promptForOptions = async (): Promise<Options> => {
 				await p.multiselect({
 					message: `Select ${group.title.toLowerCase()} options to ignore`,
 					required: false,
-					options: group.options.map(
-						(option): { value: IgnoreValue; label: string; hint: string } => ({
-							value: option.value,
-							label: option.label,
-							hint: option.hint
-						})
-					)
+					options: group.options
 				})
 			)
 			ignoreValues.push(...selected)

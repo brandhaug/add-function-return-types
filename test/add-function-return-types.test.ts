@@ -35,7 +35,7 @@ const getNumber = () => {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function greet(name: string): string {')
 		expect(updatedSource).toContain('const getNumber = (): number =>')
 	})
@@ -53,7 +53,7 @@ const multiply = (a: number, b: number) => {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'const multiply = (a: number, b: number): number =>'
 		)
@@ -73,7 +73,7 @@ async function fetchData(url: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
@@ -90,7 +90,7 @@ class Person {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
@@ -109,7 +109,7 @@ class Calculator {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
 
@@ -132,7 +132,7 @@ function combine(a: any, b: any) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('combine(a: string, b: string): string {')
 		expect(updatedSource).toContain('combine(a: number, b: number): number {')
 		expect(updatedSource).toContain('function combine(a: any, b: any) {')
@@ -151,7 +151,7 @@ function logMessage(message: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function logMessage(message: string): void {'
 		)
@@ -173,7 +173,7 @@ function* idGenerator() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function* idGenerator(): Generator<number, void, unknown> {'
 		)
@@ -192,7 +192,7 @@ function identity<T>(arg: T) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function identity<T>(arg: T): T {')
 	})
 
@@ -212,7 +212,7 @@ function toNumber(value: string | number) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function toNumber(value: string | number): number {'
 		)
@@ -236,7 +236,7 @@ const obj = {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('greet(name: string): string {')
 		expect(updatedSource).toContain('add(a: number, b: number): number {')
 	})
@@ -254,7 +254,7 @@ function getFullName({ firstName, lastName }: { firstName: string; lastName: str
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function getFullName({ firstName, lastName }: { firstName: string; lastName: string }): string {'
 		)
@@ -273,7 +273,7 @@ function greet(name: string = 'World') {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			`function greet(name: string = 'World'): string {`
 		)
@@ -292,7 +292,7 @@ function sum(...numbers: number[]) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function sum(...numbers: number[]): number {'
 		)
@@ -311,7 +311,7 @@ function getLength(str?: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function getLength(str?: string): number {'
 		)
@@ -332,7 +332,7 @@ namespace Utils {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('export function extract(): string {')
 	})
 
@@ -349,7 +349,7 @@ const double = function(n: number) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'const double = function(n: number): number {'
 		)
@@ -370,7 +370,7 @@ function createAdder(a: number) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function createAdder(a: number): (b: number) => number {'
 		)
@@ -389,7 +389,7 @@ function applyOperation(a: number, b: number, operation: (x: number, y: number) 
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function applyOperation(a: number, b: number, operation: (x: number, y: number) => number): number {'
 		)
@@ -408,7 +408,7 @@ function getValue(key: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
@@ -425,7 +425,7 @@ function isType<T>(value: any): value is T {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
@@ -443,7 +443,7 @@ function toNumber(value: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function toNumber(value: string): number | undefined {'
 		)
@@ -463,7 +463,7 @@ function toNumber(value: string) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function toNumber(value: string): number | null {'
 		)
@@ -482,7 +482,7 @@ function firstItem(values: string[]) {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function firstItem(values: string[]): string | undefined {'
 		)
@@ -514,8 +514,8 @@ function subDirFunction() {
 
 		await runAddFunctionReturnTypes({ path: testDir, shallow: true })
 
-		const updatedTopLevelFile = await fs.readFile(topLevelFilePath, 'utf-8')
-		const updatedSubDirFile = await fs.readFile(subDirFilePath, 'utf-8')
+		const updatedTopLevelFile = await fs.readFile(topLevelFilePath, 'utf8')
+		const updatedSubDirFile = await fs.readFile(subDirFilePath, 'utf8')
 
 		expect(updatedTopLevelFile).toContain(
 			'function topLevelFunction(): string {'
@@ -550,8 +550,8 @@ function shouldBeIgnored() {
 			ignoreFiles: [ignoreFileName]
 		})
 
-		const updatedProcessFile = await fs.readFile(processFilePath, 'utf-8')
-		const updatedIgnoreFile = await fs.readFile(ignoreFilePath, 'utf-8')
+		const updatedProcessFile = await fs.readFile(processFilePath, 'utf8')
+		const updatedIgnoreFile = await fs.readFile(ignoreFilePath, 'utf8')
 
 		expect(updatedProcessFile).toContain(
 			'function shouldBeProcessed(): number {'
@@ -577,7 +577,7 @@ const myArrowFunction = () => {
 
 		await runAddFunctionReturnTypes({ path: testDir, ignoreExpressions: true })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toBe(sourceCode)
 	})
 
@@ -601,7 +601,7 @@ function withTypeParams<T>() {
 			ignoreFunctionsWithoutTypeParameters: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function noTypeParams() {')
 		expect(updatedSource).toContain('function withTypeParams<T>(): string {')
 	})
@@ -626,7 +626,7 @@ function notAllowedFunction() {
 			ignoreFunctions: ['allowedFunction']
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function allowedFunction() {')
 		expect(updatedSource).toContain('function notAllowedFunction(): number {')
 	})
@@ -653,7 +653,7 @@ function normalFunction() {
 			ignoreHigherOrderFunctions: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function higherOrder() {')
 		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
@@ -678,7 +678,7 @@ const untypedFunction = function() {
 			ignoreTypedFunctionExpressions: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'const typedFunction: () => number = function() {'
 		)
@@ -702,7 +702,7 @@ const arrowNormal = () => 42;
 			ignoreConciseArrowFunctionExpressionsStartingWithVoid: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'const arrowVoid = () => void doSomething();'
 		)
@@ -726,7 +726,7 @@ function greet(name: string): number {
 			overwrite: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 
 		expect(updatedSource).toContain('function greet(name: string): string {')
 	})
@@ -747,7 +747,7 @@ function greet(name: string): number {
 			path: testDir
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function greet(name: string): number {')
 	})
 
@@ -768,7 +768,7 @@ const myArrowFunction = () => {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('const myFunction = function(): number {')
 		expect(updatedSource).toContain('const myArrowFunction = (): number =>')
 	})
@@ -790,7 +790,7 @@ function withTypeParams<T>() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function noTypeParams(): string {')
 		expect(updatedSource).toContain('function withTypeParams<T>(): string {')
 	})
@@ -814,7 +814,7 @@ function normalFunction() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function higherOrder(): () => number {')
 		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
@@ -835,7 +835,7 @@ const typedFunction: () => number = function() {
 			ignoreContextuallyTypedFunctionExpressions: false
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'const typedFunction: () => number = function(): number {'
 		)
@@ -854,7 +854,7 @@ const typedFunction: () => number = function() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('(function(): number {')
 	})
 
@@ -878,7 +878,7 @@ const typedFunction: () => number = function() {
 			ignoreIIFEs: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('(function() {')
 		expect(updatedSource).toContain('function normalFunction(): number {')
 	})
@@ -899,7 +899,7 @@ const typedFunction: () => number = function() {
 			ignoreIIFEs: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 
 		await runAddFunctionReturnTypes({
 			path: testDir,
@@ -929,7 +929,7 @@ function getNormalType() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'function getObject(): { foo: string; baz: number; } {'
 		)
@@ -955,7 +955,7 @@ return user;
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function getUser(): User {')
 	})
 
@@ -979,7 +979,7 @@ function getNormalType() {
 			ignoreAnonymousObjects: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function getObject() {')
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
@@ -1003,7 +1003,7 @@ function getNormalType() {
 			path: testDir
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function returnAny() {')
 		expect(updatedSource).not.toContain(': any')
 		expect(updatedSource).toContain('function getNormalType(): string {')
@@ -1026,7 +1026,7 @@ function inferredAny() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function returnAny(): any {')
 		expect(updatedSource).toContain('function inferredAny() {')
 	})
@@ -1051,7 +1051,7 @@ function getNormalType() {
 			ignoreUnknown: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function returnUnknown() {')
 		expect(updatedSource).toContain('function getNormalType(): string {')
 	})
@@ -1073,7 +1073,7 @@ function inferredUnknown() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function returnUnknown(): unknown {')
 		expect(updatedSource).toContain('function inferredUnknown(): unknown {')
 	})
@@ -1128,7 +1128,7 @@ variable = () => {
 			ignoreAnonymousFunctions: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('(function() {')
 		expect(updatedSource).toContain('(() => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
@@ -1189,7 +1189,7 @@ variable = () => {
 			ignoreAnonymousFunctions: false
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('(function(): number {')
 		expect(updatedSource).toContain('((): string => {')
 		expect(updatedSource).toContain('function namedFunction(): boolean {')
@@ -1219,7 +1219,7 @@ async function getNormalType() {
 			path: testDir
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('async function returnPromiseAny() {')
 		expect(updatedSource).not.toContain(': any')
 		expect(updatedSource).toContain(
@@ -1244,7 +1244,7 @@ async function inferredPromiseAny() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'async function returnPromiseAny(): Promise<any> {'
 		)
@@ -1271,7 +1271,7 @@ async function getNormalType() {
 			ignoreUnknown: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('async function returnPromiseUnknown() {')
 		expect(updatedSource).toContain(
 			'async function getNormalType(): Promise<string> {'
@@ -1295,7 +1295,7 @@ async function inferredPromiseUnknown() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'async function returnPromiseUnknown(): Promise<unknown> {'
 		)
@@ -1328,7 +1328,7 @@ function getRegularObject() {
 			ignoreAnonymousObjects: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('async function getPromiseObject() {')
 		expect(updatedSource).toContain(
 			'async function getNormalType(): Promise<string> {'
@@ -1360,7 +1360,7 @@ function getRegularObject() {
 			ignoreAnonymousObjects: false
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(
 			'async function getPromiseObject(): Promise<{ foo: string; baz: number; }> {'
 		)
@@ -1401,7 +1401,7 @@ function getNormalRecord() {
 			ignoreAnonymousObjects: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function getRecordAny() {')
 		expect(updatedSource).not.toMatch(/\): [^;{]*\bany\b/)
 		expect(updatedSource).toContain('function getRecordUnknown() {')
@@ -1440,7 +1440,7 @@ function getNormalArray() {
 			ignoreAnonymousObjects: true
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function getArrayAny() {')
 		expect(updatedSource).not.toMatch(/\): [^;{]*\bany\b/)
 		expect(updatedSource).toContain('function getArrayUnknown() {')
@@ -1473,7 +1473,7 @@ function getArrayAnonymous() {
 			ignoreAnonymousObjects: false
 		})
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain('function getRecordAny() {')
 		expect(updatedSource).toContain('function getArrayUnknown(): unknown[] {')
 		expect(updatedSource).toContain(
@@ -1508,7 +1508,7 @@ export const useSortTags = (
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(filePath, 'utf-8')
+		const updatedSource = await fs.readFile(filePath, 'utf8')
 		expect(updatedSource).toContain(": TagsQuery['team']['tags']['edges'] => {")
 	})
 
@@ -1551,7 +1551,7 @@ export function makeWidget() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(mainFile, 'utf-8')
+		const updatedSource = await fs.readFile(mainFile, 'utf8')
 		expect(updatedSource).toContain('import { type Widget }')
 		expect(updatedSource).toContain('function makeWidget(): Widget {')
 		expect(updatedSource).not.toContain(': import(')
@@ -1577,7 +1577,7 @@ export function makeWidget() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(mainFile, 'utf-8')
+		const updatedSource = await fs.readFile(mainFile, 'utf8')
 		expect(updatedSource).toContain(
 			"import { alphaTag, Widget } from './types.js'"
 		)
@@ -1599,7 +1599,7 @@ export function leak() {
 
 		await runAddFunctionReturnTypes({ path: testDir })
 
-		const updatedSource = await fs.readFile(mainFile, 'utf-8')
+		const updatedSource = await fs.readFile(mainFile, 'utf8')
 		expect(updatedSource).not.toContain(': Hidden')
 		expect(updatedSource).not.toContain("from './hidden")
 	})
@@ -1636,7 +1636,7 @@ describe.concurrent('contextually typed function expressions', (): void => {
 			...overrides,
 			path: testDir
 		})
-		return fs.readFile(filePath, 'utf-8')
+		return fs.readFile(filePath, 'utf8')
 	}
 
 	it('skips arrow function arguments to calls by default', async (): Promise<void> => {
@@ -1658,7 +1658,7 @@ const result = tag\`value: \${() => 42}\`;
 `.trim()
 		)
 
-		expect(updatedSource).toContain('${() => 42}')
+		expect(updatedSource).toContain(`\${() => 42}`)
 	})
 
 	it('skips object literal properties with a contextual type by default', async (): Promise<void> => {
@@ -1715,7 +1715,7 @@ describe.concurrent('generated files', (): void => {
 			...overrides,
 			path: testDir
 		})
-		return fs.readFile(filePath, 'utf-8')
+		return fs.readFile(filePath, 'utf8')
 	}
 
 	it('skips *.gen.ts files by default', async (): Promise<void> => {
@@ -1741,7 +1741,7 @@ describe.concurrent('generated files', (): void => {
 		const filePath = path.join(genDir, 'out.ts')
 		await fs.writeFile(filePath, source)
 		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
-		expect(await fs.readFile(filePath, 'utf-8')).toBe(source)
+		expect(await fs.readFile(filePath, 'utf8')).toBe(source)
 	})
 })
 
@@ -1762,7 +1762,7 @@ export function make() {
 `.trim()
 		await fs.writeFile(filePath, `${sourceCode}\n`)
 		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
-		const updated = await fs.readFile(filePath, 'utf-8')
+		const updated = await fs.readFile(filePath, 'utf8')
 		expect(updated).toContain('type MakeReturn =')
 		expect(updated).toContain('function make(): MakeReturn')
 	})
@@ -1773,7 +1773,7 @@ export function make() {
 		const sourceCode = 'export function one() {\n  return 1\n}\n'
 		await fs.writeFile(filePath, sourceCode)
 		await addFunctionReturnTypes({ ...defaultOptions, path: testDir })
-		const updated = await fs.readFile(filePath, 'utf-8')
+		const updated = await fs.readFile(filePath, 'utf8')
 		expect(updated).toContain('function one(): number')
 		expect(updated).not.toContain('type OneReturn')
 	})
