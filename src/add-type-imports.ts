@@ -226,6 +226,10 @@ export function collectExternalTypeDeclarations(
 				walk(element, depth + 1)
 			}
 		}
+		// SAFETY: mapped types expose `getTarget` on ts-morph's Type at runtime, but
+		// the public typings omit it. The intersection only widens the type by an
+		// optional member, and the optional call degrades to undefined if the
+		// method is absent, so the walk is unchanged either way.
 		const withTarget = type as Type & { getTarget?: () => Type | undefined }
 		const target = withTarget.getTarget?.()
 		if (target) walk(target, depth + 1)

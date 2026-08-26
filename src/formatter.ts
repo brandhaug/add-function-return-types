@@ -9,7 +9,7 @@ export type FormatterName = 'oxfmt' | 'prettier' | 'biome'
 
 export type DetectedFormatter = { name: FormatterName }
 
-const formatterConfigFiles: Record<FormatterName, string[]> = {
+const formatterConfigFiles = {
 	oxfmt: ['.oxfmtrc.json', '.oxfmtrc'],
 	prettier: [
 		'.prettierrc',
@@ -23,13 +23,13 @@ const formatterConfigFiles: Record<FormatterName, string[]> = {
 		'prettier.config.cjs'
 	],
 	biome: ['biome.json', 'biome.jsonc']
-}
+} satisfies Record<FormatterName, string[]>
 
-const formatterPackageNames: Record<FormatterName, string[]> = {
+const formatterPackageNames = {
 	oxfmt: ['oxfmt'],
 	prettier: ['prettier'],
 	biome: ['@biomejs/biome']
-}
+} satisfies Record<FormatterName, string[]>
 
 const formatterNames: readonly FormatterName[] = ['oxfmt', 'prettier', 'biome']
 
@@ -42,16 +42,26 @@ async function fileExists(filePath: string): Promise<boolean> {
 	}
 }
 
-function hasDependency(
-	packageJson: Record<string, unknown>,
-	name: string
-): boolean {
-	const sections = ['dependencies', 'devDependencies', 'peerDependencies']
+type DependencySection = 'dependencies' | 'devDependencies' | 'peerDependencies'
+
+/**
+ * The subset of a package.json that formatter detection reads. Values are the
+ * version maps of the dependency sections; `prettier` is probed only for its
+ * presence. This is the contract parsed package.json files must satisfy.
+ */
+type PackageJson = Partial<
+	Record<DependencySection, Record<string, string>>
+> & { prettier?: unknown }
+
+function hasDependency(packageJson: PackageJson, name: string): boolean {
+	const sections: DependencySection[] = [
+		'dependencies',
+		'devDependencies',
+		'peerDependencies'
+	]
 	return sections.some((section): boolean => {
 		const deps = packageJson[section]
-		return (
-			typeof deps === 'object' && deps !== null && Object.hasOwn(deps, name)
-		)
+		return deps !== undefined && Object.hasOwn(deps, name)
 	})
 }
 
@@ -78,7 +88,7 @@ export async function detectFormatter(
 
 		const packageJsonPath = path.join(dir, 'package.json')
 		if (await fileExists(packageJsonPath)) {
-			let packageJson: Record<string, unknown>
+			let packageJson: PackageJson
 			try {
 				packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'))
 			} catch {
@@ -123,11 +133,11 @@ async function resolveBin(
 }
 
 function formatArgs(name: FormatterName, filePath: string): string[] {
-	const argSets: Record<FormatterName, string[]> = {
+	const argSets = {
 		oxfmt: [filePath, '--write'],
 		biome: ['format', '--write', filePath],
 		prettier: ['--write', filePath]
-	}
+	} satisfies Record<FormatterName, string[]>
 	return argSets[name]
 }
 

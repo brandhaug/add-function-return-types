@@ -150,15 +150,10 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 			.filter(
 				([file]): boolean => results.get(file)?.startsWith('Processed') ?? false
 			)
-			.map(
-				([filePath, originalText]): {
-					filePath: string
-					originalText: string
-				} => ({
-					filePath,
-					originalText
-				})
-			)
+			.map(([filePath, originalText]) => ({
+				filePath,
+				originalText
+			}))
 		if (modifiedFiles.length > 0) {
 			const tsconfigPath = await resolveTsconfigPath(
 				options.tsconfig,

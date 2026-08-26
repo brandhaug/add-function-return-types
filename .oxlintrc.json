@@ -1,6 +1,15 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
 	"plugins": ["typescript", "unicorn", "oxc", "import", "promise"],
+	"jsPlugins": [
+		{
+			"name": "anti-slop",
+			// ultracite bundles the anti-slop plugin (upstream is copy-the-source,
+			// not published to npm). plugin.mjs is not in ultracite's exports map,
+			// so the specifier has to be a path into node_modules.
+			"specifier": "./node_modules/ultracite/config/oxlint/anti-slop/plugin.mjs"
+		}
+	],
 	"options": {
 		// Type-aware rules run through oxlint-tsgolint (devDependency). This is
 		// equivalent to the `--type-aware` flag the npm scripts pass, but makes
@@ -304,7 +313,44 @@
 		"promise/param-names": "error",
 		"promise/prefer-catch": "error",
 		"promise/spec-only": "error",
-		"promise/valid-params": "error"
+		"promise/valid-params": "error",
+
+		// anti-slop (upstream dmmulroy/anti-slop, vendored by ultracite). Full
+		// set at error except the two boundary-discipline rules below.
+		"anti-slop/no-chained-type-assertions": "error",
+		// On, and currently clean — but treat its autofix with suspicion. It
+		// rewrites `...(x === undefined ? {} : { k: x })` into a bare `k: x`,
+		// which turns "key absent" into "key present, value undefined": a type
+		// error under exactOptionalPropertyTypes and a behaviour change
+		// regardless. oxlint applies plugin fixes even at `warn`, and
+		// `oxlint --fix` runs in the pre-commit hook, so if this ever fires,
+		// fix the site by hand and check the diff rather than accepting the
+		// fixer's.
+		"anti-slop/no-conditional-empty-object-spread": "error",
+		"anti-slop/no-known-value-widening": "error",
+		"anti-slop/no-module-mocking": "error",
+		"anti-slop/no-object-parameters": "error",
+		"anti-slop/no-reflect-apply": "error",
+		"anti-slop/no-reflect-get": "error",
+		// no-runtime-typeof stays off. It presumes every boundary parses through
+		// a schema/parser, so a `typeof` check on `unknown` reads as a failure to
+		// establish a contract. This repo is plain TypeScript with no schema
+		// library: hand-rolled guards on external input (`JSON.parse` results,
+		// `workerData`, `package.json`) are the boundary parsing, and `typeof`
+		// checks are how that contract is enforced.
+		"anti-slop/no-runtime-typeof": "off",
+		"anti-slop/no-shape-in-symbol-names": "error",
+		// no-unknown-parameters stays off for the same reason: catch parameters
+		// are `unknown` by spec and guard/validator parameters exist precisely to
+		// receive unparsed input before it becomes a domain value.
+		"anti-slop/no-unknown-parameters": "off",
+		"anti-slop/no-unknown-returns": "error",
+		"anti-slop/no-unknown-type-aliases": "error",
+		// Package.json and cache files are parsed into named types at the I/O
+		// boundary (see formatter.ts `PackageJson` and cache.ts `isCacheFile`).
+		"anti-slop/no-unsafe-dictionary-type": "error",
+		"anti-slop/no-widen-then-assert": "error",
+		"anti-slop/require-safety-comment-for-type-assertion": "error"
 	},
 	"overrides": [
 		{
@@ -313,15 +359,12 @@
 			//   cases they serve, not hoisted to module scope.
 			// - require-await: async mocks (e.g. `mock(async () => ...)`) satisfy
 			//   Promise-typed interfaces without awaiting.
-			// - no-explicit-any: the @clack/prompts mock (setup-clack.ts) loosens
-			//   types on purpose to provide deterministic handles.
 			// - no-empty-function: no-op mocks (setup-clack.ts) implement the
 			//   clack API with empty bodies on purpose.
 			"files": ["test/**", "**/*.test.ts"],
 			"rules": {
 				"unicorn/consistent-function-scoping": "off",
 				"@typescript-eslint/require-await": "off",
-				"@typescript-eslint/no-explicit-any": "off",
 				"no-empty-function": "off"
 			}
 		}

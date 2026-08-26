@@ -43,6 +43,8 @@ function isWorkerData(value: unknown): value is WorkerData {
 	return 'name' in value.formatter && typeof value.formatter.name === 'string'
 }
 
+// SAFETY: workerData arrives as `any` from node:worker_threads; the shape is
+// fully validated by isWorkerData() immediately below before destructuring.
 const data = workerData as unknown
 if (!isWorkerData(data)) {
 	throw new Error('Invalid worker data')
