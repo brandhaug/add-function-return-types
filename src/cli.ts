@@ -18,6 +18,7 @@ const booleanFlags = [
 	'dry-run',
 	'no-cache',
 	'clear-cache',
+	'include-generated',
 	'json'
 ] as const
 
@@ -45,6 +46,7 @@ Options:
   --dry-run                Preview changes without modifying files
   --no-cache               Disable the incremental cache
   --clear-cache            Delete the cache file before processing
+  --include-generated      Also process generated files (*.gen.ts, *.generated.ts, __generated__/, generated/)
   --json                   Emit machine-readable JSON summary instead of a table
   --tsconfig=<path>        Path to a tsconfig.json for type resolution
   --ignore-files=<glob,..> File patterns to ignore
@@ -128,6 +130,7 @@ const buildOptions = (
 			| 'dryRun'
 			| 'useCache'
 			| 'clearCache'
+			| 'includeGenerated'
 			| 'json'
 		>
 	>
@@ -164,6 +167,8 @@ const buildOptions = (
 	tsconfig: flags.tsconfig ?? defaultOptions.tsconfig,
 	useCache: flags.useCache ?? defaultOptions.useCache,
 	clearCache: flags.clearCache ?? defaultOptions.clearCache,
+	includeGenerated:
+		flags.includeGenerated ?? defaultOptions.includeGenerated,
 	json: flags.json ?? defaultOptions.json
 })
 
@@ -397,6 +402,7 @@ export async function main(
 				dryRun: parsed['dry-run'],
 				useCache: !parsed['no-cache'],
 				clearCache: parsed['clear-cache'],
+				includeGenerated: parsed['include-generated'],
 				json: parsed['json'],
 				ignoreFiles: parsed['ignore-files']?.split(','),
 				ignoreFunctions: parsed['ignore-functions']?.split(','),

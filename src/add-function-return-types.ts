@@ -14,7 +14,7 @@ import {
 	saveCache,
 	type CacheFile
 } from './cache.js'
-import type { Options } from './options.js'
+import { defaultGeneratedIgnorePatterns, type Options } from './options.js'
 import { createRunStats, formatStatsTable, type RunStats } from './stats.js'
 import * as p from '@clack/prompts'
 import { findPackageJsonFiles, getDependencies } from './utils.js'
@@ -264,7 +264,11 @@ async function getAllTsAndTsxFiles(
 	const extensions = ['ts', 'tsx']
 	const patterns = extensions.map((ext): string => `**/*.${ext}`)
 
-	const defaultIgnorefiles = ['**/node_modules/**', '**/*.d.ts']
+	const defaultIgnorefiles = [
+		'**/node_modules/**',
+		'**/*.d.ts',
+		...(options.includeGenerated ? [] : defaultGeneratedIgnorePatterns)
+	]
 	return fg(patterns, {
 		cwd: rootPath,
 		ignore: defaultIgnorefiles.concat(options.ignoreFiles),
