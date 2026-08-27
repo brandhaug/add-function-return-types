@@ -11,7 +11,16 @@
 		"noUncheckedIndexedAccess": true,
 		"skipLibCheck": true,
 		"esModuleInterop": true,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noUncheckedSideEffectImports": true,
+		"erasableSyntaxOnly": true,
+		"noEmitOnError": true
 	},
 	"include": ["src/**/*.ts"],
 	"exclude": ["dist", "test", "**/*.test.ts"]

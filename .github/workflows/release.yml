@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      force-publish:
+        description: Publish even when release-please did not cut a new release
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -16,17 +22,19 @@ jobs:
 
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
 
     steps:
       - name: Run release-please
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          release-type: node
+          token: ${{ secrets.CI_PAT }}
+          config-file: release-please-config.json
 
   publish:
     needs: release-please
-    if: needs.release-please.outputs.release_created
+    if: needs.release-please.outputs.release_created == 'true' || inputs.force-publish == 'true'
     runs-on: ubuntu-latest
     environment: release
 
@@ -51,7 +59,6 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # npm >= 11.5.1 supports OIDC trusted publishing; requires id-token: write.
       - name: Publish to npm
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -44,12 +44,12 @@ Tests: `bun:test`, `test/*.test.ts`. Files: `add-function-return-types` (core), 
 - Runtime: `ts-morph`, `@clack/prompts`, `fast-glob`.
 - Dev: `oxlint` + `oxlint-tsgolint` (type-aware), `ultracite` (anti-slop jsPlugin), `oxfmt`, `lint-staged`, `typescript`, `@types/node`.
 - Lint config `.oxlintrc.json`: plugins typescript/unicorn/oxc/import/promise + anti-slop; correctness/suspicious/perf = error. Format config `.oxfmtrc.json`: tabs, single quotes, no semicolons, 80 cols.
-- CI: `pr.yml` (lint + test + build), `pr-gate.yml` (conventional-commits), `release.yml` (release-please → npm publish on master).
+- CI: `ci.yml` (lint + typecheck + test + build), `pr-gate.yml` (conventional-commits), `release.yml` (release-please → npm publish on master).
 - `CLAUDE.md` is a symlink to this file.
 
 ## Patterns & Pitfalls
 
-- `npm run lint` and `npm run typecheck` run the same command (`oxlint --type-aware`).
+- `npm run lint` runs oxlint type-aware; `npm run typecheck` runs `tsc --noEmit`.
 - No dev server or watch mode — this is a CLI tool.
 - `_arg`-prefixed names mark intentionally-unused parameters (`no-unused-vars` `argsIgnorePattern: ^_`).
 - No environment variables or database setup.
