@@ -1,7 +1,8 @@
-name: PR Checks
+name: CI
 
 on:
   pull_request:
+  push:
     branches:
       - master
 
@@ -9,14 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  pr_checks:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -26,8 +25,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Lint & typecheck
+      - name: Lint
         run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Run tests
         run: npm run test

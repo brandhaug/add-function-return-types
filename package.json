@@ -41,7 +41,7 @@
 		"lint": "oxlint --type-aware",
 		"format": "oxfmt --write",
 		"format:check": "oxfmt --check",
-		"typecheck": "oxlint --type-aware",
+		"typecheck": "tsc --noEmit",
 		"prepare": "git config core.hooksPath .githooks",
 		"test": "bun test --isolate --timeout 120000",
 		"validate": "npm run lint && npm run typecheck && npm run test"
