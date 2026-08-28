@@ -46,9 +46,15 @@ function getFunctionBaseName(node: FunctionLikeNode): string | undefined {
 
 	if (Node.isArrowFunction(node)) {
 		const parent = node.getParent()
-		if (Node.isVariableDeclaration(parent)) return parent.getName()
-		if (Node.isPropertyDeclaration(parent)) return parent.getName()
-		if (Node.isPropertyAssignment(parent)) return parent.getName()
+		if (Node.isVariableDeclaration(parent)) {
+			return parent.getName()
+		}
+		if (Node.isPropertyDeclaration(parent)) {
+			return parent.getName()
+		}
+		if (Node.isPropertyAssignment(parent)) {
+			return parent.getName()
+		}
 		if (
 			Node.isBinaryExpression(parent) &&
 			parent.getOperatorToken().getKind() === SyntaxKind.EqualsToken &&
@@ -73,7 +79,9 @@ function extractTypeAlias(
 	typeText: string
 ): string | undefined {
 	const baseName = getFunctionBaseName(node)
-	if (!baseName) return undefined
+	if (!baseName) {
+		return undefined
+	}
 
 	const typeParamNames = new Set(
 		node
@@ -81,13 +89,17 @@ function extractTypeAlias(
 			.map((param: TypeParameterDeclaration): string => param.getName())
 	)
 	for (const name of typeParamNames) {
-		if (new RegExp(`\\b${name}\\b`).test(typeText)) return undefined
+		if (new RegExp(`\\b${name}\\b`).test(typeText)) {
+			return undefined
+		}
 	}
 
 	const pascalName = baseName
 		.replaceAll(/[^a-zA-Z0-9]/g, '')
 		.replace(/^./, (c: string): string => c.toUpperCase())
-	if (!pascalName) return undefined
+	if (!pascalName) {
+		return undefined
+	}
 
 	let aliasName = `${pascalName}Return`
 	let suffix = 2
@@ -99,7 +111,9 @@ function extractTypeAlias(
 	let insertIndex = 0
 	const statements = sourceFile.getStatements()
 	for (const [index, statement] of statements.entries()) {
-		if (Node.isImportDeclaration(statement)) insertIndex = index + 1
+		if (Node.isImportDeclaration(statement)) {
+			insertIndex = index + 1
+		}
 	}
 
 	sourceFile.insertTypeAlias(insertIndex, {
@@ -148,7 +162,9 @@ export async function processFile(
 
 			// Check if node already has a return type
 			if (!options.overwrite && node.getReturnTypeNode()) {
-				if (stats) recordSkip(stats, 'alreadyAnnotated')
+				if (stats) {
+					recordSkip(stats, 'alreadyAnnotated')
+				}
 				return
 			}
 
@@ -159,7 +175,9 @@ export async function processFile(
 					: undefined
 
 			if (name && options.ignoreFunctions.includes(name)) {
-				if (stats) recordSkip(stats, 'ignoreFunctions')
+				if (stats) {
+					recordSkip(stats, 'ignoreFunctions')
+				}
 				return
 			}
 
@@ -170,7 +188,9 @@ export async function processFile(
 				options.ignoreExpressions &&
 				(Node.isFunctionExpression(node) || Node.isArrowFunction(node))
 			) {
-				if (stats) recordSkip(stats, 'ignoreExpressions')
+				if (stats) {
+					recordSkip(stats, 'ignoreExpressions')
+				}
 				return
 			}
 
@@ -181,7 +201,9 @@ export async function processFile(
 			) {
 				const parent = node.getParent()
 				if (Node.isVariableDeclaration(parent) && parent.getTypeNode()) {
-					if (stats) recordSkip(stats, 'ignoreTypedFunctionExpressions')
+					if (stats) {
+						recordSkip(stats, 'ignoreTypedFunctionExpressions')
+					}
 					return
 				}
 			}
@@ -211,7 +233,9 @@ export async function processFile(
 				options.ignoreFunctionsWithoutTypeParameters &&
 				node.getTypeParameters().length === 0
 			) {
-				if (stats) recordSkip(stats, 'ignoreFunctionsWithoutTypeParameters')
+				if (stats) {
+					recordSkip(stats, 'ignoreFunctionsWithoutTypeParameters')
+				}
 				return
 			}
 
@@ -239,7 +263,9 @@ export async function processFile(
 						Node.isArrowFunction(body)
 					) {
 						// Concise arrow function returning another function: () => () => 42
-						if (stats) recordSkip(stats, 'ignoreHigherOrderFunctions')
+						if (stats) {
+							recordSkip(stats, 'ignoreHigherOrderFunctions')
+						}
 						return
 					}
 				}
@@ -277,7 +303,9 @@ export async function processFile(
 					Node.isCallExpression(parent) &&
 					parent.getExpression() === node
 				) {
-					if (stats) recordSkip(stats, 'ignoreIIFEs')
+					if (stats) {
+						recordSkip(stats, 'ignoreIIFEs')
+					}
 					return
 				}
 			}
@@ -301,7 +329,9 @@ export async function processFile(
 							parent.getOperatorToken().getKind() === SyntaxKind.EqualsToken
 						)
 					) {
-						if (stats) recordSkip(stats, 'ignoreAnonymousFunctions')
+						if (stats) {
+							recordSkip(stats, 'ignoreAnonymousFunctions')
+						}
 						return
 					}
 				}
@@ -311,7 +341,9 @@ export async function processFile(
 			const priorReturnType = options.overwrite
 				? node.getReturnTypeNode()?.getText()
 				: undefined
-			if (options.overwrite) node.setReturnType('')
+			if (options.overwrite) {
+				node.setReturnType('')
+			}
 
 			// Attempt to use the type of the returned expression if it's a parameter
 			const body = node.getBody()
@@ -360,19 +392,25 @@ export async function processFile(
 
 			// ignoreAnonymousObjectTypes: ignore functions that return anonymous object types
 			if (options.ignoreAnonymousObjects && typeText.includes('{')) {
-				if (stats) recordSkip(stats, 'ignoreAnonymousObjects')
+				if (stats) {
+					recordSkip(stats, 'ignoreAnonymousObjects')
+				}
 				return
 			}
 
 			// Never emit `any`: an explicit `any` annotation is strictly worse than no annotation.
 			if (/\bany\b/.test(typeText)) {
-				if (stats) recordSkip(stats, 'anyForbidden')
+				if (stats) {
+					recordSkip(stats, 'anyForbidden')
+				}
 				return
 			}
 
 			// ignoreUnknown: ignore functions that return the unknown type
 			if (options.ignoreUnknown && /\bunknown\b/.test(typeText)) {
-				if (stats) recordSkip(stats, 'ignoreUnknown')
+				if (stats) {
+					recordSkip(stats, 'ignoreUnknown')
+				}
 				return
 			}
 
@@ -384,7 +422,9 @@ export async function processFile(
 				nestingDepth > options.maxTypeDepth
 			) {
 				const aliasName = extractTypeAlias(sourceFile, node, typeText)
-				if (!aliasName) return
+				if (!aliasName) {
+					return
+				}
 				node.setReturnType(aliasName)
 				modified = true
 				return
@@ -408,7 +448,9 @@ export async function processFile(
 
 			node.setReturnType(plan.typeText)
 			modified = true
-			if (stats) recordAnnotation(stats, plan.typeText)
+			if (stats) {
+				recordAnnotation(stats, plan.typeText)
+			}
 		} catch (error) {
 			const position = node.getStart()
 			const { line, column } = sourceFile.getLineAndColumnAtPos(position)
@@ -451,7 +493,7 @@ export async function processFile(
  */
 export async function createProject(
 	options: Options,
-	types: string[] = []
+	types: Array<string> = []
 ): Promise<Project> {
 	const { ModuleKind, Project, ScriptTarget } = await import('ts-morph')
 	const path = await import('node:path')

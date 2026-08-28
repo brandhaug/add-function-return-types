@@ -82,7 +82,7 @@ Options:
   --ignore-anonymous-functions
   -h, --help               Show this help`
 
-export const parseArgv = (argv: string[]): ParsedArgs => {
+export const parseArgv = (argv: Array<string>): ParsedArgs => {
 	const parsed: ParsedArgs & { help?: boolean } = {}
 
 	for (const arg of argv) {
@@ -134,8 +134,8 @@ const buildOptions = (
 	path: string,
 	flags: {
 		shallow?: boolean
-		ignoreFiles?: string[]
-		ignoreFunctions?: string[]
+		ignoreFiles?: Array<string>
+		ignoreFunctions?: Array<string>
 		tsconfig?: string
 	} & Partial<
 		Pick<
@@ -214,7 +214,10 @@ type IgnoreOption = {
 	hint: string
 }
 
-const ignoreOptionGroups: { title: string; options: IgnoreOption[] }[] = [
+const ignoreOptionGroups: Array<{
+	title: string
+	options: Array<IgnoreOption>
+}> = [
 	{
 		title: 'Scope',
 		options: [
@@ -309,14 +312,14 @@ const promptForOptions = async (): Promise<Options> => {
 		})
 	)
 
-	const ignoreValues: string[] = []
+	const ignoreValues: Array<string> = []
 	const configureIgnore = handleCancel<boolean>(
 		await p.confirm({ message: 'Configure ignore options?' })
 	)
 
 	if (configureIgnore) {
 		for (const group of ignoreOptionGroups) {
-			const selected = handleCancel<IgnoreValue[]>(
+			const selected = handleCancel<Array<IgnoreValue>>(
 				await p.multiselect({
 					message: `Select ${group.title.toLowerCase()} options to ignore`,
 					required: false,
@@ -381,7 +384,7 @@ const promptForOptions = async (): Promise<Options> => {
 }
 
 export async function main(
-	argv: string[] = process.argv.slice(2),
+	argv: Array<string> = process.argv.slice(2),
 	run: typeof addFunctionReturnTypes = addFunctionReturnTypes
 ): Promise<void> {
 	const userArguments = [...argv]

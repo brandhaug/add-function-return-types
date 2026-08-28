@@ -1,6 +1,6 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["typescript", "unicorn", "oxc", "import", "promise"],
+	"plugins": ["typescript", "unicorn", "oxc", "import", "promise", "react"],
 	"jsPlugins": [
 		{
 			"name": "anti-slop",
@@ -49,7 +49,7 @@
 		"prefer-template": "error",
 		"prefer-destructuring": ["error", { "array": false }],
 		"object-shorthand": "error",
-		"curly": ["error", "multi-line"],
+		"curly": "error",
 		"default-case-last": "error",
 		"no-case-declarations": "error",
 		"no-param-reassign": "error",
@@ -57,7 +57,12 @@
 		"default-param-last": "error",
 		// Unused function args are named `_arg` on purpose (test mocks); the
 		// underscore prefix is the repo's "intentionally unused" marker.
-		"no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+		// Unused imports only get safe fixes: a bare removal could break a
+		// module's side-effect contract, so `oxlint --fix` stops there.
+		"no-unused-vars": [
+			"error",
+			{ "argsIgnorePattern": "^_", "fix": { "imports": "safe-fix" } }
+		],
 		"array-callback-return": "error",
 		"no-promise-executor-return": "error",
 		"no-useless-concat": "error",
@@ -89,6 +94,14 @@
 		"prefer-regex-literals": "error",
 		"no-lonely-if": "error",
 		"no-nested-ternary": "error",
+		"no-throw-literal": "error",
+		"no-unexpected-multiline": "error",
+		// `@nocommit` marks deferred work; it must not land silently, so it is
+		// linted instead of tracked informally.
+		"no-warning-comments": ["error", { "terms": ["@nocommit"] }],
+		// Named function expressions keep their name in stack traces; plain
+		// anonymous callbacks become arrows.
+		"prefer-arrow-callback": ["error", { "allowNamedFunctions": true }],
 		// This is a CLI whose stdout/stderr is its interface: progress goes to
 		// console.info, JSON output to console.log, warnings and errors to
 		// console.warn/error. Every console method is used deliberately, so the
@@ -147,6 +160,9 @@
 		"@typescript-eslint/ban-tslint-comment": "error",
 		"@typescript-eslint/consistent-generic-constructors": "error",
 		"@typescript-eslint/consistent-indexed-object-style": ["error", "record"],
+		// Tuples and unions of array types still spell `Array<T>`; the generic
+		// form is the one that composes with non-identifier element types.
+		"@typescript-eslint/array-type": ["error", { "default": "generic" }],
 		// The repo spells every object shape as a `type` alias (there is no
 		// `interface` in src/); `interface` stays available where declaration
 		// merging genuinely needs it.
@@ -206,10 +222,12 @@
 
 		// unicorn (CLI-relevant subset; no DOM rules apply to this repo).
 		"unicorn/catch-error-name": "error",
+		"unicorn/prefer-optional-catch-binding": "error",
 		"unicorn/filename-case": "error",
 		"unicorn/new-for-builtins": "error",
 		"unicorn/no-abusive-eslint-disable": "error",
 		"unicorn/no-empty-file": "error",
+		"unicorn/no-hex-escape": "error",
 		"unicorn/no-negated-condition": "error",
 		"unicorn/no-new-array": "error",
 		"unicorn/no-typeof-undefined": "error",
@@ -226,7 +244,9 @@
 		"unicorn/numeric-separators-style": "error",
 		"unicorn/prefer-array-find": "error",
 		"unicorn/prefer-array-flat-map": "error",
+		"unicorn/prefer-array-index-of": "error",
 		"unicorn/prefer-array-some": "error",
+		"unicorn/prefer-at": "error",
 		"unicorn/prefer-date-now": "error",
 		"unicorn/prefer-logical-operator-over-ternary": "error",
 		"unicorn/prefer-native-coercion-functions": "error",
@@ -234,12 +254,15 @@
 		// unambiguous import form under Node >= 16 and the ESM output this repo
 		// publishes.
 		"unicorn/prefer-node-protocol": "error",
+		"unicorn/prefer-import-meta-properties": "error",
 		"unicorn/prefer-number-properties": "error",
 		"unicorn/prefer-object-from-entries": "error",
 		"unicorn/prefer-regexp-test": "error",
 		"unicorn/prefer-set-has": "error",
+		"unicorn/prefer-single-call": "error",
 		"unicorn/prefer-spread": "error",
 		"unicorn/prefer-string-replace-all": "error",
+		"unicorn/prefer-string-raw": "error",
 		"unicorn/prefer-string-slice": "error",
 		"unicorn/require-array-join-separator": "error",
 		"unicorn/switch-case-braces": "error",
@@ -271,10 +294,15 @@
 		// test helpers live next to the cases they serve.
 		"unicorn/consistent-function-scoping": "error",
 
+		// react. The repo ships no React code; the rule is armed so component
+		// work cannot land without a return path.
+		"react/require-render-return": "error",
+
 		// import
 		// Matches the `inline-type-imports` fixStyle on consistent-type-imports
 		// above, so both halves of the type-import style are enforced.
 		"import/consistent-type-specifier-style": ["error", "prefer-inline"],
+		"import/export": "error",
 		"import/no-duplicates": "error",
 		"import/no-empty-named-blocks": "error",
 		"import/no-mutable-exports": "error",

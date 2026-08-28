@@ -54,7 +54,7 @@ export async function findRepoRoot(startPath: string): Promise<string> {
  */
 export async function findPackageJsonFiles(
 	startPath: string
-): Promise<EntryInternal[]> {
+): Promise<Array<EntryInternal>> {
 	console.info('Looking for package.json files...')
 	// First find the repository root
 	const repoRoot = await findRepoRoot(startPath)
@@ -95,9 +95,13 @@ export function getTypeNestingDepth(typeText: string): number {
 		}
 		if (char === '{' || char === '[' || char === '(' || char === '<') {
 			depth++
-			if (depth > maxDepth) maxDepth = depth
+			if (depth > maxDepth) {
+				maxDepth = depth
+			}
 		} else if (char === '}' || char === ']' || char === ')' || char === '>') {
-			if (depth > 0) depth--
+			if (depth > 0) {
+				depth--
+			}
 		}
 	}
 	return maxDepth
@@ -109,8 +113,8 @@ export function getTypeNestingDepth(typeText: string): number {
  * @returns Array of dependency package names
  */
 export async function getDependencies(
-	packageJsonPaths: string[]
-): Promise<string[]> {
+	packageJsonPaths: Array<string>
+): Promise<Array<string>> {
 	console.info('Extracting dependencies from package.json files...')
 	const dependencies = new Set<string>()
 

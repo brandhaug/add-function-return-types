@@ -63,7 +63,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 		: {}
 
 	// Determine which files are unchanged since the last run.
-	const pendingFiles: string[] = []
+	const pendingFiles: Array<string> = []
 	let skippedCount = 0
 
 	for (const file of allFiles) {
@@ -104,7 +104,7 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	}
 
 	const results = new Map<string, string>()
-	const errors: string[] = []
+	const errors: Array<string> = []
 	const stats = createRunStats()
 	const newHashes = new Map<string, string>()
 	const totalFiles = allFiles.length
@@ -172,8 +172,12 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
 	// Aggregate file-level counts. Runs after verification so reverted files
 	// (status rewritten to `Reverted "..."`) count as unchanged in one pass.
 	for (const status of results.values()) {
-		if (status.startsWith('Processed')) stats.filesModified++
-		else if (status.startsWith('No changes') || status.startsWith('Reverted')) {
+		if (status.startsWith('Processed')) {
+			stats.filesModified++
+		} else if (
+			status.startsWith('No changes') ||
+			status.startsWith('Reverted')
+		) {
 			stats.filesUnchanged++
 		}
 	}
@@ -218,11 +222,11 @@ export async function addFunctionReturnTypes(options: Options): Promise<void> {
  * gets its own ts-morph Project and reuses it for every file in its batch.
  */
 async function runWorkerPool(
-	files: string[],
+	files: Array<string>,
 	options: Options,
-	types: string[],
+	types: Array<string>,
 	results: Map<string, string>,
-	errors: string[],
+	errors: Array<string>,
 	newHashes: Map<string, string>,
 	stats: RunStats,
 	formatter: DetectedFormatter | null
@@ -247,11 +251,11 @@ async function runWorkerPool(
 }
 
 function runWorker(
-	files: string[],
+	files: Array<string>,
 	options: Options,
-	types: string[],
+	types: Array<string>,
 	results: Map<string, string>,
-	errors: string[],
+	errors: Array<string>,
 	newHashes: Map<string, string>,
 	stats: RunStats,
 	formatter: DetectedFormatter | null
@@ -306,10 +310,13 @@ function getWorkerModuleUrl(): URL {
  * Partitions files into roughly equal batches using round-robin distribution
  * so each worker gets a balanced mix of files.
  */
-function partitionFiles(files: string[], batchCount: number): string[][] {
-	const batches: string[][] = Array.from(
+function partitionFiles(
+	files: Array<string>,
+	batchCount: number
+): Array<Array<string>> {
+	const batches: Array<Array<string>> = Array.from(
 		{ length: batchCount },
-		(): string[] => []
+		(): Array<string> => []
 	)
 	for (const [index, file] of files.entries()) {
 		batches[index % batchCount]?.push(file)
@@ -317,7 +324,7 @@ function partitionFiles(files: string[], batchCount: number): string[][] {
 	return batches.filter((batch): boolean => batch.length > 0)
 }
 
-async function resolveTypes(pathToProcess: string): Promise<string[]> {
+async function resolveTypes(pathToProcess: string): Promise<Array<string>> {
 	// Find package.json files
 	const packageJsonFiles = await findPackageJsonFiles(pathToProcess)
 	return getDependencies(packageJsonFiles)
@@ -332,7 +339,7 @@ async function resolveTypes(pathToProcess: string): Promise<string[]> {
 async function getAllTsAndTsxFiles(
 	rootPath: string,
 	options: Options
-): Promise<EntryInternal[]> {
+): Promise<Array<EntryInternal>> {
 	const extensions = ['ts', 'tsx']
 	const patterns = extensions.map((ext): string => `**/*.${ext}`)
 

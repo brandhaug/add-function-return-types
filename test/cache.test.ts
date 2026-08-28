@@ -10,7 +10,7 @@ import { defaultOptions, type Options } from '../src/options'
 const tmpDir = process.env.RUNNER_TEMP || os.tmpdir()
 
 describe('incremental cache', (): void => {
-	const createdDirs: string[] = []
+	const createdDirs: Array<string> = []
 
 	afterEach(async (): Promise<void> => {
 		for (const dir of createdDirs.splice(0)) {

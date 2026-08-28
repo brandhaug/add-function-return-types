@@ -12,7 +12,7 @@ export const text = mock(
 		initialValue === undefined ? '' : initialValue
 )
 export const confirm = mock(async (): Promise<boolean> => false)
-export const multiselect = mock(async (): Promise<never[]> => [])
+export const multiselect = mock(async (): Promise<Array<never>> => [])
 
 export const log = {
 	message: mock((_message?: string): void => {}),

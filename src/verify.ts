@@ -33,7 +33,9 @@ export async function resolveTsconfigPath(
 			return candidate
 		} catch {
 			const parent = path.dirname(current)
-			if (parent === current) return undefined
+			if (parent === current) {
+				return undefined
+			}
 			current = parent
 		}
 	}
@@ -54,9 +56,13 @@ export function collectDiagnosticsForFiles(
 	const result = new Map<string, Map<string, number>>()
 	for (const diagnostic of project.getPreEmitDiagnostics()) {
 		const sourceFile = diagnostic.getSourceFile()
-		if (!sourceFile) continue
+		if (!sourceFile) {
+			continue
+		}
 		const filePath = sourceFile.getFilePath()
-		if (!filePaths.has(filePath)) continue
+		if (!filePaths.has(filePath)) {
+			continue
+		}
 		let counts = result.get(filePath)
 		if (!counts) {
 			counts = new Map<string, number>()
@@ -77,7 +83,9 @@ export function hasNewDiagnostics(
 	after: Map<string, number> | undefined
 ): boolean {
 	for (const [key, count] of after ?? []) {
-		if (count > (baseline?.get(key) ?? 0)) return true
+		if (count > (baseline?.get(key) ?? 0)) {
+			return true
+		}
 	}
 	return false
 }
@@ -89,8 +97,8 @@ export function hasNewDiagnostics(
  */
 export async function verifyModifiedFiles(
 	tsconfigPath: string,
-	modifiedFiles: ModifiedFile[]
-): Promise<string[]> {
+	modifiedFiles: Array<ModifiedFile>
+): Promise<Array<string>> {
 	const touchedPaths = new Set(
 		modifiedFiles.map((file): string => file.filePath)
 	)
@@ -111,7 +119,7 @@ export async function verifyModifiedFiles(
 
 	const after = collectDiagnosticsForFiles(project, touchedPaths)
 
-	const revertedFiles: string[] = []
+	const revertedFiles: Array<string> = []
 	for (const file of modifiedFiles) {
 		if (
 			!hasNewDiagnostics(baseline.get(file.filePath), after.get(file.filePath))

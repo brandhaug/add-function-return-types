@@ -43,7 +43,7 @@ Tests: `bun:test`, `test/*.test.ts`. Files: `add-function-return-types` (core), 
 
 - Runtime: `ts-morph`, `@clack/prompts`, `fast-glob`.
 - Dev: `oxlint` + `oxlint-tsgolint` (type-aware), `ultracite` (anti-slop jsPlugin), `oxfmt`, `lint-staged`, `typescript`, `@types/node`.
-- Lint config `.oxlintrc.json`: plugins typescript/unicorn/oxc/import/promise + anti-slop; correctness/suspicious/perf = error. Format config `.oxfmtrc.json`: tabs, single quotes, no semicolons, 80 cols.
+- Lint config `.oxlintrc.json`: plugins typescript/unicorn/oxc/import/promise/react + anti-slop; correctness/suspicious/perf = error. Format config `.oxfmtrc.json`: tabs, single quotes, no semicolons, 80 cols.
 - CI: `ci.yml` (lint + typecheck + test + build), `pr-gate.yml` (conventional-commits), `release.yml` (release-please → npm publish on master).
 - `CLAUDE.md` is a symlink to this file.
 

@@ -1,7 +1,7 @@
 export type Options = {
 	path: string
 	shallow: boolean
-	ignoreFiles: string[]
+	ignoreFiles: Array<string>
 	ignoreConciseArrowFunctionExpressionsStartingWithVoid: boolean
 	ignoreExpressions: boolean
 	ignoreFunctionsWithoutTypeParameters: boolean
@@ -9,7 +9,7 @@ export type Options = {
 	ignoreIIFEs: boolean
 	ignoreTypedFunctionExpressions: boolean
 	ignoreContextuallyTypedFunctionExpressions: boolean
-	ignoreFunctions: string[]
+	ignoreFunctions: Array<string>
 	overwrite: boolean
 	ignoreAnonymousObjects: boolean
 	ignoreUnknown: boolean

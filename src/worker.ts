@@ -7,9 +7,9 @@ import { createRunStats, type RunStats } from './stats.js'
 import { type Options } from './options.js'
 
 type WorkerData = {
-	files: string[]
+	files: Array<string>
 	options: Options
-	types: string[]
+	types: Array<string>
 	formatter: DetectedFormatter | null
 }
 
@@ -28,15 +28,27 @@ if (!port) {
  * arrives as `any`, so the shape is checked before anything is destructured.
  */
 function isWorkerData(value: unknown): value is WorkerData {
-	if (typeof value !== 'object' || value === null) return false
+	if (typeof value !== 'object' || value === null) {
+		return false
+	}
 	if (!('files' in value) || !('options' in value) || !('types' in value)) {
 		return false
 	}
-	if (!('formatter' in value)) return false
-	if (!Array.isArray(value.files)) return false
-	if (typeof value.options !== 'object' || value.options === null) return false
-	if (!Array.isArray(value.types)) return false
-	if (value.formatter === null) return true
+	if (!('formatter' in value)) {
+		return false
+	}
+	if (!Array.isArray(value.files)) {
+		return false
+	}
+	if (typeof value.options !== 'object' || value.options === null) {
+		return false
+	}
+	if (!Array.isArray(value.types)) {
+		return false
+	}
+	if (value.formatter === null) {
+		return true
+	}
 	if (typeof value.formatter !== 'object') {
 		return false
 	}
