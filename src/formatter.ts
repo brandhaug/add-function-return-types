@@ -23,15 +23,19 @@ const formatterConfigFiles = {
 		'prettier.config.cjs'
 	],
 	biome: ['biome.json', 'biome.jsonc']
-} satisfies Record<FormatterName, string[]>
+} satisfies Record<FormatterName, Array<string>>
 
 const formatterPackageNames = {
 	oxfmt: ['oxfmt'],
 	prettier: ['prettier'],
 	biome: ['@biomejs/biome']
-} satisfies Record<FormatterName, string[]>
+} satisfies Record<FormatterName, Array<string>>
 
-const formatterNames: readonly FormatterName[] = ['oxfmt', 'prettier', 'biome']
+const formatterNames: ReadonlyArray<FormatterName> = [
+	'oxfmt',
+	'prettier',
+	'biome'
+]
 
 async function fileExists(filePath: string): Promise<boolean> {
 	try {
@@ -54,7 +58,7 @@ type PackageJson = Partial<
 > & { prettier?: unknown }
 
 function hasDependency(packageJson: PackageJson, name: string): boolean {
-	const sections: DependencySection[] = [
+	const sections: Array<DependencySection> = [
 		'dependencies',
 		'devDependencies',
 		'peerDependencies'
@@ -95,11 +99,15 @@ export async function detectFormatter(
 				packageJson = {}
 			}
 
-			if (Object.hasOwn(packageJson, 'prettier')) return { name: 'prettier' }
+			if (Object.hasOwn(packageJson, 'prettier')) {
+				return { name: 'prettier' }
+			}
 
 			for (const name of formatterNames) {
 				for (const packageName of formatterPackageNames[name]) {
-					if (hasDependency(packageJson, packageName)) return { name }
+					if (hasDependency(packageJson, packageName)) {
+						return { name }
+					}
 				}
 			}
 
@@ -108,7 +116,9 @@ export async function detectFormatter(
 		}
 
 		const parentDir = path.dirname(dir)
-		if (parentDir === dir) return null
+		if (parentDir === dir) {
+			return null
+		}
 		dir = parentDir
 	}
 }
@@ -120,24 +130,30 @@ async function resolveBin(
 	let dir = path.resolve(fromDir)
 	while (true) {
 		const binPath = path.join(dir, 'node_modules', '.bin', name)
-		if (await fileExists(binPath)) return binPath
+		if (await fileExists(binPath)) {
+			return binPath
+		}
 		const parentDir = path.dirname(dir)
-		if (parentDir === dir) break
+		if (parentDir === dir) {
+			break
+		}
 		dir = parentDir
 	}
 	// Fall back to the formatter of the running tool (e.g. when processing a
 	// directory outside of any installed dependency tree).
 	const fallbackBin = path.resolve('node_modules', '.bin', name)
-	if (await fileExists(fallbackBin)) return fallbackBin
+	if (await fileExists(fallbackBin)) {
+		return fallbackBin
+	}
 	return name
 }
 
-function formatArgs(name: FormatterName, filePath: string): string[] {
+function formatArgs(name: FormatterName, filePath: string): Array<string> {
 	const argSets = {
 		oxfmt: [filePath, '--write'],
 		biome: ['format', '--write', filePath],
 		prettier: ['--write', filePath]
-	} satisfies Record<FormatterName, string[]>
+	} satisfies Record<FormatterName, Array<string>>
 	return argSets[name]
 }
 
@@ -159,13 +175,14 @@ export const DEFAULT_MAX_LINE_WIDTH = 80
 
 type SplitState = { depth: number; current: string; previous: string }
 
-function splitTopLevel(text: string, separator: string): string[] {
+function splitTopLevel(text: string, separator: string): Array<string> {
 	const state: SplitState = { depth: 0, current: '', previous: '' }
-	const parts: string[] = []
+	const parts: Array<string> = []
 
 	for (const char of text) {
-		if ('([{<'.includes(char)) state.depth++
-		else if (
+		if ('([{<'.includes(char)) {
+			state.depth++
+		} else if (
 			')]}'.includes(char) &&
 			!(char === '>' && state.previous === '=')
 		) {
@@ -197,7 +214,9 @@ export function wrapLongType(
 	typeText: string,
 	maxWidth: number = DEFAULT_MAX_LINE_WIDTH
 ): string {
-	if (maxWidth > 0 && typeText.length <= maxWidth) return typeText
+	if (maxWidth > 0 && typeText.length <= maxWidth) {
+		return typeText
+	}
 
 	const braceStart = typeText.indexOf('{')
 	const braceEnd = typeText.lastIndexOf('}')

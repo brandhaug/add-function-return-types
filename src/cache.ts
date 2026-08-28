@@ -60,7 +60,9 @@ export function computeOptionsHash(options: Options): string {
  * be trusted just because `JSON.parse` returned an object.
  */
 function isCacheFile(value: unknown): value is CacheFile {
-	if (typeof value !== 'object' || value === null) return false
+	if (typeof value !== 'object' || value === null) {
+		return false
+	}
 	if (
 		!('version' in value) ||
 		!('optionsHash' in value) ||
@@ -68,8 +70,12 @@ function isCacheFile(value: unknown): value is CacheFile {
 	) {
 		return false
 	}
-	if (typeof value.version !== 'number') return false
-	if (typeof value.optionsHash !== 'string') return false
+	if (typeof value.version !== 'number') {
+		return false
+	}
+	if (typeof value.optionsHash !== 'string') {
+		return false
+	}
 	if (
 		typeof value.files !== 'object' ||
 		value.files === null ||

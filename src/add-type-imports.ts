@@ -95,8 +95,12 @@ export function extractTypeIdentifierCandidates(text: string): Set<string> {
 	const names = new Set<string>()
 	for (const match of text.matchAll(/\b[A-Za-z_$][\w$]*\b/g)) {
 		const name = match[0]
-		if (!/^[A-Z]/.test(name)) continue
-		if (NON_TYPE_IDENTIFIERS.has(name)) continue
+		if (!/^[A-Z]/.test(name)) {
+			continue
+		}
+		if (NON_TYPE_IDENTIFIERS.has(name)) {
+			continue
+		}
 		names.add(name)
 	}
 	return names
@@ -125,9 +129,13 @@ export function collectLocallyAvailableNames(
 
 	for (const imp of sourceFile.getImportDeclarations()) {
 		const defaultImport = imp.getDefaultImport()
-		if (defaultImport) names.add(defaultImport.getText())
+		if (defaultImport) {
+			names.add(defaultImport.getText())
+		}
 		const namespaceImport = imp.getNamespaceImport()
-		if (namespaceImport) names.add(namespaceImport.getText())
+		if (namespaceImport) {
+			names.add(namespaceImport.getText())
+		}
 		for (const specifier of imp.getNamedImports()) {
 			names.add(specifier.getName())
 		}
@@ -143,7 +151,9 @@ export function collectLocallyAvailableNames(
 		...sourceFile.getVariableDeclarations()
 	]) {
 		const name = decl.getName()
-		if (name) names.add(name)
+		if (name) {
+			names.add(name)
+		}
 	}
 
 	let current: TsMorphNode | undefined = fnNode
@@ -194,27 +204,43 @@ export function collectExternalTypeDeclarations(
 
 	const consider = (symbol: TsMorphSymbol): void => {
 		const name = symbol.getName()
-		if (!candidates.has(name) || result.has(name)) return
+		if (!candidates.has(name) || result.has(name)) {
+			return
+		}
 		for (const decl of symbol.getDeclarations()) {
 			const declSourceFile = decl.getSourceFile()
-			if (declSourceFile === sourceFile) continue
-			if (!isExportedDeclaration(decl)) continue
+			if (declSourceFile === sourceFile) {
+				continue
+			}
+			if (!isExportedDeclaration(decl)) {
+				continue
+			}
 			result.set(name, declSourceFile)
 			return
 		}
 	}
 
 	const walk = (type: Type | undefined, depth: number): void => {
-		if (!type || depth > 6) return
-		if (visited.has(type.compilerType)) return
+		if (!type || depth > 6) {
+			return
+		}
+		if (visited.has(type.compilerType)) {
+			return
+		}
 		visited.add(type.compilerType)
 
 		const symbol = type.getAliasSymbol() ?? type.getSymbol()
-		if (symbol) consider(symbol)
+		if (symbol) {
+			consider(symbol)
+		}
 
-		for (const arg of type.getTypeArguments()) walk(arg, depth + 1)
+		for (const arg of type.getTypeArguments()) {
+			walk(arg, depth + 1)
+		}
 		if (type.isUnion()) {
-			for (const member of type.getUnionTypes()) walk(member, depth + 1)
+			for (const member of type.getUnionTypes()) {
+				walk(member, depth + 1)
+			}
 		}
 		if (type.isIntersection()) {
 			for (const member of type.getIntersectionTypes()) {
@@ -232,11 +258,17 @@ export function collectExternalTypeDeclarations(
 		// method is absent, so the walk is unchanged either way.
 		const withTarget = type as Type & { getTarget?: () => Type | undefined }
 		const target = withTarget.getTarget?.()
-		if (target) walk(target, depth + 1)
+		if (target) {
+			walk(target, depth + 1)
+		}
 		const stringIndex = type.getStringIndexType()
-		if (stringIndex) walk(stringIndex, depth + 1)
+		if (stringIndex) {
+			walk(stringIndex, depth + 1)
+		}
 		const numberIndex = type.getNumberIndexType()
-		if (numberIndex) walk(numberIndex, depth + 1)
+		if (numberIndex) {
+			walk(numberIndex, depth + 1)
+		}
 		for (const signature of type.getCallSignatures()) {
 			walk(signature.getReturnType(), depth + 1)
 		}
@@ -272,7 +304,9 @@ export function getModuleSpecifier(
 	currentFile: SourceFile
 ): string | null | undefined {
 	const declPath = declFile.getFilePath()
-	if (isAmbientLibFile(declPath)) return null
+	if (isAmbientLibFile(declPath)) {
+		return null
+	}
 
 	const nodeModulesIndex = declPath.indexOf(
 		`${path.sep}node_modules${path.sep}`
@@ -293,18 +327,24 @@ export function getModuleSpecifier(
 						typeof parsed.name === 'string'
 							? parsed.name
 							: undefined
-					if (!pkgName) return undefined
+					if (!pkgName) {
+						return undefined
+					}
 					let rel = path.relative(dir, declPath).split(path.sep).join('/')
 					rel = rel.replace(/\.(d\.)?(m|c)?tsx?$/, '')
 					rel = rel.replace(/\/index$/, '')
-					if (rel.startsWith('node_modules')) return undefined
+					if (rel.startsWith('node_modules')) {
+						return undefined
+					}
 					return rel ? `${pkgName}/${rel}` : pkgName
 				} catch {
 					return undefined
 				}
 			}
 			const parent = path.dirname(dir)
-			if (parent === dir) return undefined
+			if (parent === dir) {
+				return undefined
+			}
 			dir = parent
 		}
 		return undefined
@@ -315,7 +355,9 @@ export function getModuleSpecifier(
 		.split(path.sep)
 		.join('/')
 	rel = rel.replace(/\.tsx?$/, '')
-	if (!rel.startsWith('.')) rel = `./${rel}`
+	if (!rel.startsWith('.')) {
+		rel = `./${rel}`
+	}
 	return rel
 }
 
@@ -325,10 +367,12 @@ export function getModuleSpecifier(
  */
 export function resolveGloballyAvailableNames(
 	project: Project,
-	names: string[]
+	names: Array<string>
 ): Set<string> {
 	const globallyAvailable = new Set<string>()
-	if (names.length === 0) return globallyAvailable
+	if (names.length === 0) {
+		return globallyAvailable
+	}
 
 	const probePath = path.join(path.sep, '__afrt_probe__.ts')
 	const probe =
@@ -345,13 +389,17 @@ export function resolveGloballyAvailableNames(
 		const cannotFind = probe
 			.getPreEmitDiagnostics()
 			.some((diagnostic): boolean => {
-				if (diagnostic.getLineNumber() !== line) return false
+				if (diagnostic.getLineNumber() !== line) {
+					return false
+				}
 				const message = diagnostic.getMessageText()
 				const text =
 					typeof message === 'string' ? message : message.getMessageText()
 				return text.includes('Cannot find name') && text.includes(name)
 			})
-		if (!cannotFind) globallyAvailable.add(name)
+		if (!cannotFind) {
+			globallyAvailable.add(name)
+		}
 	})
 
 	return globallyAvailable
@@ -376,7 +424,7 @@ function normalizedSpecifier(specifier: string): string {
  */
 export function ensureImports(
 	sourceFile: SourceFile,
-	refs: ExternalTypeRef[]
+	refs: Array<ExternalTypeRef>
 ): void {
 	const importDeclarations = sourceFile.getImportDeclarations()
 	const fileUsesTypeOnlyImports = importDeclarations.some(
@@ -396,7 +444,9 @@ export function ensureImports(
 		)
 
 		if (existing) {
-			if (importHasNamed(existing, ref.name)) continue
+			if (importHasNamed(existing, ref.name)) {
+				continue
+			}
 			if (existing.isTypeOnly()) {
 				existing.addNamedImport(ref.name)
 			} else if (fileUsesInlineTypeImports) {
@@ -419,7 +469,7 @@ export function ensureImports(
 }
 
 export type AnnotationPlan =
-	| { ok: true; typeText: string; imports: ExternalTypeRef[] }
+	| { ok: true; typeText: string; imports: Array<ExternalTypeRef> }
 	| { ok: false }
 
 /**
@@ -434,23 +484,29 @@ export function planAnnotation(
 	fnNode: TsMorphNode,
 	rawTypeText: string
 ): AnnotationPlan {
-	if (!rawTypeText || rawTypeText.includes('<error>')) return { ok: false }
+	if (!rawTypeText || rawTypeText.includes('<error>')) {
+		return { ok: false }
+	}
 
 	const sanitized = sanitizeTypeText(rawTypeText)
-	if (!sanitized) return { ok: false }
+	if (!sanitized) {
+		return { ok: false }
+	}
 
 	const locals = collectLocallyAvailableNames(sourceFile, fnNode)
 	const candidates = extractTypeIdentifierCandidates(sanitized)
-	for (const local of locals) candidates.delete(local)
+	for (const local of locals) {
+		candidates.delete(local)
+	}
 
-	const imports: ExternalTypeRef[] = []
+	const imports: Array<ExternalTypeRef> = []
 	if (candidates.size > 0) {
 		const externals = collectExternalTypeDeclarations(
 			inferredType,
 			sourceFile,
 			candidates
 		)
-		const unresolved: string[] = []
+		const unresolved: Array<string> = []
 
 		for (const candidate of candidates) {
 			const declFile = externals.get(candidate)
@@ -459,7 +515,9 @@ export function planAnnotation(
 				continue
 			}
 			const specifier = getModuleSpecifier(declFile, sourceFile)
-			if (specifier === undefined) return { ok: false }
+			if (specifier === undefined) {
+				return { ok: false }
+			}
 			if (specifier !== null) {
 				imports.push({ name: candidate, moduleSpecifier: specifier })
 			}
@@ -467,7 +525,9 @@ export function planAnnotation(
 
 		if (unresolved.length > 0) {
 			const globals = resolveGloballyAvailableNames(project, unresolved)
-			if (globals.size !== unresolved.length) return { ok: false }
+			if (globals.size !== unresolved.length) {
+				return { ok: false }
+			}
 		}
 	}
 

@@ -73,12 +73,24 @@ const primitives = new Set([
 export function classifyReturnType(typeText: string): AnnotationKind {
 	const trimmed = typeText.trim()
 
-	if (/^Promise<.+>$/s.test(trimmed)) return 'promise'
-	if (trimmed === 'void') return 'void'
-	if (trimmed === 'unknown') return 'unknown'
-	if (trimmed === 'any') return 'any'
-	if (/\b(?:JSX\.)?Element\b/.test(trimmed)) return 'jsx'
-	if (primitives.has(trimmed.toLowerCase())) return 'primitive'
+	if (/^Promise<.+>$/s.test(trimmed)) {
+		return 'promise'
+	}
+	if (trimmed === 'void') {
+		return 'void'
+	}
+	if (trimmed === 'unknown') {
+		return 'unknown'
+	}
+	if (trimmed === 'any') {
+		return 'any'
+	}
+	if (/\b(?:JSX\.)?Element\b/.test(trimmed)) {
+		return 'jsx'
+	}
+	if (primitives.has(trimmed.toLowerCase())) {
+		return 'primitive'
+	}
 	return 'complex'
 }
 
@@ -95,7 +107,7 @@ export function recordSkip(stats: RunStats, reason: SkipReason): void {
 	stats.skipped[reason]++
 }
 
-const annotationOrder: AnnotationKind[] = [
+const annotationOrder: Array<AnnotationKind> = [
 	'primitive',
 	'promise',
 	'void',
@@ -105,7 +117,7 @@ const annotationOrder: AnnotationKind[] = [
 	'complex'
 ]
 
-const skipOrder: SkipReason[] = [
+const skipOrder: Array<SkipReason> = [
 	'ignoreExpressions',
 	'ignoreTypedFunctionExpressions',
 	'ignoreFunctionsWithoutTypeParameters',
