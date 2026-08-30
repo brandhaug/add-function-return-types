@@ -66,8 +66,6 @@
 	},
 	"packageManager": "bun@1.4.0",
 	"catalog": {
-		"fast-glob": "3.3.3",
-		"ts-morph": "28.0.0",
 		"@types/node": "26.4.0",
 		"lint-staged": "17.4.1",
 		"oxfmt": "0.65.0",

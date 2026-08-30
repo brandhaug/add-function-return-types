@@ -38,8 +38,6 @@ type ParsedArgs = Partial<Record<(typeof booleanFlags)[number], boolean>> &
 		help?: boolean
 	}
 
-export type { ParsedArgs }
-
 const booleanFlagSet: ReadonlySet<string> = new Set(booleanFlags)
 const valueFlagSet: ReadonlySet<string> = new Set(valueFlags)
 
@@ -82,7 +80,7 @@ Options:
   --ignore-anonymous-functions
   -h, --help               Show this help`
 
-export const parseArgv = (argv: Array<string>): ParsedArgs => {
+const parseArgv = (argv: Array<string>): ParsedArgs => {
 	const parsed: ParsedArgs & { help?: boolean } = {}
 
 	for (const arg of argv) {
