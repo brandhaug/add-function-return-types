@@ -49,7 +49,7 @@ const diagnosticKey = (diagnostic: Diagnostic): string => {
 /**
  * Collects pre-emit diagnostics limited to the given files, keyed by file path.
  */
-export function collectDiagnosticsForFiles(
+function collectDiagnosticsForFiles(
 	project: Project,
 	filePaths: ReadonlySet<string>
 ): Map<string, Map<string, number>> {
@@ -78,7 +78,7 @@ export function collectDiagnosticsForFiles(
  * Returns true when `after` contains more errors than `baseline` for the
  * same file, meaning new errors were introduced.
  */
-export function hasNewDiagnostics(
+function hasNewDiagnostics(
 	baseline: Map<string, number> | undefined,
 	after: Map<string, number> | undefined
 ): boolean {

@@ -10,12 +10,12 @@
 				"backend_family": "",
 				"completeness": "complete"
 			},
-			"totalIssues": 30,
-			"unusedFiles": 11,
-			"unusedExports": 16,
+			"totalIssues": 0,
+			"unusedFiles": 0,
+			"unusedExports": 0,
 			"unusedTypes": 0,
 			"unusedDependencies": 0,
-			"unusedDevDependencies": 1,
+			"unusedDevDependencies": 0,
 			"unusedOptionalDependencies": 0,
 			"unusedEnumMembers": 0,
 			"unusedClassMembers": 0,
@@ -33,10 +33,7 @@
 			"policyViolations": 0
 		}
 	},
-	"rules": {
-		"unused-catalog-entries": "warn",
-		"unused-dependencies": "warn",
-		"unused-exports": "warn",
-		"unused-files": "warn"
-	}
+	"dynamicallyLoaded": ["src/worker.ts"],
+	"entry": ["test/**/*.test.ts", "test/mocks/*.ts"],
+	"ignoreDependencies": ["ultracite"]
 }

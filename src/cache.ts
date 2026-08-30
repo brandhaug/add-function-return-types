@@ -9,7 +9,7 @@ import { type Options } from './options.js'
  */
 export const CACHE_VERSION = 1
 
-export const CACHE_FILE_NAME = '.add-function-return-types-cache.json'
+const CACHE_FILE_NAME = '.add-function-return-types-cache.json'
 
 export type CacheFile = {
 	version: number

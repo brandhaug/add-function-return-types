@@ -80,7 +80,7 @@ const NON_TYPE_IDENTIFIERS = new Set([
  * Removes constructs from an inferred type's text that would otherwise pollute
  * identifier extraction (dynamic `import(...)` types and string literals).
  */
-export function sanitizeTypeText(text: string): string {
+function sanitizeTypeText(text: string): string {
 	return text
 		.replaceAll(/\bimport\s*\(([^)]*)\)\s*\.\s*/g, '')
 		.replaceAll(/(["'])(?:\\.|(?!\1)[^\\\n])*\1/g, "''")
@@ -91,7 +91,7 @@ export function sanitizeTypeText(text: string): string {
  * Extracts capitalized identifiers from a type's text — the plausible named
  * type entities that may need imports.
  */
-export function extractTypeIdentifierCandidates(text: string): Set<string> {
+function extractTypeIdentifierCandidates(text: string): Set<string> {
 	const names = new Set<string>()
 	for (const match of text.matchAll(/\b[A-Za-z_$][\w$]*\b/g)) {
 		const name = match[0]
@@ -110,7 +110,7 @@ export function extractTypeIdentifierCandidates(text: string): Set<string> {
  * Rewrites namespace-qualified references (e.g. `NS.Widget`) to the bare
  * imported name (`Widget`) once an import for it will be added.
  */
-export function stripQualifiers(text: string, name: string): string {
+function stripQualifiers(text: string, name: string): string {
 	return text.replaceAll(
 		new RegExp(`(?:[A-Za-z_$][\\w$]*\\.)+${name}\\b`, 'g'),
 		name
@@ -121,7 +121,7 @@ export function stripQualifiers(text: string, name: string): string {
  * Collects names that are already usable in the file: imports, local
  * declarations and in-scope type parameters.
  */
-export function collectLocallyAvailableNames(
+function collectLocallyAvailableNames(
 	sourceFile: SourceFile,
 	fnNode: TsMorphNode
 ): Set<string> {
@@ -194,7 +194,7 @@ function isExportedDeclaration(decl: TsMorphNode): boolean {
  * Walks the inferred type graph and maps referenced type entity names to the
  * source files of their (external, exported) declarations.
  */
-export function collectExternalTypeDeclarations(
+function collectExternalTypeDeclarations(
 	rootType: Type,
 	sourceFile: SourceFile,
 	candidates: Set<string>
@@ -299,7 +299,7 @@ function isAmbientLibFile(filePath: string): boolean {
  * for ambient/library declarations that are globally available, and `undefined`
  * when no reliable specifier can be determined.
  */
-export function getModuleSpecifier(
+function getModuleSpecifier(
 	declFile: SourceFile,
 	currentFile: SourceFile
 ): string | null | undefined {
@@ -365,7 +365,7 @@ export function getModuleSpecifier(
  * Returns the subset of names that are globally available without an import,
  * verified through the type checker using a throwaway probe file.
  */
-export function resolveGloballyAvailableNames(
+function resolveGloballyAvailableNames(
 	project: Project,
 	names: Array<string>
 ): Set<string> {

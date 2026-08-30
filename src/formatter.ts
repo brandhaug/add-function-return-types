@@ -171,7 +171,7 @@ export async function formatFile(
 	await execFileAsync(bin, formatArgs(formatter.name, filePath))
 }
 
-export const DEFAULT_MAX_LINE_WIDTH = 80
+const DEFAULT_MAX_LINE_WIDTH = 80
 
 type SplitState = { depth: number; current: string; previous: string }
 
