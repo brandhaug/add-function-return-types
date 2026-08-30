@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.0.1](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.0...add-function-return-types-v6.0.1) (2026-08-30)
+
+
+### Miscellaneous
+
+* **deps:** bump @types/node from 26.2.0 to 26.3.0 ([#49](https://github.com/brandhaug/add-function-return-types/issues/49)) ([495b870](https://github.com/brandhaug/add-function-return-types/commit/495b8709580a1b3f20675aad8d45088b5183aff9))
+* **deps:** bump @types/node from 26.3.0 to 26.4.0 ([#51](https://github.com/brandhaug/add-function-return-types/issues/51)) ([7395588](https://github.com/brandhaug/add-function-return-types/commit/7395588174adfecb0ad423a73038a19194687e03))
+* **deps:** bump lint-staged from 17.3.0 to 17.4.1 ([#53](https://github.com/brandhaug/add-function-return-types/issues/53)) ([0f5962d](https://github.com/brandhaug/add-function-return-types/commit/0f5962d282353f4616ba3d0044dfbda32075e59d))
+* **deps:** bump oxlint from 1.79.0 to 1.80.0 ([#44](https://github.com/brandhaug/add-function-return-types/issues/44)) ([81c8e03](https://github.com/brandhaug/add-function-return-types/commit/81c8e034ae7829c31248ddb774d41402d151a3a0))
+* **deps:** bump ultracite from 7.10.6 to 7.10.7 ([#52](https://github.com/brandhaug/add-function-return-types/issues/52)) ([5de4449](https://github.com/brandhaug/add-function-return-types/commit/5de4449ce5285315a693f20b8367dcbb1b66b85d))
+* enable strict oxlint rules and fix violations ([#47](https://github.com/brandhaug/add-function-return-types/issues/47)) ([9b560f2](https://github.com/brandhaug/add-function-return-types/commit/9b560f2314bb2de76ce89a54246098a6ffe1a847))
+* remove dead code and unused dependencies surfaced by fallow ([#56](https://github.com/brandhaug/add-function-return-types/issues/56)) ([248a127](https://github.com/brandhaug/add-function-return-types/commit/248a1272c11ff26bfc70e1bbd27bd9deecd77fb3))
+
 ## [6.0.0](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v5.0.0...add-function-return-types-v6.0.0) (2026-08-27)
 
 
