@@ -1,77 +1,77 @@
 {
-  "name": "add-function-return-types",
-  "version": "6.0.1",
-  "description": "A CLI tool to add explicit return types to TypeScript functions",
-  "keywords": [
-    "cli",
-    "explicit-function-return-type",
-    "return",
-    "tool",
-    "types",
-    "typescript"
-  ],
-  "homepage": "https://github.com/brandhaug/add-function-return-types#readme",
-  "bugs": {
-    "url": "https://github.com/brandhaug/add-function-return-types/issues"
-  },
-  "license": "MIT",
-  "author": "Martin Brandhaug",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/brandhaug/add-function-return-types.git"
-  },
-  "bin": {
-    "add-function-return-types": "dist/bin.js"
-  },
-  "workspaces": [],
-  "files": [
-    "dist/"
-  ],
-  "type": "module",
-  "main": "./dist/index.js",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "lint": "oxlint --type-aware",
-    "format": "oxfmt --write",
-    "format:check": "oxfmt --check",
-    "typecheck": "tsc --noEmit",
-    "prepare": "git config core.hooksPath .githooks",
-    "test": "bun test --isolate --timeout 120000",
-    "dead-code": "fallow dead-code --fail-on-regression",
-    "validate": "npm run lint && npm run typecheck && npm run test && npm run dead-code"
-  },
-  "dependencies": {
-    "@clack/prompts": "1.7.0",
-    "fast-glob": "3.3.3",
-    "ts-morph": "28.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "catalog:",
-    "lint-staged": "catalog:",
-    "oxfmt": "catalog:",
-    "oxlint": "catalog:",
-    "oxlint-tsgolint": "catalog:",
-    "typescript": "catalog:",
-    "ultracite": "catalog:"
-  },
-  "engines": {
-    "bun": ">=1.4.0"
-  },
-  "packageManager": "bun@1.4.0",
-  "catalog": {
-    "@types/node": "26.4.1",
-    "lint-staged": "17.4.1",
-    "oxfmt": "0.66.0",
-    "oxlint": "1.81.0",
-    "oxlint-tsgolint": "7.0.2001",
-    "typescript": "7.0.2",
-    "ultracite": "7.10.7"
-  }
+	"name": "add-function-return-types",
+	"version": "6.0.1",
+	"description": "A CLI tool to add explicit return types to TypeScript functions",
+	"keywords": [
+		"cli",
+		"explicit-function-return-type",
+		"return",
+		"tool",
+		"types",
+		"typescript"
+	],
+	"homepage": "https://github.com/brandhaug/add-function-return-types#readme",
+	"bugs": {
+		"url": "https://github.com/brandhaug/add-function-return-types/issues"
+	},
+	"license": "MIT",
+	"author": "Martin Brandhaug",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/brandhaug/add-function-return-types.git"
+	},
+	"bin": {
+		"add-function-return-types": "dist/bin.js"
+	},
+	"workspaces": [],
+	"files": [
+		"dist/"
+	],
+	"type": "module",
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js",
+		"lint": "oxlint --type-aware",
+		"format": "oxfmt --write",
+		"format:check": "oxfmt --check",
+		"typecheck": "tsc --noEmit",
+		"prepare": "git config core.hooksPath .githooks",
+		"test": "bun test --isolate --timeout 120000",
+		"dead-code": "fallow dead-code --fail-on-regression",
+		"validate": "npm run lint && npm run typecheck && npm run test && npm run dead-code"
+	},
+	"dependencies": {
+		"@clack/prompts": "1.7.0",
+		"fast-glob": "3.3.3",
+		"ts-morph": "28.0.0"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"lint-staged": "catalog:",
+		"oxfmt": "catalog:",
+		"oxlint": "catalog:",
+		"oxlint-tsgolint": "catalog:",
+		"typescript": "catalog:",
+		"ultracite": "catalog:"
+	},
+	"engines": {
+		"bun": ">=1.4.2"
+	},
+	"packageManager": "bun@1.4.2",
+	"catalog": {
+		"@types/node": "26.4.1",
+		"lint-staged": "17.4.1",
+		"oxfmt": "0.66.0",
+		"oxlint": "1.81.0",
+		"oxlint-tsgolint": "7.0.2001",
+		"typescript": "7.0.2",
+		"ultracite": "7.10.7"
+	}
 }
