@@ -1,5 +1,15 @@
 # Changelog
 
+## [6.0.2](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.1...add-function-return-types-v6.0.2) (2026-09-05)
+
+
+### Miscellaneous
+
+* **deps:** bump @types/node from 26.4.0 to 26.4.1 ([#58](https://github.com/brandhaug/add-function-return-types/issues/58)) ([758434c](https://github.com/brandhaug/add-function-return-types/commit/758434c45b0b4da18cbec757a9df0970e5ebd035))
+* **deps:** bump oxfmt from 0.65.0 to 0.66.0 ([#59](https://github.com/brandhaug/add-function-return-types/issues/59)) ([93e7357](https://github.com/brandhaug/add-function-return-types/commit/93e735790b14956e40726d4272471aba4202949e))
+* **deps:** bump oxlint from 1.80.0 to 1.81.0 ([#60](https://github.com/brandhaug/add-function-return-types/issues/60)) ([6acd741](https://github.com/brandhaug/add-function-return-types/commit/6acd74107b9d9167b68ea0138d0ebbde4246071e))
+* upgrade bun to 1.4.2 ([#62](https://github.com/brandhaug/add-function-return-types/issues/62)) ([62bb038](https://github.com/brandhaug/add-function-return-types/commit/62bb0389f848a874a3e2505a37b23157eaf60b2b))
+
 ## [6.0.1](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.0...add-function-return-types-v6.0.1) (2026-08-30)
 
 
