@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.0.3](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.2...add-function-return-types-v6.0.3) (2026-09-11)
+
+
+### Miscellaneous
+
+* **deps:** bump lint-staged from 17.4.1 to 17.5.0 ([#65](https://github.com/brandhaug/add-function-return-types/issues/65)) ([0e6cd32](https://github.com/brandhaug/add-function-return-types/commit/0e6cd3223e7dcf6efc1d8cca40d05f3ab790cacf))
+* **deps:** bump oxfmt from 0.66.0 to 0.67.0 ([#67](https://github.com/brandhaug/add-function-return-types/issues/67)) ([eca5f3e](https://github.com/brandhaug/add-function-return-types/commit/eca5f3e56f6dfc1cefd3024686983ba4bbd8b3aa))
+* **deps:** bump oxlint from 1.81.0 to 1.82.0 ([#68](https://github.com/brandhaug/add-function-return-types/issues/68)) ([43c3e5d](https://github.com/brandhaug/add-function-return-types/commit/43c3e5dd7153c438d6fd26fb30d96dbc13f35042))
+* **deps:** bump ultracite from 7.10.7 to 7.10.8 ([#63](https://github.com/brandhaug/add-function-return-types/issues/63)) ([fe47ce5](https://github.com/brandhaug/add-function-return-types/commit/fe47ce5a4e8243c827d19d1d9e0fb953c3e5d302))
+* **deps:** bump ultracite from 7.10.8 to 7.11.0 ([#66](https://github.com/brandhaug/add-function-return-types/issues/66)) ([e49ca43](https://github.com/brandhaug/add-function-return-types/commit/e49ca437adaddbe6c219b93a98ec3bf80d004ad4))
+
 ## [6.0.2](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.1...add-function-return-types-v6.0.2) (2026-09-05)
 
 
