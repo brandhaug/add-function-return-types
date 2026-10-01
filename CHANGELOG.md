@@ -1,5 +1,24 @@
 # Changelog
 
+## [6.0.4](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.3...add-function-return-types-v6.0.4) (2026-09-30)
+
+
+### Bug Fixes
+
+* **security:** override 1 vulnerable transitive dependency ([#86](https://github.com/brandhaug/add-function-return-types/issues/86)) ([a101463](https://github.com/brandhaug/add-function-return-types/commit/a101463a5dcffd9350f6979a86bc972d53139b8f))
+* **security:** override 2 vulnerable transitive dependencies ([#85](https://github.com/brandhaug/add-function-return-types/issues/85)) ([32a6127](https://github.com/brandhaug/add-function-return-types/commit/32a6127fb8b1ebddb2c5403236dea43770a39dba))
+* **security:** override 3 vulnerable transitive dependencies ([#84](https://github.com/brandhaug/add-function-return-types/issues/84)) ([38dbdec](https://github.com/brandhaug/add-function-return-types/commit/38dbdec0750d187b80d1fcea47e6ed32eb57cc5d))
+
+
+### Miscellaneous
+
+* **deps:** bump @types/node from 26.6.1 to 26.6.2 ([#77](https://github.com/brandhaug/add-function-return-types/issues/77)) ([80f3b16](https://github.com/brandhaug/add-function-return-types/commit/80f3b16b3c1b51d2c735478edd6db8aa3f83fdf4))
+* **deps:** bump @types/node from 26.6.2 to 26.6.3 ([#82](https://github.com/brandhaug/add-function-return-types/issues/82)) ([9f9f541](https://github.com/brandhaug/add-function-return-types/commit/9f9f5413f3911a758ba30d9e7bdd89e55ec23a5c))
+* **deps:** bump lint-staged from 17.5.1 to 17.6.0 ([#83](https://github.com/brandhaug/add-function-return-types/issues/83)) ([2e0bd9d](https://github.com/brandhaug/add-function-return-types/commit/2e0bd9d55cc6d1dbdc263ed30c41dd0d9aea7aa0))
+* **deps:** bump oxfmt from 0.68.0 to 0.70.0 ([#79](https://github.com/brandhaug/add-function-return-types/issues/79)) ([12dab9a](https://github.com/brandhaug/add-function-return-types/commit/12dab9afd31e81b30763d72cc4bce8665b174325))
+* **deps:** bump oxlint from 1.83.0 to 1.85.0 ([#80](https://github.com/brandhaug/add-function-return-types/issues/80)) ([3f11dd7](https://github.com/brandhaug/add-function-return-types/commit/3f11dd7fb5ad8ceaf10412ec848de49c7e55c80e))
+* **deps:** bump oxlint-tsgolint from 7.0.2002 to 7.0.2003 ([#81](https://github.com/brandhaug/add-function-return-types/issues/81)) ([a87c9f2](https://github.com/brandhaug/add-function-return-types/commit/a87c9f2976edac565531ec7bfaf1132ddc6722af))
+
 ## [6.0.3](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.2...add-function-return-types-v6.0.3) (2026-09-21)
 
 
