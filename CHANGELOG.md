@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.6](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.5...add-function-return-types-v6.0.6) (2026-10-01)
+
+
+### Miscellaneous
+
+* **deps:** bump oxfmt from 0.70.0 to 0.71.0 ([#89](https://github.com/brandhaug/add-function-return-types/issues/89)) ([e3ddebc](https://github.com/brandhaug/add-function-return-types/commit/e3ddebcccc542b022dbe864d523dd9104eb29070))
+* **deps:** bump oxlint from 1.85.0 to 1.86.0 ([#90](https://github.com/brandhaug/add-function-return-types/issues/90)) ([5b45cfd](https://github.com/brandhaug/add-function-return-types/commit/5b45cfd18f2c4fc33c80a700ce772b80bc2fb818))
+
 ## [6.0.5](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.4...add-function-return-types-v6.0.5) (2026-10-01)
 
 
