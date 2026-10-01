@@ -68,7 +68,7 @@
   "catalog": {
     "@types/node": "26.6.3",
     "lint-staged": "17.6.0",
-    "oxfmt": "0.70.0",
+    "oxfmt": "0.71.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2003",
     "typescript": "7.0.2",
