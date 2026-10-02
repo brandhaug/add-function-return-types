@@ -72,7 +72,7 @@
     "oxlint": "1.86.0",
     "oxlint-tsgolint": "7.0.2003",
     "typescript": "7.0.2",
-    "ultracite": "7.12.1"
+    "ultracite": "7.12.2"
   },
   "overrides": {
     "brace-expansion@>=4.0.0 <5.0.12": "5.0.12"
