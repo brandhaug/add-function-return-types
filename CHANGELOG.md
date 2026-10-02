@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.7](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.6...add-function-return-types-v6.0.7) (2026-10-02)
+
+
+### Miscellaneous
+
+* **deps:** bump ultracite from 7.12.1 to 7.12.2 ([#92](https://github.com/brandhaug/add-function-return-types/issues/92)) ([dd4e394](https://github.com/brandhaug/add-function-return-types/commit/dd4e394613574c50f22a35bcae52f20f2fd9a867))
+
 ## [6.0.6](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.5...add-function-return-types-v6.0.6) (2026-10-01)
 
 
