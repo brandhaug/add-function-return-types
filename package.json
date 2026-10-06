@@ -75,6 +75,6 @@
     "ultracite": "7.12.2"
   },
   "overrides": {
-    "brace-expansion@>=4.0.0 <5.0.12": "5.0.12"
+    "source-map-js@>=1.0.0 <1.2.2": "1.2.2"
   }
 }
