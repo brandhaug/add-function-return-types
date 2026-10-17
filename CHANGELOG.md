@@ -1,5 +1,28 @@
 # Changelog
 
+## [6.0.7](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.6...add-function-return-types-v6.0.7) (2026-10-17)
+
+
+### Bug Fixes
+
+* **security:** override 1 vulnerable transitive dependency ([#95](https://github.com/brandhaug/add-function-return-types/issues/95)) ([4658a65](https://github.com/brandhaug/add-function-return-types/commit/4658a657785ec081cdabd5d09d66b6e196d45a71))
+
+
+### Miscellaneous
+
+* **deps:** bump @types/node from 26.6.3 to 26.6.4 ([#94](https://github.com/brandhaug/add-function-return-types/issues/94)) ([ed5ffdf](https://github.com/brandhaug/add-function-return-types/commit/ed5ffdf47be04ff6830473d1b98394e74be712ef))
+* **deps:** bump @types/node from 26.6.4 to 26.6.5 ([#100](https://github.com/brandhaug/add-function-return-types/issues/100)) ([7076c04](https://github.com/brandhaug/add-function-return-types/commit/7076c0465ad0da064c21e65b4d4e46c405978da2))
+* **deps:** bump oxfmt from 0.71.0 to 0.72.0 ([#96](https://github.com/brandhaug/add-function-return-types/issues/96)) ([c6f70a0](https://github.com/brandhaug/add-function-return-types/commit/c6f70a0725c0a86f4a6dc8f64ea216902538c558))
+* **deps:** bump oxfmt from 0.72.0 to 0.73.0 ([#103](https://github.com/brandhaug/add-function-return-types/issues/103)) ([d2b880b](https://github.com/brandhaug/add-function-return-types/commit/d2b880b7b8ba359c5c2dd2ff96fc7a24db6349e0))
+* **deps:** bump oxlint from 1.86.0 to 1.87.0 ([#97](https://github.com/brandhaug/add-function-return-types/issues/97)) ([1c0cfaf](https://github.com/brandhaug/add-function-return-types/commit/1c0cfaff596d4af93af73862dc5ce28bf15e3944))
+* **deps:** bump oxlint from 1.87.0 to 1.88.0 ([#104](https://github.com/brandhaug/add-function-return-types/issues/104)) ([6a205a5](https://github.com/brandhaug/add-function-return-types/commit/6a205a5feca36694afb9c7553119da71f94847bb))
+* **deps:** bump oxlint-tsgolint from 7.0.2003 to 7.0.2004 ([#101](https://github.com/brandhaug/add-function-return-types/issues/101)) ([5f7a198](https://github.com/brandhaug/add-function-return-types/commit/5f7a198b383871ceca30a99f652379867856333b))
+* **deps:** bump ultracite from 7.12.1 to 7.12.2 ([#92](https://github.com/brandhaug/add-function-return-types/issues/92)) ([dd4e394](https://github.com/brandhaug/add-function-return-types/commit/dd4e394613574c50f22a35bcae52f20f2fd9a867))
+* **deps:** bump ultracite from 7.12.2 to 7.12.3 ([#98](https://github.com/brandhaug/add-function-return-types/issues/98)) ([17355e9](https://github.com/brandhaug/add-function-return-types/commit/17355e99e81f43e720f7b2e7a53b8b461d299271))
+* **deps:** bump ultracite from 7.12.3 to 7.12.4 ([#99](https://github.com/brandhaug/add-function-return-types/issues/99)) ([4651fa1](https://github.com/brandhaug/add-function-return-types/commit/4651fa135e0e9c848de2cdae8a14fc259f9d3cbc))
+* **deps:** bump ultracite from 7.12.4 to 8.0.0 ([#102](https://github.com/brandhaug/add-function-return-types/issues/102)) ([671c31d](https://github.com/brandhaug/add-function-return-types/commit/671c31d8e7db731d9c791cb5b15a14c9d49e1f00))
+* **deps:** bump ultracite from 8.0.0 to 8.0.1 ([#105](https://github.com/brandhaug/add-function-return-types/issues/105)) ([f9ff139](https://github.com/brandhaug/add-function-return-types/commit/f9ff13981568b3269b37908050e59e126aca7121))
+
 ## [6.0.6](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.5...add-function-return-types-v6.0.6) (2026-10-01)
 
 
