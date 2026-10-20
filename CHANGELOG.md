@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.8](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.7...add-function-return-types-v6.0.8) (2026-10-20)
+
+
+### Miscellaneous
+
+* **deps:** group coupled catalog updates ([#107](https://github.com/brandhaug/add-function-return-types/issues/107)) ([89b048f](https://github.com/brandhaug/add-function-return-types/commit/89b048fb9b39448137266c9a6699463ab5f6199d))
+
 ## [6.0.7](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.6...add-function-return-types-v6.0.7) (2026-10-20)
 
 
