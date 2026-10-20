@@ -37,6 +37,9 @@
 		}
 	},
 	"dynamicallyLoaded": ["src/worker.ts"],
-	"entry": ["test/**/*.test.ts", "test/mocks/*.ts"],
-	"ignoreDependencies": ["ultracite"]
+	"entry": [
+		"test/**/*.test.ts",
+		"test/mocks/*.ts",
+		"tooling/anti-slop/plugin.mjs"
+	]
 }
