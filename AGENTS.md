@@ -2,7 +2,7 @@
 
 ## Purpose & Scope
 
-CLI + library that adds explicit return types to TypeScript functions via `ts-morph` type inference. Published to npm as `add-function-return-types`. TypeScript ESM (target ES2022), Node.js >= 20, bun >= 1.4 for dev/test.
+CLI + library that adds explicit return types to TypeScript functions via `ts-morph` type inference. Published to npm as `add-function-return-types`. TypeScript ESM (target ES2022), Node.js >= 20, Bun >= 1.4.3 for dev/test and `bun check`.
 
 Core v5 invariants:
 
@@ -15,7 +15,7 @@ Core v5 invariants:
 - Library: `src/index.ts` exports `addFunctionReturnTypes`, `Options`, `defaultOptions`, and stats helpers (`RunStats`, `createRunStats`, `formatStatsTable`, `classifyReturnType`, `recordAnnotation`, `recordSkip`, `AnnotationKind`, `SkipReason`).
 - CLI: `src/bin.ts` → `main()` in `src/cli.ts`. No args → interactive `@clack/prompts` flow; any path/flag → non-interactive `parseArgv`. Compiled to `dist/bin.js`; library to `dist/index.js`.
 - `Options`, `defaultOptions`, and `defaultGeneratedIgnorePatterns` live in `src/options.ts`.
-- Module map: `add-function-return-types.ts` (orchestration: file discovery via fast-glob, incremental cache, bounded worker pool, verify, stats), `process-file.ts` (per-file AST work: annotation, alias extraction), `add-type-imports.ts` (import planning for named types), `formatter.ts` (formatter detection + fallback wrapping), `verify.ts` (post-run type-check + auto-revert), `worker.ts`, `cache.ts`, `stats.ts`, `utils.ts`.
+- Module map: `add-function-return-types.ts` (orchestration: file discovery via tinyglobby, incremental cache, bounded worker pool, verify, stats), `process-file.ts` (per-file AST work: annotation, alias extraction), `add-type-imports.ts` (import planning for named types), `formatter.ts` (formatter detection + fallback wrapping), `verify.ts` (post-run type-check + auto-revert), `worker.ts`, `cache.ts`, `stats.ts`, `utils.ts`.
 - Contracts: modified files that gain new type errors are reverted to their original content. The cache is keyed by content hash + options hash + version — bump `CACHE_VERSION` in `cache.ts` whenever processing logic changes emitted output.
 
 ## Usage Patterns
@@ -41,15 +41,15 @@ Tests: `bun:test`, `test/*.test.ts`. Files: `add-function-return-types` (core), 
 
 ## Dependencies & Edges
 
-- Runtime: `ts-morph`, `@clack/prompts`, `fast-glob`.
-- Dev: `oxlint` + `oxlint-tsgolint` (type-aware), `ultracite` (anti-slop jsPlugin), `oxfmt`, `lint-staged`, `typescript`, `@types/node`.
+- Runtime: `ts-morph`, `@clack/prompts`, `tinyglobby`.
+- Dev: `oxlint` + `oxlint-tsgolint` (type-aware), `oxfmt`, `lint-staged`, `typescript`, `@types/node`. The anti-slop plugin is vendored; see [tooling/anti-slop/README.md](tooling/anti-slop/README.md) before updating it.
 - Lint config `.oxlintrc.json`: plugins typescript/unicorn/oxc/import/promise/react + anti-slop; correctness/suspicious/perf = error. Format config `.oxfmtrc.json`: tabs, single quotes, no semicolons, 80 cols.
 - CI: `ci.yml` (lint + typecheck + test + build), `pr-gate.yml` (conventional-commits), `release.yml` (release-please → npm publish on master).
 - `CLAUDE.md` is a symlink to this file.
 
 ## Patterns & Pitfalls
 
-- `npm run lint` runs oxlint type-aware; `npm run typecheck` runs `tsc --noEmit`.
+- `npm run lint` runs oxlint type-aware; `npm run typecheck` runs `bun check`. Keep `tsc` for JavaScript and declaration output; `bun check` does not emit files.
 - No dev server or watch mode — this is a CLI tool.
 - `_arg`-prefixed names mark intentionally-unused parameters (`no-unused-vars` `argsIgnorePattern: ^_`).
 - No environment variables or database setup.

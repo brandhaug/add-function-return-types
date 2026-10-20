@@ -1,8 +1,6 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import fg from 'fast-glob'
-
-type EntryInternal = Awaited<ReturnType<typeof fg>>[number]
+import { glob } from 'tinyglobby'
 
 /**
  * Recursively searches for .git directory in parent directories
@@ -54,15 +52,14 @@ export async function findRepoRoot(startPath: string): Promise<string> {
  */
 export async function findPackageJsonFiles(
 	startPath: string
-): Promise<Array<EntryInternal>> {
+): Promise<Array<string>> {
 	console.info('Looking for package.json files...')
 	// First find the repository root
 	const repoRoot = await findRepoRoot(startPath)
 
 	const patterns = ['**/package.json']
 
-	// Use fast-glob to find all package.json files within the repository root
-	const packageJsonFiles = await fg(patterns, {
+	const packageJsonFiles = await glob(patterns, {
 		cwd: repoRoot,
 		ignore: ['**/node_modules/**'],
 		absolute: true

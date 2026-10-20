@@ -1,9 +1,8 @@
 import path from 'node:path'
 import { Worker } from 'node:worker_threads'
 import os from 'node:os'
-import fg from 'fast-glob'
+import { glob } from 'tinyglobby'
 
-type EntryInternal = Awaited<ReturnType<typeof fg>>[number]
 import {
 	CACHE_VERSION,
 	computeContentHash,
@@ -339,7 +338,7 @@ async function resolveTypes(pathToProcess: string): Promise<Array<string>> {
 async function getAllTsAndTsxFiles(
 	rootPath: string,
 	options: Options
-): Promise<Array<EntryInternal>> {
+): Promise<Array<string>> {
 	const extensions = ['ts', 'tsx']
 	const patterns = extensions.map((ext): string => `**/*.${ext}`)
 
@@ -348,7 +347,7 @@ async function getAllTsAndTsxFiles(
 		'**/*.d.ts',
 		...(options.includeGenerated ? [] : defaultGeneratedIgnorePatterns)
 	]
-	return fg(patterns, {
+	return glob(patterns, {
 		cwd: rootPath,
 		ignore: [...defaultIgnorefiles, ...options.ignoreFiles],
 		absolute: true,
