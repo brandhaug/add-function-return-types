@@ -2,7 +2,7 @@
 
 ## Purpose & Scope
 
-CLI + library that adds explicit return types to TypeScript functions via `ts-morph` type inference. Published to npm as `add-function-return-types`. TypeScript ESM (target ES2022), Node.js >= 20, Bun >= 1.4.3 for dev/test and `bun check`.
+CLI + library that adds explicit return types to TypeScript functions via `ts-morph` type inference. Published to npm as `add-function-return-types`. TypeScript ESM (target ES2022), Node.js >= 20, Bun >= 1.4.4 for dev/test and `bun check`.
 
 Core v5 invariants:
 
