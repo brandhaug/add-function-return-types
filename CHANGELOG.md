@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.9](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.8...add-function-return-types-v6.0.9) (2026-10-22)
+
+
+### Miscellaneous
+
+* **deps:** bump oxc dependencies ([#110](https://github.com/brandhaug/add-function-return-types/issues/110)) ([926f9e8](https://github.com/brandhaug/add-function-return-types/commit/926f9e8c88e08c6009cc5d2403a45d7662448596))
+* **tooling:** upgrade Bun to 1.4.4 ([#109](https://github.com/brandhaug/add-function-return-types/issues/109)) ([adbe81f](https://github.com/brandhaug/add-function-return-types/commit/adbe81fe858dd5db52cae20e001617ca9d24f9b3))
+
 ## [6.0.8](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.7...add-function-return-types-v6.0.8) (2026-10-20)
 
 
