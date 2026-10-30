@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.10](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.9...add-function-return-types-v6.0.10) (2026-10-30)
+
+
+### Miscellaneous
+
+* **deps:** bump oxc dependencies ([#114](https://github.com/brandhaug/add-function-return-types/issues/114)) ([c2563cc](https://github.com/brandhaug/add-function-return-types/commit/c2563cc1fa4c0f8be4404ba5a81fcd7bf75b96db))
+* **deps:** bump oxlint-tsgolint from 7.0.2004 to 7.0.2005 ([#112](https://github.com/brandhaug/add-function-return-types/issues/112)) ([39521e7](https://github.com/brandhaug/add-function-return-types/commit/39521e7869c663cde8a5d5cd1734f24fa70fa90c))
+
 ## [6.0.9](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.8...add-function-return-types-v6.0.9) (2026-10-22)
 
 
