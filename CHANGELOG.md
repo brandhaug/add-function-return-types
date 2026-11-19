@@ -1,5 +1,21 @@
 # Changelog
 
+## [6.0.10](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.9...add-function-return-types-v6.0.10) (2026-11-19)
+
+
+### Miscellaneous
+
+* **deps:** bump @types/node from 26.6.5 to 26.6.6 ([#115](https://github.com/brandhaug/add-function-return-types/issues/115)) ([9ff69c1](https://github.com/brandhaug/add-function-return-types/commit/9ff69c153dcddaa2b645a6205e436b60f33b6596))
+* **deps:** bump lint-staged from 17.6.0 to 17.6.1 ([#122](https://github.com/brandhaug/add-function-return-types/issues/122)) ([e07d996](https://github.com/brandhaug/add-function-return-types/commit/e07d996a7d6126a6becf90c758c5e296c3da2c4a))
+* **deps:** bump oxc dependencies ([#114](https://github.com/brandhaug/add-function-return-types/issues/114)) ([c2563cc](https://github.com/brandhaug/add-function-return-types/commit/c2563cc1fa4c0f8be4404ba5a81fcd7bf75b96db))
+* **deps:** bump oxc dependencies ([#118](https://github.com/brandhaug/add-function-return-types/issues/118)) ([961047b](https://github.com/brandhaug/add-function-return-types/commit/961047b9b9b40428840f7ecb69ce3a3c53f93d24))
+* **deps:** bump oxc dependencies ([#119](https://github.com/brandhaug/add-function-return-types/issues/119)) ([033ccca](https://github.com/brandhaug/add-function-return-types/commit/033ccca7ecaba76b976e24fa8d34edb9156b7c22))
+* **deps:** bump oxc dependencies ([#121](https://github.com/brandhaug/add-function-return-types/issues/121)) ([a21b686](https://github.com/brandhaug/add-function-return-types/commit/a21b686c70ec5937772e31e4e248717d506d128b))
+* **deps:** bump oxfmt from 0.75.0 to 0.76.0 ([#116](https://github.com/brandhaug/add-function-return-types/issues/116)) ([fcf61d1](https://github.com/brandhaug/add-function-return-types/commit/fcf61d1951ee7478e442f71b495cd2c112d656e4))
+* **deps:** bump oxlint from 1.90.0 to 1.91.0 ([#117](https://github.com/brandhaug/add-function-return-types/issues/117)) ([884ab38](https://github.com/brandhaug/add-function-return-types/commit/884ab386d33597442acf9ac6bb42917f4d00c843))
+* **deps:** bump oxlint-tsgolint from 7.0.2004 to 7.0.2005 ([#112](https://github.com/brandhaug/add-function-return-types/issues/112)) ([39521e7](https://github.com/brandhaug/add-function-return-types/commit/39521e7869c663cde8a5d5cd1734f24fa70fa90c))
+* **deps:** bump oxlint-tsgolint from 7.0.2006 to 7.0.2007 ([#120](https://github.com/brandhaug/add-function-return-types/issues/120)) ([c3e81d6](https://github.com/brandhaug/add-function-return-types/commit/c3e81d62ce227355b93235bb4b8066fa9ba0598e))
+
 ## [6.0.9](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.8...add-function-return-types-v6.0.9) (2026-10-22)
 
 
