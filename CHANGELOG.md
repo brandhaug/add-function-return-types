@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.0.11](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.10...add-function-return-types-v6.0.11) (2026-11-28)
+
+
+### Miscellaneous
+
+* **deps:** bump @types/node from 26.6.6 to 26.6.10 ([#127](https://github.com/brandhaug/add-function-return-types/issues/127)) ([0879173](https://github.com/brandhaug/add-function-return-types/commit/087917337aeaf36470ea4f4eae0f94fcadc78648))
+* **deps:** bump lint-staged from 17.6.1 to 17.6.2 ([#124](https://github.com/brandhaug/add-function-return-types/issues/124)) ([aa9a903](https://github.com/brandhaug/add-function-return-types/commit/aa9a903b8141da180bcd522e7478482fd018ae19))
+
 ## [6.0.10](https://github.com/brandhaug/add-function-return-types/compare/add-function-return-types-v6.0.9...add-function-return-types-v6.0.10) (2026-11-24)
 
 
